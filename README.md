@@ -4,7 +4,13 @@ Paste in any suspicious text message, email, or DM and get a plain-English verdi
 
 Built for non-technical users, especially older adults, who are the most targeted by scams and the least equipped to spot them.
 
-**Status: demo-ready.** 16/16 on the classification suite, ~6s per check, web UI built.
+**🔗 Live demo: https://is-this-real-app.vercel.app**
+
+Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust**
+
+**Status:** 16/16 on the classification suite · 85/85 on edge and privacy assertions · ~6s per check, instant on repeats · deployed.
+
+> ⚠️ **The live demo needs Anthropic API credits.** The account backing it is currently at zero balance, so checks fall back to the rules-only layer and say so. Top up at [Plans & Billing](https://console.anthropic.com/settings/billing) to restore full quality — no redeploy needed.
 
 ---
 
@@ -268,6 +274,42 @@ Copy `src/lib/` and `src/store/` across and delete `src/server.ts` and `src/rout
 
 ---
 
-## Known rough edges
+## How AI was used to build this
 
-See [DECISIONS.md](DECISIONS.md) for the full list, judgment calls, and what's stubbed versus built.
+Disclosed in full, since the hackathon asks.
+
+**Claude is the product**, not just a build tool — Layer 2 of the classifier is a Claude Opus 5 call with structured JSON output. That's the AI in "AI-powered scam detection", and it is doing real work: the romance-scam opener scores 0/100 on the deterministic rules and is still caught.
+
+**Claude Code wrote most of the implementation**, working from specifications and review. Concretely, it:
+
+- built both classification layers, the API, the store adapters, and the web UI;
+- wrote the 16-message evaluation set and the 85-assertion edge suite;
+- found and fixed the two bugs described below, both surfaced by tests it wrote.
+
+**What was human-directed:** the product concept and target user, the two-layer architecture, the anti-cry-wolf requirement as the primary success metric, the tone rules for user-facing copy, the effort/latency tradeoff decision, scope boundaries (what got cut), and review of every classification result.
+
+**What was not AI-generated:** the 16 evaluation fixtures are grounded in documented FTC / FBI IC3 / USPS / IRS scam-warning patterns rather than invented, and the expected verdicts were set by human judgement before running them.
+
+## Known limitations
+
+Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
+
+| Limitation | Detail |
+| --- | --- |
+| **API credits** | The live demo degrades to rules-only when the Anthropic balance hits zero. It says so in the UI rather than pretending. |
+| **Stats are per-instance on Vercel** | Serverless has no shared state, so the counter reflects one warm instance and resets on cold start. Fine for demo texture; the Supabase adapter is the real fix. |
+| **Cache is per-instance** | Same reason. In practice one demo session stays on one warm instance, so repeats are instant. |
+| **In-app rate limit is per-instance** | 12/min/IP works for sequential requests (a human clicking). Concurrent requests spread across instances and slip past it — which is why there's also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
+| **~6s per check** | The model's floor for reasoning plus four written explanations. Faster means vaguer reasons. |
+| **`x-forwarded-for` is spoofable** | Only the first hop is trusted. Adequate for a cost guard; real production wants signed tokens or platform-level identity. |
+| **Family alerting is schema only** | Table exists, logic does not. Deliberate scope line. |
+
+## Deploying your own
+
+```bash
+npm i -g vercel && vercel link && vercel --prod
+```
+
+Set `ANTHROPIC_API_KEY`, `HASH_SALT`, `CLASSIFIER_EFFORT=low` in the Vercel project. `vercel.json` pins `framework: null` — without it Vercel auto-detects Fastify, finds `public/app.js`, and fails looking for a server entrypoint.
+
+Railway / Render / Fly run it unchanged with `npm start`, and get real SQLite persistence plus a working in-process rate limiter.

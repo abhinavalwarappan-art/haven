@@ -219,9 +219,10 @@ export function heuristicFallback(signals: SignalReport): Classification {
     );
   }
 
-  reasons.push(
-    'Our detailed checker was unavailable, so this is a quick automatic assessment — double-check before acting on it.'
-  );
+  // The "our checker was unavailable" notice deliberately does NOT go here.
+  // Reasons are statements about the *message*; this is a statement about the
+  // *tool*. Each surface renders it from meta.classifier instead — putting it
+  // in both places printed it twice in the UI.
 
   return {
     verdict,

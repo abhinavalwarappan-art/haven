@@ -5,3 +5,5 @@ node_modules/
 
 # Local SQLite fallback store (dev only — contains hashes, never raw text)
 data/
+.vercel
+.env*

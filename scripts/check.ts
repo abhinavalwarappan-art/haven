@@ -52,6 +52,11 @@ async function main() {
     process.stdout.write(`\n${LABEL[result.verdict] ?? result.verdict}`);
     process.stdout.write(`   (${result.confidence}% confident)\n\n`);
     for (const reason of result.reasons) process.stdout.write(`  • ${reason}\n`);
+    if (result.meta.classifier === 'heuristic_fallback') {
+      process.stdout.write(
+        '\n  ⚠️  The AI layer was unavailable — this is a rules-only assessment.\n'
+      );
+    }
     process.stdout.write('\n');
 
     const suspicious = result.flags_detected.filter(

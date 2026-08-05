@@ -4,6 +4,71 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 3 — caching, rate limiting, deployment
+
+### 🔴 The Anthropic account ran out of credits
+
+Mid-session the API started returning `400 invalid_request_error: Your credit balance is too low`. **This was my doing** — verifying the rate limiter end-to-end took ~60 real checks across local and production bursts, and that drained the remaining balance.
+
+Not a code bug, and the app degrades exactly as designed: the rules layer answers and the UI says "The AI layer was unavailable." But **the live demo is running in degraded mode until the balance is topped up**, and rules-only reasons are noticeably more generic — which would blunt the demo. Top-up is a payment action, so it needs a human.
+
+One upside: it proved the degradation path works under real conditions rather than a simulated failure.
+
+### Verdict caching
+
+Keyed on the salted input hash that already existed for privacy, so the cache holds no recoverable plaintext either.
+
+**Measured, local:** 5.0s cold → **2.3ms** cached. **Measured, production:** 5–6s cold → **101–243ms** cached (that's the network round-trip; server-side is ~0ms).
+
+The instruction was to confirm this doesn't undermine the "instant verdict" claim. Three things enforce that:
+
+1. A hit only ever comes from text genuinely classified before. First-time input always pays.
+2. `duration_ms` reports real elapsed time, and `meta.cached` marks the response. A fast answer can never be mistaken for a fast *classification*.
+3. The evaluation harness passes `useCache: false`, so the suite always re-classifies. A cached suite would report a previous run's accuracy as this one's.
+
+Rules-only fallbacks are never cached — otherwise a degraded answer produced during an API outage would be pinned for an hour after recovery. Given the credit exhaustion above, that turned out to matter.
+
+### Rate limiting: two layers, because one didn't work
+
+Started with a sliding-window in-process limiter (12/min/IP, plus a 240/min global cost ceiling). 23 unit tests, and it correctly returned a friendly 429 locally.
+
+**Then it failed on production.** 15 concurrent uncached checks all returned 200. Vercel scales out per concurrent request, each instance has its own counters, and no instance ever saw more than a few. The limiter was working perfectly and protecting nothing.
+
+The fix is that rate limiting belongs at the edge, not in the app. Added a **Vercel firewall rule** — genuinely shared across instances. But the edge returns a bare 403 with Vercel's own block page, which is precisely the context-free wall a judge shouldn't hit.
+
+So both, layered by who they're for:
+
+| Layer | Limit | Catches | Response |
+| --- | --- | --- | --- |
+| In-app | 12/min/IP | A human clicking fast (sequential → same warm instance) | Friendly 429 explaining it will pass |
+| Vercel edge | 40/min/IP | Scripted abuse spread across instances | 403 (fine — that's abuse, not a judge) |
+
+Both verified on the live URL: sequential burst blocks at request 13 with the friendly message; 16 concurrent blocks 4 at the edge. The frontend also treats a 403 as throttling now, so even an edge block reads as "Just a moment" rather than "unexpected response".
+
+**Cache hits don't consume quota.** Re-running a demo example is free, verified by exhausting the limit and then successfully re-checking a cached message.
+
+**For real production scale** the in-app limiter should be backed by shared state (Upstash Redis is the obvious fit on Vercel), which would make one correct limiter instead of two partial ones. In-memory is the right call for a hackathon demo, and the edge rule covers the gap that matters.
+
+### Vercel: memory store, not SQLite
+
+Vercel's filesystem is read-only apart from a per-instance `/tmp` that dies on cold start. SQLite there buys nothing over a `Map` — same lifetime, same loss — while adding a filesystem that can fail. So the store selector picks an in-memory adapter when `VERCEL` is set, and `node:sqlite` is now `require`d lazily so importing the module is safe on any runtime.
+
+Consequence, stated plainly: **on Vercel the demo counter is per-instance and resets on cold start.** Persistence is best-effort and session-scoped. That's acceptable for a counter that exists as demo texture; anything that needed to be real would flip to the Supabase adapter, which is written and unused.
+
+### Two deployment snags worth recording
+
+**Vercel auto-detected Fastify** and failed with "No entrypoint found which imports fastify. Found possible entrypoint: app.js" — it had found `public/app.js`, the browser bundle. Fixed with `"framework": null` in vercel.json.
+
+**Deployment Protection was on by default**, so every URL 302'd to an SSO login — the demo would have been unreachable for judges. Disabled via `vercel project protection disable --sso`. Worth checking on any new Vercel project meant to be public.
+
+### A duplication bug found while testing live
+
+The "our detailed checker was unavailable" notice appeared twice in the UI — once as a reason bullet, once in the footnote. The fallback was pushing it into `reasons` while the UI was also rendering it from `meta.classifier`.
+
+Fixed by making it not a reason at all: reasons are statements about the *message*, this is a statement about the *tool*. Each surface now renders it once from `meta.classifier` (the CLI gained its own line).
+
+---
+
 ## Session 2 — verification, tuning, and the frontend
 
 ### Effort: `low` wins outright

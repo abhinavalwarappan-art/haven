@@ -251,22 +251,35 @@ async function check(text) {
     return;
   }
 
-  let payload;
+  let payload = null;
   try {
     payload = await response.json();
   } catch {
-    renderError('We got an unexpected response. Please try again in a moment.');
-    return;
+    // Body wasn't JSON we could read. Fall through — the status still tells us
+    // enough to say something useful.
   }
 
   if (!response.ok) {
-    // The API writes its messages for end users, so show them as-is.
-    const message = payload?.message || 'Something went wrong. Please try again.';
-    if (response.status === 429) {
-      renderError(message, 'Just a moment');
+    // Two different things can throttle us, and only one of them is ours:
+    //   429 — our own limiter, which sends a message written for the reader.
+    //   403 — the platform edge firewall, which blocks before our code runs
+    //         and returns its own generic body. Without this branch a judge
+    //         poking hard would see "unexpected response" and assume the demo
+    //         is broken, which is exactly the wall we're trying to avoid.
+    if (response.status === 429 || response.status === 403) {
+      renderError(
+        payload?.message ||
+          "You've made a lot of checks in a short time, so we're pausing briefly. Wait about a minute and try again — nothing is broken, and re-checking a message you've already checked is always free.",
+        'Just a moment'
+      );
       return;
     }
-    renderError(message);
+    renderError(payload?.message || 'Something went wrong. Please try again.');
+    return;
+  }
+
+  if (!payload) {
+    renderError('We got an unexpected response. Please try again in a moment.');
     return;
   }
 
