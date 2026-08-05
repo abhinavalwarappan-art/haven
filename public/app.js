@@ -31,6 +31,7 @@ const ui = {
   reasons: el('reasons'),
   footnote: el('verdict-footnote'),
   again: el('again'),
+  errorHeadline: el('error-headline'),
   errorBody: el('error-body'),
   retry: el('retry'),
   stats: el('stats'),
@@ -203,7 +204,14 @@ function renderResult(data) {
   revealStage(ui.stages.result);
 }
 
-function renderError(message) {
+/**
+ * @param {string} message
+ * @param {string} [headline] Defaults to a failure framing. Rate limiting is
+ *   not a failure — it resolves on its own — so it gets a calmer headline and
+ *   must not read as "the demo is broken".
+ */
+function renderError(message, headline = "We couldn't check that") {
+  ui.errorHeadline.textContent = headline;
   ui.errorBody.textContent = message;
   show('error');
   revealStage(ui.stages.error);
@@ -252,8 +260,13 @@ async function check(text) {
   }
 
   if (!response.ok) {
-    // The API writes its 400 messages for end users, so show them as-is.
-    renderError(payload?.message || 'Something went wrong. Please try again.');
+    // The API writes its messages for end users, so show them as-is.
+    const message = payload?.message || 'Something went wrong. Please try again.';
+    if (response.status === 429) {
+      renderError(message, 'Just a moment');
+      return;
+    }
+    renderError(message);
     return;
   }
 

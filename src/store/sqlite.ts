@@ -7,7 +7,7 @@
  * Postgres is a config change, not a code change.
  */
 
-import { DatabaseSync } from 'node:sqlite';
+import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -16,6 +16,13 @@ import type { CheckRecord, StatsResponse, Store } from '../lib/types.js';
 const DEFAULT_PATH = 'data/checks.db';
 
 export function createSqliteStore(path = process.env.SQLITE_PATH || DEFAULT_PATH): Store {
+  // Required lazily rather than imported at module scope. `node:sqlite` only
+  // exists on Node 22.5+, and this module gets imported by the store selector
+  // on every platform — including serverless, where the memory store is used
+  // instead. A top-level import would make an unused dependency fatal.
+  const require = createRequire(import.meta.url);
+  const { DatabaseSync } = require('node:sqlite') as typeof import('node:sqlite');
+
   const file = resolve(path);
   mkdirSync(dirname(file), { recursive: true });
 

@@ -9,6 +9,7 @@ import type { CheckResponse, Classification, SignalReport } from './types.js';
 import { analyzeSignals } from './signals/index.js';
 import { classify, classifierModel, ClassifierUnavailableError } from './classifier.js';
 import { hashInput } from './privacy.js';
+import { cacheLookup, cacheStore } from './cache.js';
 import { getStore } from '../store/index.js';
 
 export const MAX_INPUT_LENGTH = 20_000;
@@ -23,6 +24,12 @@ export class InvalidInputError extends Error {
 export interface CheckOptions {
   /** Skip persistence. Used by the test harness so runs don't pollute stats. */
   persist?: boolean;
+  /**
+   * Skip the verdict cache. The evaluation harness sets this so every fixture
+   * is genuinely re-classified — a suite that graded cached answers would
+   * report yesterday's accuracy.
+   */
+  useCache?: boolean;
 }
 
 export function validateInput(text: unknown): string {
@@ -51,6 +58,29 @@ export async function runCheck(
 ): Promise<CheckResponse> {
   const started = Date.now();
   const text = validateInput(rawText);
+  const hash = hashInput(text);
+
+  // Cache lookup before any work. Only ever hits on text we have genuinely
+  // classified before — a first-time check always pays the real cost.
+  if (options.useCache !== false) {
+    const hit = cacheLookup(hash);
+    if (hit) {
+      return {
+        verdict: hit.verdict,
+        confidence: hit.confidence,
+        reasons: hit.reasons,
+        flags_detected: hit.flags_detected,
+        raw_signals: hit.raw_signals,
+        meta: {
+          classifier: hit.classifier,
+          model: hit.model,
+          duration_ms: Date.now() - started,
+          check_id: null,
+          cached: true,
+        },
+      };
+    }
+  }
 
   // Layer 1 — always runs, always succeeds, never calls the network.
   const signals = analyzeSignals(text);
@@ -79,8 +109,21 @@ export async function runCheck(
       model: source === 'claude' ? classifierModel() : null,
       duration_ms: Date.now() - started,
       check_id: null,
+      cached: false,
     },
   };
+
+  if (options.useCache !== false) {
+    cacheStore(hash, {
+      verdict: response.verdict,
+      confidence: response.confidence,
+      reasons: response.reasons,
+      flags_detected: response.flags_detected,
+      raw_signals: response.raw_signals,
+      classifier: source,
+      model: response.meta.model,
+    });
+  }
 
   if (options.persist !== false) {
     // Storage must never break a check. If the database is down the user still

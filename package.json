@@ -13,7 +13,9 @@
     "build": "tsc --noEmit",
     "check": "tsx --env-file-if-exists=.env.local scripts/check.ts",
     "test:checks": "tsx --env-file-if-exists=.env.local scripts/test-checks.ts",
-    "test:edge": "tsx --env-file-if-exists=.env.local scripts/test-edge-cases.ts"
+    "test:edge": "tsx --env-file-if-exists=.env.local scripts/test-edge-cases.ts",
+    "deploy": "vercel --prod",
+    "test:limits": "tsx --env-file-if-exists=.env.local scripts/test-limits.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",

@@ -135,6 +135,12 @@ export interface CheckResponse {
     duration_ms: number;
     /** Stable id of the stored row, for later feedback/linking. */
     check_id: string | null;
+    /**
+     * True when this verdict was served from the cache rather than freshly
+     * classified. Surfaced so a fast response can never be mistaken for a
+     * fast *classification* — `duration_ms` stays honest either way.
+     */
+    cached: boolean;
   };
 }
 
@@ -164,5 +170,5 @@ export interface Store {
     record: Omit<CheckRecord, 'id' | 'created_at'>
   ): Promise<{ id: string } | null>;
   getStats(): Promise<StatsResponse>;
-  readonly kind: 'supabase' | 'sqlite';
+  readonly kind: 'supabase' | 'sqlite' | 'memory';
 }

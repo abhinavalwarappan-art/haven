@@ -20,7 +20,16 @@ import { isUsingDefaultSalt } from './lib/privacy.js';
 const PORT = Number(process.env.PORT || 3600);
 const HOST = process.env.HOST || '0.0.0.0';
 
-export function buildServer() {
+export interface BuildOptions {
+  /**
+   * Serve public/ from this process. False on Vercel, where the CDN serves
+   * those files directly and only /api/* reaches the function.
+   */
+  serveStatic?: boolean;
+}
+
+export function buildServer(options: BuildOptions = {}) {
+  const { serveStatic = true } = options;
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL || 'info',
@@ -53,11 +62,13 @@ export function buildServer() {
 
   // The demo UI. Served from the same process as the API so `npm run dev` is
   // the only command needed to show this to anyone.
-  const here = dirname(fileURLToPath(import.meta.url));
-  app.register(fastifyStatic, {
-    root: join(here, '..', 'public'),
-    index: ['index.html'],
-  });
+  if (serveStatic) {
+    const here = dirname(fileURLToPath(import.meta.url));
+    app.register(fastifyStatic, {
+      root: join(here, '..', 'public'),
+      index: ['index.html'],
+    });
+  }
 
   return app;
 }

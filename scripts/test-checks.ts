@@ -67,7 +67,9 @@ async function runAll(): Promise<Row[]> {
       const index = cursor++;
       const fixture = FIXTURES[index]!;
       process.stderr.write(`  running ${fixture.id}\n`);
-      const result = await runCheck(fixture.text, { persist: false });
+      // useCache:false so every fixture is genuinely re-classified. Grading
+      // cached verdicts would report a previous run's accuracy as this one's.
+      const result = await runCheck(fixture.text, { persist: false, useCache: false });
       rows[index] = { fixture, result, grade: grade(fixture, result) };
     }
   }
