@@ -1,10 +1,10 @@
 # Is This Real?
 
-Paste in any suspicious text message, email, or DM and get an instant, plain-English verdict — **"Likely a scam," "Looks legit,"** or **"Be careful"** — with specific reasons why.
+Paste in any suspicious text message, email, or DM and get a plain-English verdict — **"This looks like a scam," "This looks legitimate,"** or **"Be careful with this one"** — with specific reasons why.
 
 Built for non-technical users, especially older adults, who are the most targeted by scams and the least equipped to spot them.
 
-Backend only. No UI yet.
+**Status: demo-ready.** 16/16 on the classification suite, ~6s per check, web UI built.
 
 ---
 
@@ -14,27 +14,31 @@ Backend only. No UI yet.
 npm install
 ```
 
-Then add your Anthropic API key to `.env.local`:
+Add your Anthropic API key to `.env.local` (copy `.env.example` if it's missing), then:
 
 ```bash
-cp .env.example .env.local
+npm run dev
 ```
 
-Open `.env.local` and set `ANTHROPIC_API_KEY=sk-ant-...`, plus a random `HASH_SALT`. Generate a salt with:
+Open **http://localhost:3600**. That serves both the UI and the API from one process — it's the only command you need to demo this.
+
+Generate a hashing salt for `HASH_SALT` with:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
 ```
 
-Check that it works:
+> **No API key?** Everything still runs — the rules layer answers alone and the UI says so explicitly. Classification quality is much lower, so don't judge the tool by it.
 
-```bash
-npm run check -- "USPS: your package is held. Pay a \$2.99 fee at https://usps-track.icu/pay within 24 hours."
-```
+### Demoing it
 
-Expected: `🔴 LIKELY A SCAM` with reasons about the fake domain and the fee.
+The UI ships with three one-click examples chosen to tell a story:
 
-> **No API key?** Everything still runs — the rules layer answers on its own and the response is marked `heuristic_fallback`. Classification quality is much lower, so don't judge the tool by it.
+| Click | What it shows |
+| --- | --- |
+| **A delivery text** → 🔴 scam | Catches the fake domain and the fee |
+| **A shipping update** → 🟢 legitimate | Nearly identical shape, correctly cleared. **This is the proof it doesn't cry wolf** |
+| **A wrong number** → 🔴 scam | Scores **0/100** on the rules layer and is still caught — the argument for the AI layer |
 
 ---
 
@@ -60,11 +64,22 @@ npm run build         # typecheck
 
 ---
 
-## The API
+## The interface
 
-```bash
-npm run dev           # http://localhost:3600
-```
+Mobile-first single screen, served as static files from the same Fastify process — no build step, no second server, no framework.
+
+Four states: **compose → thinking → result | error.**
+
+Design notes that are decisions, not decoration:
+
+- **Warm paper and an editorial serif, not a dark security console.** The person using this is frightened. A black screen of red alerts would make that worse, and panic is what makes people act on scams.
+- **The verdict is the whole screen**, not a badge — a large serif sentence on a colour field readable at arm's length.
+- **Confidence is translated, never a percentage.** "We're very confident it is a scam", not "97%". A number invites the reader to do risk arithmetic, which is the wrong task. The `uncertain` verdict gets its own phrasing ("genuinely unclear — there are signs both ways") since high confidence there means confidently ambiguous.
+- **The wait is narrated honestly.** A ~6s check shows rotating copy tracking real pipeline stages — "Checking where the links really go…" — with a bar that eases toward 92% and only completes on a real response. It never claims to be done before it is.
+- **Type is oversized throughout** for imperfect eyesight, and all text meets WCAG AA contrast (verified, ≥4.66:1).
+- **Fonts are locally available** (Iowan Old Style / Charter, Avenir Next) so there is no webfont request to flash or fail on venue wi-fi.
+
+## The API
 
 ### `POST /api/check`
 
@@ -103,6 +118,10 @@ Errors return `400` with `{ error, message }` — the message is written for the
 ```
 
 Aggregates only — individual checks are never exposed.
+
+### `GET /api/examples`
+
+The three demo messages, read from the evaluation fixtures so what judges click is literally what the test suite grades.
 
 ### `GET /health`
 
@@ -161,9 +180,13 @@ All 5 legitimate fixtures score **0/100** on Layer 1 and come back `likely_safe`
 ## Project layout
 
 ```
+public/                    the demo UI — no build step
+├── index.html             semantic markup, four stages
+├── styles.css             design tokens + components
+└── app.js                 state machine, copy, fetch
 src/
-├── server.ts              Fastify app (thin HTTP shell)
-├── routes/                check.ts · stats.ts
+├── server.ts              Fastify app (API + static UI)
+├── routes/                check.ts · stats.ts · examples.ts
 ├── lib/
 │   ├── pipeline.ts        orchestration + heuristic fallback  ← start here
 │   ├── classifier.ts      Layer 2: Claude, prompt, JSON schema
@@ -189,17 +212,18 @@ All logic lives in `src/lib/`, so the HTTP layer is disposable — the same `run
 
 ## Data layer
 
-Runs on **local SQLite by default with zero configuration** (Node's built-in `node:sqlite` — no native build). Set both `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` and it switches to Supabase Postgres with no code change.
+**SQLite, deliberately** — Node's built-in `node:sqlite`, zero configuration, no native build. It backs the `/api/stats` counter and needs no provisioning, which is the right trade for a hackathon demo.
 
-To use Supabase, apply [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) first — via the Supabase SQL editor, or `supabase db push`.
+A **Supabase adapter is written and ready but unused.** The account is at its free-project limit, and switching is two env vars (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) plus applying [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) — no code changes. It's there so "how would this scale?" has a real answer, not a slide.
 
-**Tables:** `checks` (one row per check) and `family_links` (**stub schema only** — the "alert my adult child when Mum gets a scam text" stretch goal is not implemented).
+**Tables:** `checks` (one row per check) and `family_links` (**stub schema only** — the "alert my adult child when Mum gets a scam text" idea is roadmap, not built).
 
 ### Privacy
 
 The pitch is digital trust, so the raw text never persists:
 
 - Only a **salted HMAC-SHA256** of the normalized input is stored. Not reversible; rotating `HASH_SALT` unlinks old rows by design.
+- **Card numbers and Social Security numbers are stripped from the AI's written reasons** before they leave the server. The model is also told not to repeat them — this is the belt-and-braces layer, because a pasted message often contains the reader's own details and a reason that quotes them back lands in every intermediary's request log.
 - Input is normalized before hashing, so the same scam pasted by 50 people collapses to one hash — enough for a "seen 50 times tonight" counter without retaining anything.
 - Logs redact request bodies at the Fastify level, and `redact()` strips emails, card numbers, phone numbers and SSNs from anything else headed for stdout.
 - Evidence snippets in the response are hard-clipped to 80 characters so a detector can never echo a whole message back.
@@ -215,7 +239,7 @@ Verified by `npm run test:edge`, which asserts the response and the database nev
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | — | Required for Layer 2. Without it, every check uses the fallback. |
 | `CLASSIFIER_MODEL` | `claude-opus-5` | |
-| `CLASSIFIER_EFFORT` | `medium` | **Try `low` first** — likely a 3× latency win. See DECISIONS.md. |
+| `CLASSIFIER_EFFORT` | `medium` | **Set to `low`** — 4–5× faster at identical accuracy. `.env.local` ships with `low`. |
 | `CLASSIFIER_TIMEOUT_MS` | `20000` | Falls back to rules after this. |
 | `HASH_SALT` | placeholder | **Change before deploying.** Server warns if unset. |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | — | Both set → Supabase. Neither → local SQLite. |

@@ -24,6 +24,7 @@ import type {
   SignalReport,
   Verdict,
 } from './types.js';
+import { redactHighRisk } from './privacy.js';
 
 const DEFAULT_MODEL = 'claude-opus-5';
 const VERDICTS: Verdict[] = ['scam', 'likely_safe', 'uncertain_be_careful'];
@@ -136,6 +137,8 @@ Each reason must:
 If the verdict is **likely_safe**, you must still give real reasons — say concretely why it looks fine ("It doesn't ask for money or personal details", "The link goes to the company's real website", "It names your actual order number"). Never say only "looks fine". A verdict with no reasoning teaches the reader nothing and makes the tool untrustworthy.
 
 If the verdict is **scam** or **uncertain_be_careful**, make at least one reason something the reader can act on or verify independently — for example, calling the number on the back of their card instead of the one in the message.
+
+**Never repeat a full card number or a Social Security number back in your reasons**, even if the message contains one. Say "your card number" or "your Social Security number" instead. Quoting the last four digits is fine. Naming a phone number, email address or website from the message is fine and often useful.
 
 ## cited_flags
 
@@ -363,10 +366,14 @@ function coerce(parsed: unknown, signals: SignalReport): Classification {
     ? Math.max(0, Math.min(100, Math.round(rawConfidence)))
     : 50;
 
+  // Defence in depth: the system prompt tells the model not to repeat card
+  // numbers or SSNs, and this guarantees it even if the model does anyway.
+  // Without it, a pasted message containing the user's own card number comes
+  // straight back out in a reason and into any intermediary's request logs.
   const reasons = Array.isArray(obj.reasons)
     ? obj.reasons
         .filter((r): r is string => typeof r === 'string' && r.trim().length > 0)
-        .map((r) => r.trim())
+        .map((r) => redactHighRisk(r.trim()))
         .slice(0, 4)
     : [];
 

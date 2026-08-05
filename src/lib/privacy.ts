@@ -52,6 +52,25 @@ export function redact(text: string): string {
   return REDACTIONS.reduce((acc, [pattern, mask]) => acc.replace(pattern, mask), text);
 }
 
+/**
+ * Redact only the identifiers that have no legitimate reason to appear in an
+ * explanation shown back to the user: full card numbers and Social Security
+ * numbers.
+ *
+ * Applied to the model's written reasons. Deliberately narrower than
+ * `redact()` — naming the scammer's phone number or email address is useful,
+ * actionable advice ("don't call (872) 214-0083"), so those are left intact.
+ * A card number or SSN in a reason is pure liability with no upside.
+ */
+const HIGH_RISK: Array<[RegExp, string]> = [
+  [/\b(?:\d[ -]?){13,19}\b/g, 'your card number'],
+  [/\b\d{3}-\d{2}-\d{4}\b/g, 'your Social Security number'],
+];
+
+export function redactHighRisk(text: string): string {
+  return HIGH_RISK.reduce((acc, [pattern, mask]) => acc.replace(pattern, mask), text);
+}
+
 /** Bound an evidence snippet so a detector can never echo a whole message. */
 export function clipEvidence(text: string, max = 80): string {
   const collapsed = text.replace(/\s+/g, ' ').trim();

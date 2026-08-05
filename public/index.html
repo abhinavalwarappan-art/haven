@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Is This Real? — check a suspicious message</title>
+<meta name="description" content="Paste a suspicious text, email or DM and get a plain-English answer about whether it's a scam." />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#f7f4ed" />
+<link rel="stylesheet" href="/styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧐</text></svg>" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="shell">
+    <header class="masthead">
+      <h1 class="wordmark">Is this real<span class="wordmark__mark">?</span></h1>
+      <p class="tagline">Paste a message you're unsure about. We'll tell you plainly.</p>
+    </header>
+
+    <main id="main">
+
+      <!-- ───────────────────────── COMPOSE ───────────────────────── -->
+      <section class="stage stage--compose" id="stage-compose" aria-labelledby="compose-heading">
+        <h2 class="sr-only" id="compose-heading">Check a message</h2>
+
+        <form id="check-form" novalidate>
+          <div class="well">
+            <label class="well__label" for="message">Paste the message here</label>
+            <textarea
+              id="message"
+              name="message"
+              rows="7"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="A text, an email, a message from someone you don't know…"
+              aria-describedby="counter field-error"></textarea>
+            <div class="well__foot">
+              <p class="counter" id="counter" aria-live="polite"></p>
+              <button type="button" class="linkbtn" id="clear" hidden>Clear</button>
+            </div>
+          </div>
+
+          <p class="field-error" id="field-error" role="alert" hidden></p>
+
+          <button type="submit" class="cta" id="submit">
+            <span class="cta__label">Check it</span>
+          </button>
+        </form>
+
+        <section class="examples" id="examples" hidden aria-labelledby="examples-heading">
+          <h3 class="examples__heading" id="examples-heading">Or try one of these</h3>
+          <div class="examples__row" id="examples-row"></div>
+        </section>
+      </section>
+
+      <!-- ───────────────────────── THINKING ──────────────────────── -->
+      <section class="stage stage--thinking" id="stage-thinking" hidden aria-live="polite" aria-busy="true">
+        <div class="thinking">
+          <div class="thinking__bar" aria-hidden="true"><i id="thinking-fill"></i></div>
+          <p class="thinking__copy" id="thinking-copy">Reading the message…</p>
+          <p class="thinking__sub">This takes a few seconds. We read it properly rather than guessing.</p>
+        </div>
+      </section>
+
+      <!-- ────────────────────────── RESULT ───────────────────────── -->
+      <section class="stage stage--result" id="stage-result" hidden aria-labelledby="verdict-heading" tabindex="-1">
+        <article class="verdict" id="verdict">
+          <p class="verdict__eyebrow" id="verdict-eyebrow">Our answer</p>
+          <h2 class="verdict__headline" id="verdict-heading">—</h2>
+          <p class="verdict__confidence" id="verdict-confidence"></p>
+
+          <hr class="rule" />
+
+          <h3 class="reasons__heading">Why we think so</h3>
+          <ul class="reasons" id="reasons"></ul>
+
+          <p class="verdict__footnote" id="verdict-footnote" hidden></p>
+        </article>
+
+        <button type="button" class="cta cta--ghost" id="again">Check another message</button>
+      </section>
+
+      <!-- ─────────────────────────── ERROR ───────────────────────── -->
+      <section class="stage stage--error" id="stage-error" hidden role="alert" tabindex="-1">
+        <article class="notice">
+          <h2 class="notice__headline">We couldn't check that</h2>
+          <p class="notice__body" id="error-body">Something went wrong on our end.</p>
+          <button type="button" class="cta cta--ghost" id="retry">Try again</button>
+        </article>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <p class="stats" id="stats" hidden></p>
+      <p class="disclaimer">
+        A second opinion, not a guarantee. When money or personal details are involved,
+        contact the company using a number you already have.
+      </p>
+    </footer>
+  </div>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

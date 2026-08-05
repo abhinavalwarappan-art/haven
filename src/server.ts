@@ -6,9 +6,13 @@
  * to Next.js route handlers later.
  */
 
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 import { registerCheckRoute } from './routes/check.js';
 import { registerStatsRoute } from './routes/stats.js';
+import { registerExamplesRoute } from './routes/examples.js';
 import { getStore } from './store/index.js';
 import { hasApiKey, classifierModel } from './lib/classifier.js';
 import { isUsingDefaultSalt } from './lib/privacy.js';
@@ -45,6 +49,15 @@ export function buildServer() {
 
   registerCheckRoute(app);
   registerStatsRoute(app);
+  registerExamplesRoute(app);
+
+  // The demo UI. Served from the same process as the API so `npm run dev` is
+  // the only command needed to show this to anyone.
+  const here = dirname(fileURLToPath(import.meta.url));
+  app.register(fastifyStatic, {
+    root: join(here, '..', 'public'),
+    index: ['index.html'],
+  });
 
   return app;
 }
