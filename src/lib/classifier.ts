@@ -298,7 +298,17 @@ export async function classify(
         effort: EFFORT,
         format: { type: 'json_schema', schema: OUTPUT_SCHEMA },
       },
-      system: SYSTEM_PROMPT,
+      // The system prompt is ~1800 static tokens and is byte-identical on every
+      // request, so caching it removes it from the critical path after the first
+      // check. Matters for a live demo: the second message someone pastes is
+      // noticeably faster than the first.
+      system: [
+        {
+          type: 'text',
+          text: SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [{ role: 'user', content: buildUserMessage(text, signals) }],
     } as Anthropic.Beta.Messages.MessageCreateParamsNonStreaming);
   } catch (err) {

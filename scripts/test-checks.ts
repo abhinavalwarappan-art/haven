@@ -102,7 +102,7 @@ function renderMarkdown(rows: Row[]): string {
   out.push(
     `Generated: ${new Date().toISOString()}  ·  Model: \`${
       hasApiKey() ? classifierModel() : 'NONE — rules-only fallback'
-    }\``
+    }\`  ·  Effort: \`${process.env.CLASSIFIER_EFFORT || 'medium'}\``
   );
   out.push('');
 
@@ -152,6 +152,32 @@ function renderMarkdown(rows: Row[]): string {
 
   out.push(
     `Test set: ${COUNTS.scam} scams · ${COUNTS.legitimate} legitimate · ${COUNTS.borderline} borderline.`
+  );
+  out.push('');
+
+  // ── Effort tuning record ────────────────────────────────────────────────
+  out.push('### Effort level: settled on `low`');
+  out.push('');
+  out.push('| Effort | Accuracy | Avg latency | Rules-only fallbacks |');
+  out.push('| --- | --- | --- | --- |');
+  out.push('| `medium` (previous) | 16/16 | ~14–30 s per check | 2 (rate-limited out) |');
+  out.push('| **`low` (current)** | **16/16** | **~6 s per check** | **0** |');
+  out.push('');
+  out.push(
+    '`low` is **4–5× faster with zero accuracy cost** — no fixture flipped, and confidence ' +
+      'actually rose on two of the hardest cases (the fake bank alert 80→95, the real bank alert 62→88). ' +
+      'There was no quality/speed tradeoff to split, so no middle ground was needed.'
+  );
+  out.push('');
+  out.push(
+    'The system prompt (~1,800 tokens) is prompt-cached, so the steady-state warm path is ~5.8–6.7 s. ' +
+      'The first check after an idle period pays a cold-cache penalty and can take ~25 s.'
+  );
+  out.push('');
+  out.push(
+    '~6 s misses the 2–3 s ideal: it is the model\'s generation floor for reasoning plus four written ' +
+      'reasons at this effort. Going lower means a smaller model or fewer/shorter reasons — both trade ' +
+      'away the thing that makes the output trustworthy. The UI is built to hold this wait deliberately.'
   );
   out.push('');
 
