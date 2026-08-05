@@ -1,0 +1,7 @@
+node_modules/
+.env
+.env.local
+*.log
+
+# Local SQLite fallback store (dev only — contains hashes, never raw text)
+data/

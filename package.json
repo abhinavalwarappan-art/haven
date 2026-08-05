@@ -1,0 +1,28 @@
+{
+  "name": "is-this-real",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Paste a suspicious message, get a plain-English verdict on whether it's a scam.",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env.local src/server.ts",
+    "start": "tsx --env-file-if-exists=.env.local src/server.ts",
+    "build": "tsc --noEmit",
+    "check": "tsx --env-file-if-exists=.env.local scripts/check.ts",
+    "test:checks": "tsx --env-file-if-exists=.env.local scripts/test-checks.ts",
+    "test:edge": "tsx --env-file-if-exists=.env.local scripts/test-edge-cases.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@supabase/supabase-js": "^2.58.0",
+    "fastify": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
