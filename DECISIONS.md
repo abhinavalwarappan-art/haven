@@ -86,6 +86,31 @@ Also caught by measuring: `62ch` on the safe verdict's single column was
 producing an 86-character line, because `ch` is the width of a zero and this face
 sets zeros much wider than its average lowercase. Now 50ch, which is ~70.
 
+### The live API returns more reasons than local did
+
+Local runs of the wrong-number chip came back with three reasons and fit. The
+deployed one returned **four** — the documented maximum — and overran a 670px
+viewport by 63px. Fitting three reasons was never the requirement; fitting the
+worst case the schema allows is.
+
+That produced a second, tighter tier at `max-height: 730px`. Deliberately not
+folded into the 820px block above it: a 13" laptop sits around 760–780px of
+viewport and would otherwise have inherited 15px body copy, which is the wrong
+trade for an audience with imperfect eyesight. Only a genuine recording frame
+gets the aggressive treatment. Verified live at 4 reasons with ~28px of slack.
+
+### A stale index.html looks exactly like a broken deploy
+
+After the deploy the live page rendered with **no styling at all** — every
+element unstyled, giant SVGs, the lot. The cause was a browser holding an
+`index.html` from the previous deploy, whose hashed stylesheet no longer
+existed; the console showed a 404 on a stylesheet URL that curl fetched at 200.
+
+Not a real user problem — Vercel serves HTML with `max-age=0, must-revalidate`,
+so any visitor revalidates. But it is a genuine demo-day trap: **hard-reload any
+tab that was open across a deploy before recording**, or you will record an
+unstyled page and think the build broke.
+
 ### One measure for the page
 
 The result state used to break out of a narrower shell on its own, which left the
