@@ -105,7 +105,7 @@ curl -X POST http://localhost:3600/api/check \
     "If you're unsure, call the number on the back of your card instead of using this link."
   ],
   "flags_detected": ["urgency_language", "lookalike_domain", "suspicious_tld"],
-  "raw_signals": { /* full Layer 1 output — see below */ },
+  "raw_signals": { /* full Layer 1 output: flags, matched evidence, URL analysis, riskScore */ },
   "meta": {
     "classifier": "claude",             // or "heuristic_fallback"
     "model": "claude-opus-5",
@@ -216,17 +216,19 @@ src/
 │   ├── normalize.ts       unicode / homoglyph / evasion handling
 │   ├── privacy.ts         hashing, redaction, evidence clipping
 │   ├── types.ts           shared contracts
-│   └── signals/           Layer 2 detectors
+│   └── signals/           Layer 1 detectors
 │       ├── index.ts       aggregation + advisory scoring
 │       ├── urgency.ts     pressure, threats, suspension
 │       ├── payment.ts     gift cards, wire, crypto, P2P, fees
 │       ├── links.ts       shorteners, lookalikes, spoofs, mismatches
 │       ├── impersonation.ts  brands, channel switching, credentials
 │       └── legitimacy.ts  counter-evidence  ← the anti-cry-wolf piece
-├── store/                 index.ts (selection) · sqlite.ts · supabase.ts
+├── store/                 index.ts (selection) · sqlite.ts · supabase.ts · memory.ts
+api/index.ts               Vercel serverless entry (reuses the same Fastify app)
 fixtures/messages.ts       the 16 curated test messages
-scripts/                   test-checks.ts · test-edge-cases.ts · check.ts
+scripts/                   test-checks.ts · test-edge-cases.ts · test-limits.ts · check.ts
 supabase/migrations/       0001_init.sql
+vercel.json                framework:null + routes (see "Deploying your own")
 ```
 
 All logic lives in `src/lib/`, so the HTTP layer is disposable — the same `runCheck()` powers the API, the CLI, and the test harness.

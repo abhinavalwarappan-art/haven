@@ -5,7 +5,10 @@
 
 > ⚠️ **Before you present:** confirm the Anthropic account has credits (see README → Known limitations). With an empty balance the app still answers, but from the rules layer only — the reasons get generic and the demo loses its punch. Check by pasting anything: if you see "The AI layer was unavailable", top up first.
 >
-> **Warm it up.** Run the three examples once a minute or two before you present. They'll be cached and return instantly, and you avoid a cold-start pause on stage.
+> **Warm it up — timing matters.** Run the three examples so they're cached and return instantly instead of taking ~6s each on stage.
+>
+> - **Credits topped up:** verdicts cache for an hour, so warming any time in the hour before you present is fine.
+> - **Credits still empty:** rules-only verdicts cache for only **60 seconds** (deliberately — a degraded answer shouldn't outlive the outage). Warm them in the last minute before you go on, or they'll be cold again.
 
 ---
 

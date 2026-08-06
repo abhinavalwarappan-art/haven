@@ -77,7 +77,7 @@ Suggested shape (~90s):
 4. **1:15–1:40** — Paste the wrong-number opener → red, despite 0/100 on rules. Why two layers.
 5. **1:40–2:00** — The two bugs found (homoglyph spoofing, PII leak) as evidence of rigor.
 
-**Record on a phone in portrait** — the UI is mobile-first and it's a mobile product. Warm the three examples first so they return instantly.
+**Record on a phone in portrait** — the UI is mobile-first and it's a mobile product. Warm the three examples immediately before recording so they return instantly (see the warm-up note at the top of DEMO_SCRIPT.md — the window is only 60s while credits are empty).
 
 **Before recording, confirm credits are topped up** — rules-only reasons are generic and will undercut the demo.
 
@@ -90,7 +90,7 @@ Suggested shape (~90s):
 npm run build          # typecheck
 npm run test:checks    # 16/16 classification
 npm run test:edge      # 85 edge + privacy assertions
-npm run test:limits    # 30 rate-limit, cache and hashing assertions
+npm run test:limits    # 31 rate-limit, cache and hashing assertions
 ```
 
 - [ ] Credits topped up, live URL returns `"classifier":"claude"`
