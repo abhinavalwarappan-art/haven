@@ -261,6 +261,21 @@ button { -webkit-tap-highlight-color: transparent; }
   .disclaimer { max-width: none; }
 }
 
+/* A genuine recording frame. A browser window sized to 1280×720 leaves about
+   670px of viewport once its own chrome is subtracted, and the worst case the
+   API can produce — four reasons, each wrapping — overruns that by 63px.
+
+   Deliberately gated at 730px rather than folded into the 820px tier above. A
+   13" laptop sits around 760–780px of viewport and would otherwise inherit
+   15px body copy, which is the wrong trade for an audience with imperfect
+   eyesight. Only a frame this short gets the aggressive treatment. */
+@media (min-width: 900px) and (max-height: 730px) {
+  .shell { padding-block: 1.1rem 0.9rem; }
+  .masthead { margin-bottom: 0.7rem; }
+  .wordmark { font-size: 1.45rem; }
+  .footer { margin-top: 0.75rem; padding-top: 0.6rem; }
+}
+
 /* ── Reduced motion ─────────────────────────────────────────────────────
    The Motion components read the same preference via useReducedMotion and drop
    to opacity-only. This covers the CSS half: hover translations and the
