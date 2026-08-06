@@ -5,7 +5,11 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Clears the landing page's sticky nav on anchor jumps. */
+  scroll-padding-top: 5rem;
+}
 
 body {
   margin: 0;
@@ -99,10 +103,18 @@ main { flex: 1; }
   line-height: 1.1;
 }
 
+/* On the tool, the wordmark links back to the page that explains it. */
+.wordmark__link {
+  color: inherit;
+  text-decoration: none;
+}
+.wordmark__link:hover .wordmark__mark { opacity: 0.72; }
+
 /* The question mark is the logo — it is the thing the reader is actually
    asking, so it takes the accent rather than the words around it. Set in the
    serif's italic, which has a genuine calligraphic swing to it. */
 .wordmark__mark {
+  transition: opacity 160ms var(--ease);
   color: var(--pen);
   font-style: italic;
   padding-left: 0.03em;

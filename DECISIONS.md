@@ -4,6 +4,116 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 7 — a landing page, and the tool moved to /check
+
+### The site was the tool, with nothing in front of it
+
+`/` loaded straight into a textarea. For a product whose entire pitch is
+digital trust, that is the wrong first impression: a stranger arrives holding
+a message they already suspect, and we ask them to paste it into a website
+they have never heard of, with no explanation of who we are or what happens to
+it. The landing page exists to earn that paste.
+
+Two routes now, one React app. The tool moved to `/check` unchanged: the same
+four-state machine, the same copy, the same Motion reveal, the same 720p
+fitting from last session. `src/`, `api/`, `scripts/` and `fixtures/` were not
+touched.
+
+### The brief asked for React tools that were not connected
+
+Framer Motion, shadcn and magic-mcp were all named. Motion was already here
+from the last session. **Neither shadcn-mcp nor magic-mcp is connected to this
+environment**, so those two contributed nothing and every component on this
+page is hand-written. Worth recording so nobody later assumes the page came
+out of a generator.
+
+### One real 3D moment, and a hard budget around it
+
+A WebGL stack of messages in the hero, one of them a scam. Deliberately not a
+dark techy hero: warm paper lit from the upper left, using the same tokens as
+the verdict card, because a neon wireframe would look impressive and sell the
+wrong product.
+
+Three.js is 883kb raw. It lives in its own lazy chunk, so:
+
+- `/check` never downloads a byte of it.
+- The hero's headline and button paint before the canvas mounts (deferred one
+  frame past first paint on purpose).
+- **Under `prefers-reduced-motion` the chunk is never fetched at all.** Not a
+  paused animation and not a hidden canvas: the import never runs, and a
+  static CSS-3D illustration of the same four cards renders instead. Verified
+  by stubbing `matchMedia` and checking the resource list, not by reading the
+  code.
+
+Two things had to be fixed by looking at it rather than reasoning about it.
+The default ACES tone mapping rendered cream paper as grey, which made the
+whole scene look like a greyscale mock; `flat` fixes it. And real shadow maps
+on flat cards produced hard black rectangles with the shadow-catcher's own
+edge swinging into frame, so shadows came out entirely and the bevel highlight
+carries the separation instead.
+
+### The section that cannot drift from the product
+
+"What you get back" renders the actual `VerdictLetter` component with a fixed
+result, not a screenshot. Same fonts, same letterhead rule, same reveal. If
+the product changes, that section changes with it. A marketing page that *can*
+drift from the product eventually will.
+
+`VerdictLetter`'s `onAgain` became optional to support this, since there is
+nothing to go back to on a static page.
+
+### 🔴 The landing stylesheet broke the tool
+
+`.stats` was already taken. The app's footer uses it for the "412 messages
+checked" counter; I used the same name for the landing page's figure grid, and
+the rule `@media (min-width: 720px) { .stats { grid-template-columns: repeat(3, 1fr) } }`
+applied to both, because it is all one bundled stylesheet.
+
+The footer paragraph became a three-column grid on `/check`, grew ~30px, and
+**pushed two of the three demo verdicts back out of the 720p recording frame**
+that last session was spent fitting. Nothing errored. It only showed up
+because the fit numbers were re-measured after the landing work rather than
+assumed to still hold.
+
+Renamed to `.figures`/`.figure`, and the one bare `code {}` element rule got
+scoped to `.landing`. Then the actual fix: a script that extracts every class
+selector from `landing.css` and intersects it with the app's four
+stylesheets. It now reports zero collisions, and that check is worth re-running
+any time a stylesheet is added.
+
+### Copy
+
+Written against the `stop-slop` rules: active voice, no em-dashes, no adverbs
+doing the work, specific mechanisms over abstractions, varied sentence length.
+Every number on the page comes from `DEMO_SCRIPT.md` or `README.md` rather
+than being invented for the page. Nothing says "advanced AI" or
+"cutting-edge."
+
+The one line the whole architecture section hangs on sits on the wire between
+the two layer cards: **evidence, not a verdict**.
+
+### Verified
+
+Contrast measured on rendered pixels across the landing page: zero failures.
+One flagged item turned out to be my own script mishandling `oklch(… / 0.1)`
+alpha, which it only detected in `rgba()` form; composited properly that pill
+is 7.54:1. The lesson from last session repeats: a contrast script that has
+never reported a pass you independently confirmed is not evidence.
+
+No horizontal overflow at 390px or 1440px. Touch targets ≥44px, including the
+nav wordmark, which was 35px as bare text. No console errors on either route.
+31 rate-limit and 91 edge assertions still green.
+
+### Deploy note
+
+Client-side routing needs a fallback on both runtimes. Vercel gets a rewrite
+that excludes `/assets/` and `/fonts/`; Fastify gets a `setNotFoundHandler`
+that returns `index.html` for GETs but a real 404 for missing build assets,
+since answering an asset miss with HTML surfaces as a confusing MIME error
+rather than a missing file.
+
+---
+
 ## Session 6 — React rewrite and the visual pass
 
 ### The brief asked for React tools on a codebase that had no React

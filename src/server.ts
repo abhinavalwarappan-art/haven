@@ -68,6 +68,25 @@ export function buildServer(options: BuildOptions = {}) {
       root: join(here, '..', 'public'),
       index: ['index.html'],
     });
+
+    // The UI is a client-routed single page: `/` explains the product, `/check`
+    // is the tool. A direct hit on `/check` has no file behind it, so hand back
+    // index.html and let the router resolve the path. API routes are registered
+    // above and never reach here; a missing asset still 404s honestly.
+    // Hashed build output. A miss here is a genuine 404 — answering with HTML
+    // would surface as a confusing MIME-type error instead of a missing file.
+    const isBuildAsset = /^\/(assets|fonts)\//;
+
+    app.setNotFoundHandler((request, reply) => {
+      if (
+        request.method !== 'GET' ||
+        request.url.startsWith('/api/') ||
+        isBuildAsset.test(request.url)
+      ) {
+        return reply.code(404).send({ error: 'not_found' });
+      }
+      return reply.sendFile('index.html');
+    });
   }
 
   return app;

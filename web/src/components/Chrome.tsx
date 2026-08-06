@@ -1,10 +1,15 @@
+import { Link } from 'react-router-dom';
+
 import type { Stats } from '../lib/types';
 
 export function Masthead() {
   return (
     <header className="masthead">
       <h1 className="wordmark">
-        Is this real<span className="wordmark__mark">?</span>
+        {/* The wordmark is the way back to the page that explains this. */}
+        <Link className="wordmark__link" to="/">
+          Is this real<span className="wordmark__mark">?</span>
+        </Link>
       </h1>
       <p className="tagline">Paste a message you’re unsure about. We’ll tell you plainly.</p>
     </header>

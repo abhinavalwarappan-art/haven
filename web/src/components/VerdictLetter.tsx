@@ -7,7 +7,8 @@ import type { CheckResponse } from '../lib/types';
 interface Props {
   result: CheckResponse;
   reduced: boolean;
-  onAgain: () => void;
+  /** Omitted on the landing page, where there is nothing to go back to. */
+  onAgain?: () => void;
 }
 
 /**
@@ -67,17 +68,19 @@ export function VerdictLetter({ result, reduced, onAgain }: Props) {
         </div>
       </motion.article>
 
-      <motion.button
-        type="button"
-        className="cta cta--ghost result__again"
-        onClick={onAgain}
-        variants={item}
-        initial="initial"
-        animate="animate"
-        transition={{ delay: reduced ? 0 : 0.34 }}
-      >
-        Check another message
-      </motion.button>
+      {onAgain && (
+        <motion.button
+          type="button"
+          className="cta cta--ghost result__again"
+          onClick={onAgain}
+          variants={item}
+          initial="initial"
+          animate="animate"
+          transition={{ delay: reduced ? 0 : 0.34 }}
+        >
+          Check another message
+        </motion.button>
+      )}
     </>
   );
 }

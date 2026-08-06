@@ -1,6 +1,6 @@
 # Is This Real?
 
-Paste in any suspicious text message, email, or DM and get a plain-English verdict — **"This looks like a scam," "This looks legitimate,"** or **"Be careful with this one"** — with specific reasons why.
+A landing page that explains the problem, and a tool that solves it. Paste in any suspicious text message, email, or DM and get a plain-English verdict — **"This looks like a scam," "This looks legitimate,"** or **"Be careful with this one"** — with specific reasons why.
 
 Built for non-technical users, especially older adults, who are the most targeted by scams and the least equipped to spot them.
 
@@ -71,9 +71,22 @@ npm run build         # typecheck
 
 ## The interface
 
-Mobile-first single screen, served as static files from the same Fastify process — no build step, no second server, no framework.
+Two routes, one React app (Vite + Motion), built into `public/` and served by
+the same Fastify process locally and Vercel's CDN in production.
 
-Four states: **compose → thinking → result | error.**
+| Route | What it is |
+| --- | --- |
+| `/` | The landing page: the problem, the architecture, a live verdict card, the privacy story |
+| `/check` | The tool. Four states: **compose → thinking → result \| error** |
+
+The landing page's hero renders a WebGL stack of messages, one of them a scam.
+It is lazy-loaded in its own chunk, so `/check` never downloads a byte of
+Three.js, and anyone with `prefers-reduced-motion` set gets a static CSS
+illustration instead — the chunk is never even fetched.
+
+The "what you get back" section on `/` renders the **real** `VerdictLetter`
+component with a fixed result rather than a screenshot, so the marketing page
+cannot drift from the product.
 
 Design notes that are decisions, not decoration:
 
@@ -82,7 +95,7 @@ Design notes that are decisions, not decoration:
 - **Confidence is translated, never a percentage.** "We're very confident it is a scam", not "97%". A number invites the reader to do risk arithmetic, which is the wrong task. The `uncertain` verdict gets its own phrasing ("genuinely unclear — there are signs both ways") since high confidence there means confidently ambiguous.
 - **The wait is narrated honestly.** Even at ~1.5s the check shows copy tracking real pipeline stages — "Checking where the links really go…" — with a bar that eases toward 92% and only completes on a real response. It never claims to be done before it is, and it degrades sensibly if a cold start takes longer.
 - **Type is oversized throughout** for imperfect eyesight, and all text meets WCAG AA contrast (verified, ≥4.66:1).
-- **Fonts are locally available** (Iowan Old Style / Charter, Avenir Next) so there is no webfont request to flash or fail on venue wi-fi.
+- **Fonts are self-hosted** (Instrument Serif and Instrument Sans, 59kb for three files) so there is no third-party request to flash or fail on venue wi-fi.
 
 ## The API
 
@@ -202,16 +215,23 @@ All 5 legitimate fixtures score **0/100** on Layer 1 and come back `likely_safe`
 ## Project layout
 
 ```
-public/                    the demo UI — no build step
-├── index.html             semantic markup, four stages
-├── styles.css             design tokens + components
-└── app.js                 state machine, copy, fetch
+web/                       the frontend source (React + Vite + Motion)
+├── index.html             document shell, font preloads
+├── public/fonts/          self-hosted Instrument Serif + Sans
+└── src/
+    ├── App.tsx            router: / and /check
+    ├── routes/            Landing.tsx · Check.tsx
+    ├── components/        the tool's four stages + VerdictLetter
+    │   └── landing/       hero, 3D stack, sections
+    ├── lib/               api · copy · motion · types
+    └── styles/            tokens · fonts · global · compose · thinking · letter · landing
+public/                    build output (generated; served by Fastify and Vercel)
 src/
 ├── server.ts              Fastify app (API + static UI)
 ├── routes/                check.ts · stats.ts · examples.ts
 ├── lib/
 │   ├── pipeline.ts        orchestration + heuristic fallback  ← start here
-│   ├── classifier.ts      Layer 2: Claude, prompt, JSON schema
+│   ├── classifier.ts      Layer 2: Gemini, prompt, JSON schema
 │   ├── normalize.ts       unicode / homoglyph / evasion handling
 │   ├── privacy.ts         hashing, redaction, evidence clipping
 │   ├── types.ts           shared contracts

@@ -16,6 +16,10 @@
     {
       "source": "/health",
       "destination": "/api/index"
+    },
+    {
+      "source": "/((?!assets/|fonts/).*)",
+      "destination": "/index.html"
     }
   ]
 }

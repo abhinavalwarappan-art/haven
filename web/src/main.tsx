@@ -9,6 +9,7 @@ import './styles/global.css';
 import './styles/compose.css';
 import './styles/thinking.css';
 import './styles/letter.css';
+import './styles/landing.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root missing from index.html');
