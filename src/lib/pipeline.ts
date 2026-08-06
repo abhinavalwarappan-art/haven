@@ -8,7 +8,7 @@
 import type { CheckResponse, Classification, SignalReport } from './types.js';
 import { analyzeSignals } from './signals/index.js';
 import { classify, classifierModel, ClassifierUnavailableError } from './classifier.js';
-import { hashInput } from './privacy.js';
+import { hashInput, hashExact } from './privacy.js';
 import { cacheLookup, cacheStore } from './cache.js';
 import { getStore } from '../store/index.js';
 
@@ -58,12 +58,14 @@ export async function runCheck(
 ): Promise<CheckResponse> {
   const started = Date.now();
   const text = validateInput(rawText);
-  const hash = hashInput(text);
+  // Exact hash for the cache (must match the submitted text byte for byte);
+  // normalized hash for storage (dedupes the same scam across many senders).
+  const cacheKey = hashExact(text);
 
   // Cache lookup before any work. Only ever hits on text we have genuinely
   // classified before — a first-time check always pays the real cost.
   if (options.useCache !== false) {
-    const hit = cacheLookup(hash);
+    const hit = cacheLookup(cacheKey);
     if (hit) {
       return {
         verdict: hit.verdict,
@@ -114,7 +116,7 @@ export async function runCheck(
   };
 
   if (options.useCache !== false) {
-    cacheStore(hash, {
+    cacheStore(cacheKey, {
       verdict: response.verdict,
       confidence: response.confidence,
       reasons: response.reasons,

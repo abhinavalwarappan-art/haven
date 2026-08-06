@@ -12,7 +12,7 @@ import {
   runCheck,
   validateInput,
 } from '../lib/pipeline.js';
-import { hashInput } from '../lib/privacy.js';
+import { hashExact } from '../lib/privacy.js';
 import { cacheHas } from '../lib/cache.js';
 import { clientIdFrom, consume, rateLimitConfig } from '../lib/rate-limit.js';
 
@@ -50,7 +50,7 @@ export function registerCheckRoute(app: FastifyInstance): void {
     // Only spend quota on requests that will actually do paid work. A repeat
     // check of an already-classified message is served from cache for free,
     // so re-running a demo example never eats into anyone's allowance.
-    if (!cacheHas(hashInput(text))) {
+    if (!cacheHas(hashExact(text))) {
       const decision = consume(
         clientIdFrom(request.headers as Record<string, unknown>, request.ip)
       );

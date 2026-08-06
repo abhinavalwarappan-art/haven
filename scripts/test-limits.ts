@@ -12,6 +12,8 @@
 
 import { consume, rateLimitReset, clientIdFrom, rateLimitConfig } from '../src/lib/rate-limit.js';
 import { cacheLookup, cacheStore, cacheHas, cacheClear, cacheStats } from '../src/lib/cache.js';
+import { hashInput, hashExact } from '../src/lib/privacy.js';
+import { analyzeSignals } from '../src/lib/signals/index.js';
 import type { SignalReport } from '../src/lib/types.js';
 
 let passed = 0;
@@ -141,6 +143,28 @@ for (let i = 0; i < max + 50; i++) cacheStore(`k${i}`, entry);
 ok(`evicts to stay within max_entries (${max})`, cacheStats().size <= max, String(cacheStats().size));
 ok('evicts the oldest first', !cacheHas('k0'));
 ok('keeps the newest', cacheHas(`k${max + 49}`));
+
+// ── Cache key vs storage key ──────────────────────────────────────────────
+section('Hashing: cache key must be exact, storage key normalized');
+
+const shouted = 'URGENT ACT NOW YOUR ACCOUNT WILL BE CLOSED';
+const quiet = shouted.toLowerCase();
+
+ok(
+  'storage hash normalizes case (dedupes the same scam across senders)',
+  hashInput(shouted) === hashInput(quiet)
+);
+ok(
+  'cache key does NOT normalize case',
+  hashExact(shouted) !== hashExact(quiet),
+  'ALL-CAPS and lowercase would share a cache entry, so the cached raw_signals ' +
+    'would report the wrong shouted-word count for whichever text was not classified'
+);
+ok('cache key is stable for byte-identical text', hashExact(shouted) === hashExact(`${shouted}`));
+ok(
+  'Layer 1 really is case-sensitive (this is why the split matters)',
+  analyzeSignals(shouted).stats.allCapsWordCount !== analyzeSignals(quiet).stats.allCapsWordCount
+);
 
 // ── Summary ───────────────────────────────────────────────────────────────
 process.stdout.write(`\n${passed} passed, ${failed} failed\n\n`);

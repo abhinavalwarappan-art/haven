@@ -26,6 +26,21 @@ export function hashInput(text: string): string {
   return createHmac('sha256', salt).update(canonical).digest('hex');
 }
 
+/**
+ * Salted HMAC of the input *exactly as submitted* — no normalization.
+ *
+ * Separate from `hashInput` because the two have opposite requirements.
+ * Storage wants normalization so the same scam pasted by fifty people collapses
+ * to one row. The verdict cache must NOT normalize: Layer 1 is case-sensitive
+ * (it counts shouted words), so an ALL-CAPS message and its lowercase twin are
+ * genuinely different inputs. Sharing a cache entry would return `raw_signals`
+ * that don't describe the text the caller actually sent.
+ */
+export function hashExact(text: string): string {
+  const salt = process.env.HASH_SALT || DEFAULT_SALT;
+  return createHmac('sha256', salt).update(text).digest('hex');
+}
+
 /** True when the deployment is still using the placeholder salt. */
 export function isUsingDefaultSalt(): boolean {
   return (process.env.HASH_SALT || DEFAULT_SALT) === DEFAULT_SALT;

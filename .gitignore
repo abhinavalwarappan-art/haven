@@ -7,3 +7,4 @@ node_modules/
 data/
 .vercel
 .env*
+TEST_RESULTS.degraded.md

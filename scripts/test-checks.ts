@@ -24,6 +24,8 @@ import { hasApiKey, classifierModel } from '../src/lib/classifier.js';
 import type { CheckResponse } from '../src/lib/types.js';
 
 const OUT = 'TEST_RESULTS.md';
+/** Where a fully-degraded run goes, so it can't clobber a real result. */
+const DEGRADED_OUT = 'TEST_RESULTS.degraded.md';
 // Kept low deliberately: at 4 the evaluation run rate-limits itself, and a
 // rate-limited case silently degrades to the rules-only fallback, which makes
 // the results look like a classification failure when it is a throughput one.
@@ -301,15 +303,35 @@ async function main() {
   const rows = await runAll();
   const elapsed = ((Date.now() - started) / 1000).toFixed(1);
 
-  await writeFile(OUT, renderMarkdown(rows), 'utf8');
-
-  const { counts } = summarize(rows);
+  const { counts, fallbacks } = summarize(rows);
   const critical = counts.CRY_WOLF + counts.MISSED;
 
-  process.stderr.write(`\nDone in ${elapsed}s → ${OUT}\n`);
+  // A run where the AI layer never fired grades the rules-only fallback, which
+  // says nothing about classification quality. Overwriting a good result with
+  // one of those destroys the evidence artifact — which is exactly what
+  // happened when the API balance hit zero and this was run by reflex.
+  // Refuse to clobber; write the degraded run somewhere harmless instead.
+  const degraded = fallbacks === rows.length && rows.length > 0;
+  const target = degraded ? DEGRADED_OUT : OUT;
+
+  await writeFile(target, renderMarkdown(rows), 'utf8');
+
+  process.stderr.write(`\nDone in ${elapsed}s → ${target}\n`);
   process.stderr.write(
-    `  ${counts.PASS} pass · ${counts.FAIL} off · ${counts.CRY_WOLF} cried wolf · ${counts.MISSED} missed\n\n`
+    `  ${counts.PASS} pass · ${counts.FAIL} off · ${counts.CRY_WOLF} cried wolf · ${counts.MISSED} missed\n`
   );
+
+  if (degraded) {
+    process.stderr.write(
+      `\n⚠️  The AI layer did not run for ANY fixture — these are rules-only results.\n` +
+        `   ${OUT} was left untouched so a real result is not overwritten.\n` +
+        `   Usual cause: no API credits or no ANTHROPIC_API_KEY. Fix that and re-run.\n\n`
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  process.stderr.write('\n');
 
   // Non-zero exit only for the two failures that actually matter.
   if (critical > 0) process.exitCode = 1;
