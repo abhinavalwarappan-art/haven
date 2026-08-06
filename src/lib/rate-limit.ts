@@ -10,9 +10,9 @@
  * previous one.
  *
  * Limits are set so a judge cannot realistically hit them. Checking the three
- * examples plus a few of their own messages is ~6 requests; cache hits do not
- * count at all (see `shouldCount` in the route), so re-running an example is
- * free. You have to be trying to hit 12.
+ * examples plus a few of their own messages is ~6 requests. Cache hits are
+ * metered separately and far more loosely (see CACHED_MAX_REQUESTS), so
+ * re-running an example never eats into the allowance for real checks.
  */
 
 const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
@@ -95,7 +95,14 @@ export function consume(
     };
   }
 
-  let bucket = buckets.get(clientId);
+  // Each budget gets its OWN bucket, not just its own ceiling. Sharing one
+  // array meant free cache hits spent the paid allowance: one billable check
+  // plus eleven re-checks of that same text filled the 12-slot bucket, and the
+  // next new message was refused — while the refusal text said re-checking is
+  // always free. The budget class has to be part of the key.
+  const key = countGlobal ? clientId : `cached:${clientId}`;
+
+  let bucket = buckets.get(key);
   if (!bucket) {
     if (buckets.size >= MAX_TRACKED_CLIENTS) {
       const oldest = buckets.keys().next().value;
@@ -107,9 +114,9 @@ export function consume(
     // Map preserves insertion order, which is not the same as recency unless
     // we refresh it here — without this, an actively-limited client that was
     // seen first is the first one evicted, releasing its limit.
-    buckets.delete(clientId);
+    buckets.delete(key);
   }
-  buckets.set(clientId, bucket);
+  buckets.set(key, bucket);
 
   bucket.hits = prune(bucket.hits, now);
 

@@ -223,6 +223,29 @@ export function heuristicFallback(signals: SignalReport): Classification {
     }
   }
 
+  /**
+   * Affirmative evidence of a real sender — things a stranger could not
+   * cheaply fake: the last four of your card, an order number you can look up,
+   * a genuine brand domain, a compliant opt-out footer.
+   *
+   * The rest of the legitimacy flags (`no_links_present`, `no_payment_request`,
+   * `no_urgency_pressure`, `no_action_requested`) are pure *absence* checks.
+   * They all fire together on any message that simply doesn't contain a link,
+   * a payment word or an urgency word — which is exactly the shape of the
+   * social-engineering openers Layer 2 exists to catch. Treating that absence
+   * as proof of safety made the fallback call the romance-scam opener (demo
+   * example 3, and a message that scores 0/100 on the rules by design)
+   * "This looks legitimate."
+   */
+  const POSITIVE_EVIDENCE = [
+    'personalized_details',
+    'recognized_brand_domain',
+    'standard_optout_footer',
+  ];
+  const hasPositiveEvidence = legitimacySignals.some((f) =>
+    POSITIVE_EVIDENCE.includes(f)
+  );
+
   let verdict: Classification['verdict'];
   let confidence: number;
 
@@ -232,7 +255,9 @@ export function heuristicFallback(signals: SignalReport): Classification {
   } else if (riskScore >= 35) {
     verdict = 'uncertain_be_careful';
     confidence = 60;
-  } else if (riskScore <= 5 && legitimacySignals.length >= 3) {
+  } else if (riskScore <= 5 && hasPositiveEvidence) {
+    // Safe-leaning only on positive evidence, never on absence alone. A layer
+    // that did not run cannot manufacture reassurance.
     verdict = 'likely_safe';
     confidence = 62;
   } else {

@@ -9,7 +9,14 @@
  * either way. Also asserts the privacy guarantees hold.
  */
 
-import { runCheck, validateInput, InvalidInputError, MAX_INPUT_LENGTH } from '../src/lib/pipeline.js';
+import {
+  runCheck,
+  validateInput,
+  heuristicFallback,
+  InvalidInputError,
+  MAX_INPUT_LENGTH,
+} from '../src/lib/pipeline.js';
+import { FIXTURES } from '../fixtures/messages.js';
 import { analyzeSignals } from '../src/lib/signals/index.js';
 import { hashInput, redact } from '../src/lib/privacy.js';
 import { hasApiKey } from '../src/lib/classifier.js';
@@ -223,6 +230,48 @@ async function main() {
     injection.verdict !== 'likely_safe',
     `got ${injection.verdict}`
   );
+
+  // ── Degraded-mode safety ────────────────────────────────────────────────
+  // The rules-only fallback runs whenever the API is down, out of credits, or
+  // times out — i.e. exactly when nobody is watching. It must never be
+  // confidently wrong, and above all must never manufacture reassurance out of
+  // "I found no red flags".
+  section('Rules-only fallback must not invent safety');
+
+  let fallbackMissed = 0;
+  let fallbackCriedWolf = 0;
+  for (const fixture of FIXTURES) {
+    const verdict = heuristicFallback(analyzeSignals(fixture.text)).verdict;
+    if (fixture.category === 'scam' && verdict === 'likely_safe') fallbackMissed++;
+    if (fixture.category === 'legitimate' && verdict === 'scam') fallbackCriedWolf++;
+  }
+  ok('fallback calls no scam "likely safe"', fallbackMissed === 0, `${fallbackMissed} missed`);
+  ok('fallback calls no legitimate message a scam', fallbackCriedWolf === 0, `${fallbackCriedWolf} cried wolf`);
+
+  // Absence of red flags is not evidence of safety. These carry no links, no
+  // payment ask and no urgency — every "absence" legitimacy flag fires — but
+  // nothing affirmatively identifies the sender.
+  for (const bare of [
+    'hi',
+    'Hi! Sorry, is this Michael? I think I have the wrong number.',
+    'This is Officer Daniels. Please call me back as soon as you can.',
+  ]) {
+    const verdict = heuristicFallback(analyzeSignals(bare)).verdict;
+    ok(
+      `fallback does not call a bare opener safe: "${bare.slice(0, 34)}…"`,
+      verdict !== 'likely_safe',
+      `got ${verdict}`
+    );
+  }
+
+  // But real positive evidence should still earn a safe verdict, or the
+  // fallback becomes uselessly alarmist.
+  const genuine = heuristicFallback(
+    analyzeSignals(
+      'UPS: your package from REI arrives Thursday. Tracking 1Z999AA10123456784 at https://www.ups.com/track. Reply STOP to opt out.'
+    )
+  ).verdict;
+  ok('fallback still clears a message with real positive evidence', genuine === 'likely_safe', genuine);
 
   // ── Summary ─────────────────────────────────────────────────────────────
   process.stdout.write(`\n${passed} passed, ${failed} failed\n\n`);
