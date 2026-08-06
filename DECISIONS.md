@@ -4,6 +4,144 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 6 — React rewrite and the visual pass
+
+### The brief asked for React tools on a codebase that had no React
+
+The frontend was 414 lines of vanilla JS and 723 of CSS, zero dependencies, no
+build step. Framer Motion, shadcn and magic-mcp are all React-ecosystem tools —
+none of them apply without a rewrite, and neither shadcn-mcp nor magic-mcp was
+actually connected to the session. That was surfaced before any code was written,
+along with the option of Motion One (same library family, works without React,
+~5kb). **The rewrite was chosen knowingly.** Recording that here because the cost
+is real and shows up in the next entry.
+
+Everything is now React 19 + Vite + Motion, built into `public/` — which is
+exactly what both runtimes already serve (`@fastify/static` locally, Vercel's CDN
+in production). **`src/`, `api/`, `scripts/` and `fixtures/` were not touched.**
+Verified by diff, not by assertion.
+
+### What the rewrite cost
+
+**8kb of JS became 104kb gzipped.** React DOM and Motion are most of it. That is
+still inside the 150kb landing-page budget, but it is a 13× increase on a page
+whose entire job is one form and one card, and it is the honest price of the
+tooling decision. `LazyMotion` + `m` components would claw back roughly 25kb if
+it ever matters.
+
+Nothing else regressed: same four states, same copy, same keyboard handling, same
+degraded-mode notice, same three verdicts on the same three chips.
+
+### Type: Instrument Serif + Instrument Sans
+
+Siblings from one foundry, so the pairing is a designed relationship rather than
+two faces that happen to sit together. Self-hosted — 59kb for three files, no
+Google Fonts request on a page about not trusting things, and nothing to fail on
+venue wi-fi.
+
+**Instrument Serif ships one weight.** Every display rule sets `font-weight: 400`
+deliberately; asking for 600 makes the browser synthesise a fake bold, which
+smears the high-contrast strokes that are the entire reason for choosing it.
+
+### The verdict card is composed as a letterhead
+
+Masthead, rule, standfirst, then the body set in columns beneath — a printed
+notice rather than a status card. The rule draws itself left to right as the card
+arrives, which is the most satisfying beat in the reveal.
+
+The structure earns its keep twice: it is the most distinctive thing on the page,
+and because the headline spans the full measure instead of sharing a row, it can
+be set enormous and still leave the evidence above the fold in a 720p frame.
+
+### The tint was wrong twice before it was right
+
+First pass put the verdict hue into the card at full tint strength. The scam card
+came out **pink** — a coloured panel, which is an alarm, and alarm is the state
+that makes people act on a scam instead of pausing. The whole product exists to
+buy the reader a moment of calm.
+
+The tints are now a blush on the same warm stock (chroma 0.010–0.015 against
+paper's 0.016), and the signal is carried entirely by the ink: headline, rule,
+eyebrow and dashes all take the hue at full strength. Unmissable at a glance,
+calm everywhere else. Calibrated against a live screenshot, not picked on a
+colour wheel.
+
+### Fitting a 720p frame took measurement, not taste
+
+At 1280×720 the browser gives 670px of viewport. The compose state was 866px and
+the longest verdict 766px — both scrolled.
+
+Compose was fixed structurally rather than by shrinking: from 900px the form and
+the example slips set in two columns, which matches the letter's own composition
+*and* drops the state to 565px without making a single thing smaller.
+
+The letter needed real measurement. Column widths were probed at four ratios on
+the longest live verdict — 1.55/0.6 gave columns of 180 and 254px, 1.45/0.75 gave
+180 and 209, 1.4/0.8 gave 203 and 164. The card is as tall as its taller column,
+so the last one wins. That plus one notch down on body type **inside the letter
+only** — never on mobile or a normal-height desktop, where this audience needs
+the larger size — brought every state to exactly 670px.
+
+Also caught by measuring: `62ch` on the safe verdict's single column was
+producing an 86-character line, because `ch` is the width of a zero and this face
+sets zeros much wider than its average lowercase. Now 50ch, which is ~70.
+
+### One measure for the page
+
+The result state used to break out of a narrower shell on its own, which left the
+masthead visibly inset from the card beneath it. The shell now opens to 58rem at
+900px and everything hangs off the same left edge.
+
+Related bug worth remembering: a `@media` block adds **no specificity**, so a
+desktop override placed above the rule it overrides silently loses. That is
+exactly how the tagline kept its 32ch phone measure on a 928px page and went on
+breaking mid-clause. Desktop blocks now live at the end of each file.
+
+### Motion: one continuous reveal, not three screen swaps
+
+A single `AnimatePresence mode="wait"` boundary wraps the whole flow. Each stage
+leaves upward in 140ms and the next arrives from below — a slow exit is what
+makes a transition feel like a page change instead of a reveal.
+
+Measured on the real thing: headline at 184ms, confidence at 275ms, first reason
+at 366ms, last at 457ms, everything at rest by 730ms.
+
+Reduced motion runs the same code path with movement dropped and durations
+collapsed — verified by stubbing `matchMedia`, not assumed from the CSS.
+
+### Vercel design-guidelines audit — the real findings
+
+- 🔴 **The progress bar animated `width`** — a layout property, ticking every
+  130ms for the entire wait. Now `transform: scaleX()`, compositor-only, visually
+  identical.
+- 🔴 **No `touch-action: manipulation`** — every control carried the 300ms
+  double-tap-zoom delay on mobile.
+- 🔴 **No skip link.**
+- 🟡 **Long unbroken strings could overflow.** Reasons routinely quote the domain
+  they object to, and scam domains are long. `overflow-wrap: break-word` on
+  reasons and advice.
+- 🔵 Straight quotes → curly throughout our own copy (the model's reasons come
+  from the API and are left alone). `theme-color` corrected to the actual paper
+  value.
+
+**Not fixed, deliberately:** the guidelines say URL should reflect state. Here the
+state *is* the message someone pasted because they are frightened of it. Putting
+that in the URL would leak it into history, referrers and shoulder-surfing range.
+The whole privacy design of this product is that we never keep the text.
+
+### Verified, not assumed
+
+Contrast measured on rendered pixels across compose and all three verdicts —
+**zero failures**, AA holds. This needed a hand-written OKLCH→sRGB conversion:
+`getComputedStyle` returns `oklch()` and neither a regex nor a canvas
+`fillStyle` round-trip resolves it, so the first two attempts reported every
+element at ~1.05:1 and would have been a completely fabricated pass.
+
+Touch targets ≥44px on a real 390px viewport. No horizontal overflow anywhere.
+No console errors. 31 rate-limit and 91 edge assertions still green.
+
+---
+
 ## Session 5 — provider swap to Gemini, and a polish pass
 
 ### Layer 2 moved from Claude Opus 5 to Gemini

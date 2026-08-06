@@ -1,0 +1,81 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Thinking — honest narration, not a spinner.
+   The lines track what the pipeline is genuinely doing, in order. That turns
+   the wait from "is it broken?" into "it is doing the work I asked for".
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.thinking { padding: clamp(2.5rem, 2rem + 4vw, 4rem) 0; }
+
+/* Held to the width of the column the form occupied, so the bar appears more
+   or less where the input well just was. Run full-bleed across 58rem it stops
+   reading as progress and starts reading as a page divider — and the eye has
+   to travel to find the narration under it. */
+@media (min-width: 900px) {
+  .thinking { max-width: 32rem; }
+}
+
+.thinking__bar {
+  height: 3px;
+  border-radius: 99px;
+  background: var(--paper-edge);
+  overflow: hidden;
+  margin-bottom: 1.7rem;
+}
+
+.thinking__fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--pen), var(--pen-soft));
+  position: relative;
+  overflow: hidden;
+  /* Scaled, not widened. Animating `width` is a layout property: every tick
+     costs a reflow, and this ticks every 130ms for the whole wait. scaleX runs
+     on the compositor and looks identical.
+
+     The duration is matched to that 130ms tick — at 700ms the bar lagged so far
+     behind the real answer that it jumped at the end. */
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 190ms linear;
+}
+
+/* A slow sheen travelling the filled portion. Compositor-only, and it gives the
+   bar a pulse without implying a specific remaining duration. */
+.thinking__fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    oklch(100% 0 0 / 0.55) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  animation: sheen 1.15s var(--ease) infinite;
+}
+
+@keyframes sheen {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking__fill::after { animation: none; opacity: 0; }
+}
+
+.thinking__copy {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-xl);
+  line-height: 1.2;
+  letter-spacing: -0.014em;
+  min-height: 1.2em;
+}
+
+.thinking__sub {
+  margin: 0.7rem 0 0;
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+  max-width: 34ch;
+}

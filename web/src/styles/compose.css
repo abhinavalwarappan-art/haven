@@ -1,0 +1,274 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Compose — the input well, the counter, and the example slips.
+   The state should feel inviting rather than clinical: a sheet to write on,
+   not a form to fill in.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.well {
+  position: relative;
+  background: var(--paper-deep);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--radius);
+  padding: 1rem 1.05rem 0.7rem;
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+/* Focus lifts the well toward the light rather than outlining it — the field
+   becomes the brightest thing on the page, which is where the eye should be. */
+.well:focus-within {
+  background: var(--paper-lift);
+  border-color: oklch(70% 0.055 254);
+  box-shadow: 0 0 0 4px oklch(60% 0.09 254 / 0.13);
+}
+
+.well__label {
+  display: block;
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.55rem;
+}
+
+.well textarea {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  /* No resize grip: an unstyled artefact in the corner of an otherwise
+     deliberate surface, and the field already fits a long paste by scrolling. */
+  resize: none;
+  min-height: 7rem;
+  max-height: 34vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-edge) transparent;
+}
+
+.well textarea:focus { outline: none; }
+.well textarea::placeholder { color: var(--ink-faint); }
+
+.well__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 1.6rem;
+  margin-top: 0.35rem;
+}
+
+.counter {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.counter[data-state='warn'] { color: var(--caution); }
+.counter[data-state='over'] { color: var(--danger); font-weight: 600; }
+
+.field-error {
+  margin: 0.7rem 0 0;
+  color: var(--danger);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.compose__cta { margin-top: 1.1rem; }
+
+/* The CTA borrows the slips' arrow, so the two ways into a check share one
+   gesture instead of looking like unrelated controls. */
+.compose__cta .chip__arrow {
+  width: 1rem;
+  height: 1rem;
+  color: currentColor;
+  opacity: 0.6;
+}
+.compose__cta:hover .chip__arrow { transform: translateX(3px); opacity: 1; }
+
+/* ── Example slips ──────────────────────────────────────────────────────
+   Not chips. Each one is a slip of paper clipped to the page — a shortcut a
+   person would actually reach for, with the same letterhead vocabulary as the
+   verdict card. */
+
+.examples { margin-top: 2rem; }
+
+.examples__heading {
+  margin: 0 0 0.75rem;
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.examples__row { display: grid; gap: 0.55rem; }
+
+.chip {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  /* ≥44px tall on touch, comfortably. */
+  padding: 0.8rem 0.95rem;
+  min-height: 3rem;
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+/* A pen stroke down the leading edge, drawn on hover. This is the one place
+   the accent appears outside the wordmark and the focus ring, and it is what
+   makes the slips feel handled rather than listed. */
+.chip::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--pen);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 220ms var(--ease);
+}
+
+.chip:hover,
+.chip:focus-visible {
+  background: var(--paper-deep);
+  border-color: oklch(79% 0.024 80);
+  transform: translateX(3px);
+}
+.chip:hover::before,
+.chip:focus-visible::before { transform: scaleY(1); }
+.chip:active { transform: translateX(3px) scale(0.995); transition-duration: 60ms; }
+
+.chip__text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.chip__label { font-weight: 600; font-size: var(--text-sm); }
+.chip__hint {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Drawn arrow rather than a glyph — it inherits colour, scales with the type,
+   and does not depend on an emoji or icon font rendering the same everywhere. */
+.chip__arrow {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  transition:
+    transform 220ms var(--ease),
+    opacity 220ms var(--ease),
+    color 220ms var(--ease);
+}
+.chip:hover .chip__arrow,
+.chip:focus-visible .chip__arrow {
+  transform: translateX(3px);
+  opacity: 1;
+  color: var(--pen);
+}
+
+/* ── Error notice ───────────────────────────────────────────────────────
+   Stays on brand: same paper, same letterhead rhythm. A generic red box would
+   read as "the product is broken", and most of what lands here — a rate-limit
+   pause — is not a failure at all. */
+
+.notice {
+  border: 1px solid var(--paper-edge);
+  background: var(--paper-deep);
+  border-radius: var(--radius);
+  padding: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+}
+
+.notice__eyebrow {
+  margin: 0 0 0.7rem;
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.notice__headline {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-xl);
+  letter-spacing: -0.018em;
+  line-height: 1.15;
+}
+
+.notice__body { margin: 0 0 1.35rem; color: var(--ink-soft); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Desktop composition
+   ───────────────────────────────────────────────────────────────────────────
+   From 900px the compose state sets in two columns — the sheet you write on,
+   and the slips you can reach for — rather than stacking into one tall ribbon
+   down the middle of a 16:9 frame.
+
+   Two reasons, and the second is the load-bearing one. It matches the letter's
+   own composition, so compose → result reads as one document changing rather
+   than two different layouts; and it takes the compose state from 866px tall to
+   comfortably inside a 720p recording frame without shrinking a single thing.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 900px) {
+  .compose__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    column-gap: clamp(2rem, 1rem + 3vw, 3.25rem);
+    align-items: start;
+  }
+
+  .examples {
+    margin-top: 0;
+    border-left: 1px solid var(--paper-edge);
+    padding-left: clamp(2rem, 1rem + 3vw, 3.25rem);
+  }
+
+  /* The slips read as a stack of cards rather than a list of rows, so the hint
+     gets its own line instead of being clipped beside the label. */
+  .chip__text { display: block; }
+  .chip__hint { display: block; margin-top: 0.15rem; }
+
+  .notice { max-width: 42rem; }
+  /* A full-width ghost button across 42rem is a large empty rectangle — the
+     loudest thing on a screen whose whole job is to be reassuring. */
+  .notice .cta { max-width: 20rem; }
+}
+
+/* Short-and-wide viewports. The two-column grid already clears a 720p frame;
+   this is headroom for anything shorter — a 1366×600 laptop, or a browser with
+   a bookmarks bar and a downloads shelf open. */
+@media (min-width: 900px) and (max-height: 720px) {
+  .well textarea { height: 6rem; min-height: 0; }
+  .chip { min-height: 2.75rem; padding-block: 0.65rem; }
+}

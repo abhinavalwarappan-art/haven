@@ -1,0 +1,275 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Page chrome — surface, masthead, footer, and the details browsers style for
+   you if you let them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Kills the 300ms double-tap-zoom wait on every control. */
+  touch-action: manipulation;
+}
+
+/* Keyboard users land here first and can jump straight to the field. Visually
+   hidden until focused, then it sits over the masthead as a real control. */
+.skip {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 10;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 140ms var(--ease);
+}
+.skip:focus-visible { transform: translateY(0); }
+
+/* ── Paper grain ────────────────────────────────────────────────────────
+   The one piece of atmosphere on the page. Two layers at different scales so
+   it reads as the tooth of real stock rather than a single tiling noise
+   pattern — a uniform grain gives itself away as a texture overlay, and the
+   repeat becomes visible on a large display.
+
+   Inline SVG, so there is no network request and it renders identically with
+   the wi-fi unplugged. Multiply keeps it inside the paper instead of hazing
+   the ink sitting on top of it. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23a)' opacity='0.05'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.28' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23b)' opacity='0.028'/%3E%3C/svg%3E");
+}
+
+/* The grain is decoration; on a coarse display it costs more than it gives. */
+@media (max-width: 380px) {
+  .grain { opacity: 0.34; }
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2.25rem, 34rem);
+  margin-inline: auto;
+  padding-block: clamp(2.25rem, 1.6rem + 3vw, 4rem) 2.5rem;
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+main { flex: 1; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ── Masthead ───────────────────────────────────────────────────────────── */
+
+.masthead { margin-bottom: var(--gap); }
+
+.wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-xl);
+  letter-spacing: -0.014em;
+  line-height: 1.1;
+}
+
+/* The question mark is the logo — it is the thing the reader is actually
+   asking, so it takes the accent rather than the words around it. Set in the
+   serif's italic, which has a genuine calligraphic swing to it. */
+.wordmark__mark {
+  color: var(--pen);
+  font-style: italic;
+  padding-left: 0.03em;
+}
+
+.tagline {
+  margin: 0.45rem 0 0;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  max-width: 32ch;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+
+.footer {
+  margin-top: 2.75rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--paper-edge);
+}
+
+.stats {
+  margin: 0 0 0.7rem;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.stats b { color: var(--ink); font-weight: 600; }
+
+.disclaimer {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--ink-faint);
+  max-width: 46ch;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 1.05rem 1.5rem;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  cursor: pointer;
+  box-shadow: 0 1px 2px oklch(23% 0.02 60 / 0.16), 0 6px 16px oklch(23% 0.02 60 / 0.13);
+  /* Press physics: it sinks and the shadow tightens, rather than just changing
+     colour. The CTA carries the weight of the whole screen. */
+  transition:
+    transform 170ms var(--ease),
+    box-shadow 240ms var(--ease),
+    opacity var(--dur-fast) var(--ease),
+    background-color 180ms var(--ease);
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px oklch(23% 0.02 60 / 0.18), 0 10px 24px oklch(23% 0.02 60 / 0.17);
+}
+.cta:active:not(:disabled) {
+  transform: translateY(1px) scale(0.994);
+  transition-duration: 60ms;
+}
+.cta:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.cta--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--paper-edge);
+  box-shadow: none;
+  font-size: var(--text-base);
+  padding-block: 0.9rem;
+}
+.cta--ghost:hover {
+  background: var(--paper-deep);
+  border-color: oklch(79% 0.024 80);
+  box-shadow: none;
+  transform: none;
+}
+
+.linkbtn {
+  border: 0; background: none; padding: 0.2rem 0;
+  font: inherit; font-size: var(--text-xs);
+  color: var(--ink-faint);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: oklch(62% 0.016 70 / 0.35);
+  transition: color var(--dur-fast) var(--ease);
+}
+.linkbtn:hover { color: var(--ink); }
+
+/* ── Details that would otherwise be browser defaults ───────────────────── */
+
+/* Selection shows constantly here: returning to compose re-selects the previous
+   message so a fresh paste replaces it. The default slate-blue clashes. */
+::selection {
+  background: oklch(84% 0.06 250 / 0.5);
+  color: var(--ink);
+}
+
+/* One focus treatment for the whole page, keyboard-only. Someone tabbing
+   through — or a judge on a laptop — should never have to hunt for where
+   they are. */
+:where(a, button, textarea, [tabindex]):focus-visible {
+  outline: 2.5px solid var(--pen);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Firefox draws its own inner dotted ring on buttons. */
+button::-moz-focus-inner { border: 0; }
+
+/* iOS Safari's grey tap flash fights the designed active state. */
+button { -webkit-tap-highlight-color: transparent; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Desktop composition
+   ───────────────────────────────────────────────────────────────────────────
+   One measure for the whole page. Mobile is a 34rem reading column; from 900px
+   the page opens to 58rem and the masthead, the compose grid, the letter and
+   the footer all hang off the same left edge. The result state used to break
+   out of a narrower shell on its own, which left the masthead visibly inset
+   from the card beneath it.
+
+   These live at the end of the file on purpose: a media query adds no
+   specificity, so an override placed above the rule it overrides silently
+   loses. That is exactly how the tagline kept its phone measure on a 928px
+   page and went on breaking mid-clause.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 900px) {
+  .shell { width: min(100% - 3rem, 58rem); }
+  .tagline { max-width: none; }
+}
+
+/* Short-and-wide — a 16:9 recording frame. Every state has to clear it without
+   a scroll, because that frame is what the demo video captures. */
+@media (min-width: 900px) and (max-height: 820px) {
+  .shell { padding-block: 1.25rem 1rem; }
+  .masthead { margin-bottom: 0.85rem; }
+  .wordmark { font-size: 1.55rem; }
+  .tagline { margin-top: 0.3rem; }
+  .footer { margin-top: 0.9rem; padding-top: 0.7rem; }
+  .stats { margin-bottom: 0.35rem; }
+  /* The disclaimer earns its place, but not three lines of it. */
+  .disclaimer { max-width: none; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────
+   The Motion components read the same preference via useReducedMotion and drop
+   to opacity-only. This covers the CSS half: hover translations and the
+   progress bar's sheen. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .cta:hover, .cta:active, .chip:hover, .chip:active { transform: none; }
+}

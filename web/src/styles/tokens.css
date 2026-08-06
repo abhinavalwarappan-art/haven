@@ -1,0 +1,102 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   "Is This Real?" — design tokens
+   ───────────────────────────────────────────────────────────────────────────
+   Direction: warm paper, editorial serif, calm authority. Deliberately NOT the
+   dark-terminal security aesthetic — the person using this is worried, possibly
+   75, and a black screen full of red alerts would frighten them. Panic makes
+   people act, and acting is the danger.
+
+   Colour discipline: the page is warm paper and ink, with exactly one brand
+   accent (blue, like a pen). The three verdict hues are the *only* other colour
+   on the page and they appear on the verdict card alone, so when one shows up
+   it reads instantly instead of competing with decoration.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Paper ─────────────────────────────────────────────────────────────
+     Never pure white. Warmed at the chroma rather than the lightness — cream
+     instead of grey — so the contrast ratios verified for the ink tiers hold. */
+  --paper:        oklch(97% 0.016 88);
+  --paper-deep:   oklch(94.2% 0.020 86);
+  --paper-edge:   oklch(88.5% 0.022 84);
+  --paper-lift:   oklch(98.6% 0.012 90);
+
+  --ink:          oklch(23% 0.020 60);
+  --ink-soft:     oklch(44% 0.018 66);
+  /* The quiet tier still has to be genuinely readable — this audience skews
+     older. Measured against --paper for WCAG AA at small sizes; do not lighten
+     without re-measuring. */
+  --ink-faint:    oklch(51% 0.017 70);
+
+  /* ── Pen ───────────────────────────────────────────────────────────────
+     The single brand accent: blue ink on cream paper. Carries the wordmark's
+     question mark, focus rings, the progress bar and nothing else. */
+  --pen:          oklch(40% 0.115 254);
+  --pen-soft:     oklch(56% 0.100 256);
+
+  /* ── Verdict palette ───────────────────────────────────────────────────
+     Earthy and considered, not neon. A scam verdict should land as serious,
+     not as a klaxon. Each hue ships as a triad: the ink, a paper tint it can
+     sit on, and an edge.
+
+     The tints are deliberately barely there — a blush on the same warm stock,
+     not a coloured panel. A fully pink card reads as an alarm, and alarm is the
+     state that makes people act on a scam instead of pausing. The signal is
+     carried by the ink: the headline, the rule, the eyebrow and the dashes all
+     take the hue at full strength, which is unmissable at a glance while the
+     surface stays the same calm paper as every other screen. */
+  --danger:       oklch(46% 0.175 27);
+  --danger-tint:  oklch(97% 0.010 42);
+  --danger-edge:  oklch(82% 0.080 32);
+
+  --caution:      oklch(48% 0.130 68);
+  --caution-tint: oklch(97.2% 0.015 86);
+  --caution-edge: oklch(84% 0.075 78);
+
+  --safe:         oklch(45% 0.110 152);
+  --safe-tint:    oklch(97% 0.011 158);
+  --safe-edge:    oklch(82% 0.062 152);
+
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --font-display: 'Instrument Serif', 'Iowan Old Style', Charter, Georgia, serif;
+  --font-ui:      'Instrument Sans', 'Avenir Next', system-ui, sans-serif;
+
+  --text-xs:   0.8125rem;
+  --text-sm:   0.9375rem;
+  --text-base: clamp(1.0625rem, 1.01rem + 0.28vw, 1.1875rem);
+  --text-lg:   clamp(1.1875rem, 1.10rem + 0.42vw, 1.375rem);
+  --text-xl:   clamp(1.6rem, 1.40rem + 0.95vw, 2.1rem);
+  /* The verdict owns the screen. Instrument Serif is high-contrast and tightly
+     apertured, so it wants negative tracking and a line-height under 1. */
+  --verdict:   clamp(2.6rem, 1.85rem + 3.6vw, 4.4rem);
+
+  /* Small letterspaced label used for every section heading. Defined once so
+     the eyebrow, "why we think so" and "what to do" are unmistakably a set. */
+  --label-size:    var(--text-xs);
+  --label-track:   0.085em;
+  --label-weight:  600;
+
+  /* ── Space ─────────────────────────────────────────────────────────────── */
+  --gap:        clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+  --radius:     18px;
+  --radius-sm:  12px;
+
+  /* ── Motion ────────────────────────────────────────────────────────────
+     Shared with the Motion variants in the components so CSS transitions and
+     JS animation never disagree about how this product moves. */
+  --dur-fast:   160ms;
+  --dur:        320ms;
+  --ease:       cubic-bezier(0.22, 1, 0.36, 1);
+
+  --shadow-lift:
+    0 1px 1px oklch(30% 0.02 60 / 0.04),
+    0 4px 10px oklch(30% 0.02 60 / 0.05),
+    0 16px 34px oklch(30% 0.02 60 / 0.07);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ink-faint:  oklch(46% 0.016 70);
+    --paper-edge: oklch(72% 0.024 84);
+  }
+}

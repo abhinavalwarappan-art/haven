@@ -10,22 +10,30 @@
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env.local src/server.ts",
     "start": "tsx --env-file-if-exists=.env.local src/server.ts",
-    "build": "tsc --noEmit",
+    "build": "tsc --noEmit && tsc -p web --noEmit && vite build",
     "check": "tsx --env-file-if-exists=.env.local scripts/check.ts",
     "test:checks": "tsx --env-file-if-exists=.env.local scripts/test-checks.ts",
     "test:edge": "tsx --env-file-if-exists=.env.local scripts/test-edge-cases.ts",
     "deploy": "vercel --prod",
-    "test:limits": "tsx --env-file-if-exists=.env.local scripts/test-limits.ts"
+    "test:limits": "tsx --env-file-if-exists=.env.local scripts/test-limits.ts",
+    "dev:web": "vite"
   },
   "dependencies": {
     "@fastify/static": "^10.1.2",
     "@google/genai": "^2.16.0",
     "@supabase/supabase-js": "^2.58.0",
-    "fastify": "^5.2.0"
+    "fastify": "^5.2.0",
+    "motion": "^13.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vite": "^8.2.0"
   }
 }
