@@ -36,7 +36,7 @@ export function createSqliteStore(path = process.env.SQLITE_PATH || DEFAULT_PATH
       verdict         TEXT NOT NULL,
       confidence      INTEGER NOT NULL,
       flags_detected  TEXT NOT NULL DEFAULT '[]',
-      classifier      TEXT NOT NULL DEFAULT 'claude',
+      classifier      TEXT NOT NULL DEFAULT 'ai',
       created_at      TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS checks_created_at_idx ON checks (created_at DESC);

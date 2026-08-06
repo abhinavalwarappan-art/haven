@@ -100,7 +100,7 @@ export async function runCheck(
   // than fail: a rules-only answer is far better than a 500 for a user who is
   // staring at a suspicious text message.
   let classification: Classification;
-  let source: 'claude' | 'heuristic_fallback' = 'claude';
+  let source: 'ai' | 'heuristic_fallback' = 'ai';
   try {
     classification = await classify(text, signals);
   } catch (err) {
@@ -117,7 +117,7 @@ export async function runCheck(
     raw_signals: signals,
     meta: {
       classifier: source,
-      model: source === 'claude' ? classifierModel() : null,
+      model: source === 'ai' ? classifierModel() : null,
       duration_ms: Date.now() - started,
       check_id: null,
       cached: false,

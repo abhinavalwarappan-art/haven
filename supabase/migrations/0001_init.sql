@@ -27,8 +27,8 @@ create table if not exists public.checks (
   flags_detected  jsonb not null default '[]'::jsonb,
 
   -- Whether the AI agent ran, or we degraded to the rules-only fallback.
-  classifier      text not null default 'claude'
-                    check (classifier in ('claude', 'heuristic_fallback')),
+  classifier      text not null default 'ai'
+                    check (classifier in ('ai', 'heuristic_fallback')),
 
   created_at      timestamptz not null default now()
 );

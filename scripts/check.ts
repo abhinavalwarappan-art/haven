@@ -38,7 +38,7 @@ async function main() {
   }
 
   if (!hasApiKey()) {
-    process.stderr.write('⚠️  No ANTHROPIC_API_KEY — using rules-only fallback.\n\n');
+    process.stderr.write('⚠️  No GEMINI_API_KEY — using rules-only fallback.\n\n');
   }
 
   try {

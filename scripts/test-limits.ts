@@ -146,8 +146,8 @@ const entry = {
   reasons: ['because'],
   flags_detected: [],
   raw_signals: fakeSignals,
-  classifier: 'claude' as const,
-  model: 'claude-opus-5',
+  classifier: 'ai' as const,
+  model: 'gemini-3.1-flash-lite',
 };
 
 cacheClear();

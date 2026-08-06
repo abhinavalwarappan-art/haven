@@ -159,29 +159,20 @@ function renderMarkdown(rows: Row[]): string {
   );
   out.push('');
 
-  // ── Effort tuning record ────────────────────────────────────────────────
-  out.push('### Effort level: settled on `low`');
-  out.push('');
-  out.push('| Effort | Accuracy | Avg latency | Rules-only fallbacks |');
-  out.push('| --- | --- | --- | --- |');
-  out.push('| `medium` (previous) | 16/16 | ~14–30 s per check | 2 (rate-limited out) |');
-  out.push('| **`low` (current)** | **16/16** | **~6 s per check** | **0** |');
+  // ── Provider / tuning record ────────────────────────────────────────────
+  out.push('### Classifier');
   out.push('');
   out.push(
-    '`low` is **4–5× faster with zero accuracy cost** — no fixture flipped, and confidence ' +
-      'actually rose on two of the hardest cases (the fake bank alert 80→95, the real bank alert 62→88). ' +
-      'There was no quality/speed tradeoff to split, so no middle ground was needed.'
+    'Layer 2 runs on Google Gemini (`gemini-3.1-flash-lite`) with JSON-schema ' +
+      'structured output. `CLASSIFIER_EFFORT` maps to the Gemini thinking budget: ' +
+      '`low` = 512 tokens, `medium` = 2048, `high` = 8192.'
   );
   out.push('');
   out.push(
-    'The system prompt (~1,800 tokens) is prompt-cached, so the steady-state warm path is ~5.8–6.7 s. ' +
-      'The first check after an idle period pays a cold-cache penalty and can take ~25 s.'
-  );
-  out.push('');
-  out.push(
-    '~6 s misses the 2–3 s ideal: it is the model\'s generation floor for reasoning plus four written ' +
-      'reasons at this effort. Going lower means a smaller model or fewer/shorter reasons — both trade ' +
-      'away the thing that makes the output trustworthy. The UI is built to hold this wait deliberately.'
+    'The project previously ran on Claude Opus 5, which scored the same 16/16 at ' +
+      '~6 s per check. The move to Gemini was driven by API credit availability, not ' +
+      'by classification quality — the fixtures and grading are unchanged, so the two ' +
+      'runs are directly comparable.'
   );
   out.push('');
 
@@ -292,7 +283,7 @@ function renderMarkdown(rows: Row[]): string {
 async function main() {
   if (!hasApiKey()) {
     process.stderr.write(
-      '\n⚠️  ANTHROPIC_API_KEY is not set. Every case will use the rules-only fallback,\n' +
+      '\n⚠️  GEMINI_API_KEY is not set. Every case will use the rules-only fallback,\n' +
         '   which is NOT a real test of classification quality.\n' +
         '   Set it in .env.local and re-run.\n\n'
     );
@@ -325,7 +316,7 @@ async function main() {
     process.stderr.write(
       `\n⚠️  The AI layer did not run for ANY fixture — these are rules-only results.\n` +
         `   ${OUT} was left untouched so a real result is not overwritten.\n` +
-        `   Usual cause: no API credits or no ANTHROPIC_API_KEY. Fix that and re-run.\n\n`
+        `   Usual cause: no API credits or no GEMINI_API_KEY. Fix that and re-run.\n\n`
     );
     process.exitCode = 1;
     return;

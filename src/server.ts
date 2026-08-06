@@ -78,7 +78,7 @@ async function main() {
 
   if (!hasApiKey()) {
     app.log.warn(
-      'ANTHROPIC_API_KEY is not set — every check will use the rules-only fallback.'
+      'GEMINI_API_KEY is not set — every check will use the rules-only fallback.'
     );
   }
   if (isUsingDefaultSalt()) {

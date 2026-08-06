@@ -61,7 +61,7 @@ async function main() {
   process.stdout.write('Edge-case checks\n');
   if (!hasApiKey()) {
     process.stdout.write(
-      '⚠️  No ANTHROPIC_API_KEY — exercising the fallback path only.\n'
+      '⚠️  No GEMINI_API_KEY — exercising the fallback path only.\n'
     );
   }
 

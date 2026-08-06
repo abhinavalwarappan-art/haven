@@ -130,7 +130,7 @@ export interface CheckResponse {
   raw_signals: SignalReport;
   meta: {
     /** Whether Layer 2 ran, or we fell back to rules-only. */
-    classifier: 'claude' | 'heuristic_fallback';
+    classifier: 'ai' | 'heuristic_fallback';
     model: string | null;
     duration_ms: number;
     /** Stable id of the stored row, for later feedback/linking. */
@@ -158,7 +158,7 @@ export interface CheckRecord {
   verdict: Verdict;
   confidence: number;
   flags_detected: FlagId[];
-  classifier: 'claude' | 'heuristic_fallback';
+  classifier: 'ai' | 'heuristic_fallback';
   created_at: string;
 }
 

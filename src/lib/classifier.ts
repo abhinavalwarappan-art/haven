@@ -1,23 +1,24 @@
 /**
- * Layer 2: the Claude classification agent.
+ * Layer 2: the AI classification agent (Google Gemini).
  *
  * Takes the original text plus the Layer 1 signal report and produces a
  * verdict, a confidence level, and 2-4 plain-English reasons.
  *
  * Design notes that matter for classification quality:
  *
- *  - Structured output is enforced with `output_config.format` (JSON schema),
- *    not parsed out of free text, so the API response shape is reliable.
+ *  - Structured output is enforced with a `responseSchema` and
+ *    `responseMimeType: application/json`, not parsed out of free text, so the
+ *    API response shape is reliable.
  *  - The prompt is explicit that Layer 1 hits are *evidence, not proof*. This
  *    is the single most important instruction in the system: without it the
  *    model rubber-stamps the rules layer and flags every legitimate bank alert
  *    that happens to contain the word "urgent".
- *  - Adaptive thinking is left ON. On Claude Opus 5, disabling thinking can
- *    cause the model to emit malformed structured output, which would silently
- *    break the whole pipeline.
+ *  - Nothing here is provider-specific beyond this file. The pipeline calls
+ *    `classify()` and gets a `Classification` back; swapping models again means
+ *    editing this file alone.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI, type GenerateContentResponse } from '@google/genai';
 import type {
   Classification,
   FlagId,
@@ -26,7 +27,7 @@ import type {
 } from './types.js';
 import { redactHighRisk } from './privacy.js';
 
-const DEFAULT_MODEL = 'claude-opus-5';
+const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
 const VERDICTS: Verdict[] = ['scam', 'likely_safe', 'uncertain_be_careful'];
 
 /**
@@ -37,34 +38,26 @@ const VERDICTS: Verdict[] = ['scam', 'likely_safe', 'uncertain_be_careful'];
 const REQUEST_TIMEOUT_MS = Number(process.env.CLASSIFIER_TIMEOUT_MS || 20_000);
 
 /**
- * Effort controls thinking depth, and is the primary latency lever on Claude
- * Opus 5.
- *
- * `medium` is the default because it is the setting the evaluation set was
- * actually measured at (16/16, see TEST_RESULTS.md) — it costs ~14-30s per
- * check, which is slow for the "instant verdict" pitch.
- *
- * `low` is very likely the right production setting and is the first thing to
- * try: on Claude Opus 5 it is unusually strong for short, well-scoped
- * classification. It is NOT the default only because it has not been run
- * against the evaluation set yet. Set CLASSIFIER_EFFORT=low, re-run
- * `npm run test:checks`, and if it still scores 16/16 make it the default.
+ * Effort maps to Gemini's thinking budget (tokens the model may spend
+ * reasoning before it answers). This is a short, well-scoped classification,
+ * so `low` is the default — measured as accurate as higher settings on the
+ * evaluation set while keeping the wait tolerable.
  */
-const EFFORT = (process.env.CLASSIFIER_EFFORT || 'medium') as
-  | 'low'
-  | 'medium'
-  | 'high';
+const THINKING_BUDGET: Record<string, number> = {
+  low: 512,
+  medium: 2048,
+  high: 8192,
+};
 
-let cached: Anthropic | null = null;
+function effort(): string {
+  return process.env.CLASSIFIER_EFFORT || 'low';
+}
 
-function client(): Anthropic {
+let cached: GoogleGenAI | null = null;
+
+function client(): GoogleGenAI {
   if (!cached) {
-    cached = new Anthropic({
-      timeout: REQUEST_TIMEOUT_MS,
-      // One retry, not the default two: a second failure means we should show
-      // the user the fallback rather than keep them waiting through backoff.
-      maxRetries: 1,
-    });
+    cached = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
   return cached;
 }
@@ -74,7 +67,7 @@ export function classifierModel(): string {
 }
 
 export function hasApiKey(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+  return Boolean(process.env.GEMINI_API_KEY);
 }
 
 const SYSTEM_PROMPT = `You help ordinary people — especially older adults — decide whether a message they received is a scam. You are the second stage of a two-stage system.
@@ -111,6 +104,12 @@ A message that is urgent, generic, and slightly awkward but asks for nothing is 
 
 Details a stranger could not know — the last four digits of a card, a real order number you can look up, a named appointment time — are meaningful evidence the sender has a genuine relationship with the reader.
 
+**One case needs care, because the obvious reading is the wrong one.** When a message asks for money by a method that cannot be reversed — a payment app, a wire, a bank transfer, gift cards — the question is NOT "does this sender sound like a stranger?" It is "can the reader confirm these payment details actually belong to who they think, and what happens if they can't?"
+
+A plausible backstory is not verification. Invoice-redirect fraud works precisely *because* the job, the tradesperson and the amount are all real — the scammer intercepts a genuine invoice and swaps in their own payment details, often with a reason the usual method is unavailable. So a request to send a substantial sum to a personal email address or phone number, especially alongside "our card reader is down" or any other reason to deviate from the normal way of paying, is **at minimum uncertain_be_careful** — never likely_safe — even when everything else about it reads as genuine. The correct advice is always to confirm the payment details by calling the number the reader already has, not one in the message.
+
+This is not about assuming bad faith. It is that "likely_safe" on an irreversible payment the reader cannot verify is advice that costs them everything if you are wrong, and costs them one phone call if you are right.
+
 ## Choosing a verdict
 
 - **scam** — You are confident this is fraudulent. There is a clear ask that benefits the sender, and acting on it would cost the reader money, account access, or personal information.
@@ -144,8 +143,12 @@ If the verdict is **scam** or **uncertain_be_careful**, make at least one reason
 
 List only the rules-layer flags you actually judged relevant to your verdict. If a flag fired but you decided it was a false alarm in context, leave it out. An empty list is fine.`;
 
-/** JSON schema for the structured response. */
-const OUTPUT_SCHEMA = {
+/**
+ * Response schema. Gemini accepts a subset of OpenAPI 3 — objects, arrays,
+ * primitives, and enums. Numeric ranges and array-length bounds are not
+ * enforced here, so `coerce()` clamps them below.
+ */
+const RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
     verdict: {
@@ -166,17 +169,15 @@ const OUTPUT_SCHEMA = {
     cited_flags: {
       type: 'array',
       items: { type: 'string' },
-      description:
-        'The rules-layer flag ids you actually relied on. May be empty.',
+      description: 'The rules-layer flag ids you actually relied on. May be empty.',
     },
     calibration_note: {
       type: 'string',
-      description:
-        'One short internal sentence on why this confidence level. Not shown to the user.',
+      description: 'One short internal sentence on why this confidence level. Not shown to the user.',
     },
   },
   required: ['verdict', 'confidence', 'reasons', 'cited_flags', 'calibration_note'],
-  additionalProperties: false,
+  propertyOrdering: ['verdict', 'confidence', 'reasons', 'cited_flags', 'calibration_note'],
 } as const;
 
 /** Render the Layer 1 report as compact, readable evidence for the model. */
@@ -284,57 +285,58 @@ export async function classify(
   signals: SignalReport
 ): Promise<Classification> {
   if (!hasApiKey()) {
-    throw new ClassifierUnavailableError('ANTHROPIC_API_KEY is not set');
+    throw new ClassifierUnavailableError('GEMINI_API_KEY is not set');
   }
 
-  let response;
+  // The SDK has no per-request timeout option, so race it. Without this a
+  // stalled upstream call would hold the user past any tolerable wait.
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(
+      () => reject(new Error(`timed out after ${REQUEST_TIMEOUT_MS}ms`)),
+      REQUEST_TIMEOUT_MS
+    ).unref?.()
+  );
+
+  let response: GenerateContentResponse;
   try {
-    response = await client().beta.messages.create({
-      model: classifierModel(),
-      max_tokens: 4096,
-      // Server-side fallback: if safety classifiers decline the request, the
-      // API retries on another model rather than returning nothing. Scam text
-      // is benign, but this makes the demo resilient to a false positive.
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: {
-        effort: EFFORT,
-        format: { type: 'json_schema', schema: OUTPUT_SCHEMA },
-      },
-      // The system prompt is ~1800 static tokens and is byte-identical on every
-      // request, so caching it removes it from the critical path after the first
-      // check. Matters for a live demo: the second message someone pastes is
-      // noticeably faster than the first.
-      system: [
-        {
-          type: 'text',
-          text: SYSTEM_PROMPT,
-          cache_control: { type: 'ephemeral' },
+    response = await Promise.race([
+      client().models.generateContent({
+        model: classifierModel(),
+        contents: buildUserMessage(text, signals),
+        config: {
+          systemInstruction: SYSTEM_PROMPT,
+          responseMimeType: 'application/json',
+          responseSchema: RESPONSE_SCHEMA as unknown as Record<string, unknown>,
+          thinkingConfig: {
+            thinkingBudget: THINKING_BUDGET[effort()] ?? THINKING_BUDGET.low!,
+          },
         },
-      ],
-      messages: [{ role: 'user', content: buildUserMessage(text, signals) }],
-    } as Anthropic.Beta.Messages.MessageCreateParamsNonStreaming);
+      }),
+      timeout,
+    ]);
   } catch (err) {
     throw new ClassifierUnavailableError(
-      `Claude API call failed: ${err instanceof Error ? err.message : String(err)}`,
+      `Gemini API call failed: ${err instanceof Error ? err.message : String(err)}`,
       err
     );
   }
 
-  // Safety classifiers can decline a request. Check before reading content.
-  if (response.stop_reason === 'refusal') {
-    throw new ClassifierUnavailableError('The model declined to classify this message');
-  }
-  if (response.stop_reason === 'max_tokens') {
-    throw new ClassifierUnavailableError('The model response was cut off');
+  // Safety filters can block a request outright. Check before reading text.
+  const blockReason = response.promptFeedback?.blockReason;
+  if (blockReason) {
+    throw new ClassifierUnavailableError(
+      `The model declined to classify this message (${blockReason})`
+    );
   }
 
-  const raw = response.content
-    .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('')
-    .trim();
+  const finishReason = response.candidates?.[0]?.finishReason;
+  if (finishReason && finishReason !== 'STOP') {
+    throw new ClassifierUnavailableError(
+      `The model stopped early (${finishReason})`
+    );
+  }
 
+  const raw = (response.text ?? '').trim();
   if (!raw) {
     throw new ClassifierUnavailableError('The model returned an empty response');
   }
@@ -343,18 +345,24 @@ export async function classify(
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new ClassifierUnavailableError(`The model returned unparseable output`);
+    throw new ClassifierUnavailableError('The model returned unparseable output');
+  }
+
+  // A JSON body that isn't an object would make property access throw outside
+  // the guarded block above, surfacing as a 500 instead of a clean fallback.
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new ClassifierUnavailableError('The model returned a non-object response');
   }
 
   return coerce(parsed, signals);
 }
 
 /**
- * Validate and normalize the model's output. The JSON schema guarantees the
+ * Validate and normalize the model's output. The response schema guarantees the
  * shape, but not the ranges or counts — those are enforced here so a
  * misbehaving response can never reach the API surface malformed.
  */
-function coerce(parsed: unknown, signals: SignalReport): Classification {
+function coerce(parsed: object, signals: SignalReport): Classification {
   const obj = parsed as Record<string, unknown>;
 
   const verdict = VERDICTS.includes(obj.verdict as Verdict)
