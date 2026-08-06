@@ -6,7 +6,29 @@ Judgment calls and why. Newest first.
 
 ## Session 4 — code review pass
 
-Ran a full audit including a dispatched reviewer subagent. Findings and what changed.
+Ran a full audit: a general reviewer subagent plus two focused adversarial passes (contract agreement, and silent-failure/state). Findings and what changed.
+
+### 🔴 The fallback manufactured reassurance out of "no red flags"
+
+The worst finding, and it was live. `heuristicFallback` returned `likely_safe` whenever `riskScore <= 5 && legitimacySignals.length >= 3`. But three of those legitimacy flags — `no_links_present`, `no_payment_request`, `no_urgency_pressure` — are pure *absence* checks that all fire together on any message containing no link, no payment word and no urgency word.
+
+That is precisely the shape of the social-engineering openers Layer 2 exists to catch. So in degraded mode the romance-scam opener — **demo example 3, chosen specifically because it scores 0/100 on the rules** — came back "This looks legitimate," with three invented affirmative reasons. `"hi"` returned the same. And the live demo has been in degraded mode since the API balance hit zero, so a judge clicking that chip would have been told a scam was fine.
+
+A layer that did not run cannot produce positive evidence. Safe-leaning verdicts now require something a stranger can't cheaply fake — personalized details, a genuine brand domain, a compliant opt-out footer — never absence alone. Across the 16 fixtures the fallback now calls **0 scams safe (was 1)** and still clears all 5 legitimate messages. Verified live: that chip now returns `uncertain_be_careful`.
+
+### The two rate-limit budgets shared one bucket
+
+Self-inflicted, while fixing the "cache hits are replayable without bound" finding earlier in the same review. `consume()` took a `limit` option but still keyed the bucket on `clientId` alone, so timestamps written under the 200-request cached budget counted against the 12-request paid one.
+
+One billable check plus eleven re-checks of that same text locked the caller out of new checks for 60 seconds — while the refusal text said "re-checking a message you've already checked is always free." That is the literal demo flow: click the example chips, re-click them, then try your own message. The existing test never caught it because it only exercised the other direction (exhaust 12 uncached, confirm a cached one still passes), which succeeds precisely because 12 < 200.
+
+The budget class is now part of the bucket key. Verified: the failing sequence now ends in 200, and 13 distinct messages still correctly blocks at the 13th.
+
+### Contract drift
+
+`.env.example` was a leftover from session 1 — it pinned `claude-sonnet-4-5-20250929` and omitted `CLASSIFIER_EFFORT`. The README tells you to copy it, so **every fresh clone ran the wrong model at the wrong effort**: neither the model nor the setting the 16/16 and the ~6s figure were measured on. Nothing errored; the numbers just quietly weren't the documented ones.
+
+Also: `scripts/check.ts` hardcoded its own degraded caveat while this file claimed the CLI rendered from `meta.notice`; DEMO_SCRIPT told you to warm the examples "a minute or two before" presenting, which the 60s fallback TTL defeats in exactly the degraded state the docs say the demo is currently in; and the README promised a `raw_signals` schema section that didn't exist, labelled `signals/` as Layer 2, and omitted four files from the project tree.
 
 ### 🔴 The rate limiter was bypassable with one header
 
@@ -38,7 +60,7 @@ Skipping `consume()` entirely on a cache hit made repeats not just free but *unb
 - **`api/index.ts` hardening** — `app.ready()` had no `.catch`, so a startup rejection would have killed the instance on cold start instead of returning an error.
 - Bucket eviction was FIFO-by-first-seen rather than LRU; a literal NUL byte in the edge-test fixtures made git treat that file as binary and its diffs unreviewable.
 
-31 rate-limit/cache/hashing assertions and 85 edge assertions, all passing.
+31 rate-limit/cache/hashing assertions and 91 edge assertions, all passing.
 
 ---
 

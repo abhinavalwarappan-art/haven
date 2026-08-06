@@ -50,7 +50,7 @@ Want `"classifier":"claude"`. If it says `"heuristic_fallback"`, credits are sti
 
 **Technical summary**
 > TypeScript · Fastify · Claude Opus 5 (structured JSON output) · Vercel serverless + edge firewall · SQLite locally, Supabase adapter ready.
-> 16/16 on a hand-built classification suite (8 scams, 5 legitimate-but-suspicious-looking, 3 borderline). 85 edge-case and privacy assertions. Messages are never stored — only a salted HMAC. Card numbers and SSNs are stripped from AI output before it leaves the server.
+> 16/16 on a hand-built classification suite (8 scams, 5 legitimate-but-suspicious-looking, 3 borderline). 91 edge-case and privacy assertions. Messages are never stored — only a salted HMAC. Card numbers and SSNs are stripped from AI output before it leaves the server.
 
 ---
 
@@ -89,7 +89,7 @@ Suggested shape (~90s):
 # All should pass
 npm run build          # typecheck
 npm run test:checks    # 16/16 classification
-npm run test:edge      # 85 edge + privacy assertions
+npm run test:edge      # 91 edge + privacy assertions
 npm run test:limits    # 31 rate-limit, cache and hashing assertions
 ```
 

@@ -8,7 +8,7 @@ Built for non-technical users, especially older adults, who are the most targete
 
 Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust**
 
-**Status:** 16/16 on the classification suite · 85/85 on edge and privacy assertions · ~6s per check, instant on repeats · deployed.
+**Status:** 16/16 on the classification suite · 91/91 on edge and privacy assertions · ~6s per check, instant on repeats · deployed.
 
 > ⚠️ **The live demo needs Anthropic API credits.** The account backing it is currently at zero balance, so checks fall back to the rules-only layer and say so. Top up at [Plans & Billing](https://console.anthropic.com/settings/billing) to restore full quality — no redeploy needed.
 
@@ -64,7 +64,7 @@ Runs 16 curated messages (8 real scam patterns, 5 legitimate-but-suspicious-look
 Takes ~5 minutes. Exits non-zero if either critical failure occurs.
 
 ```bash
-npm run test:edge     # 85 robustness + privacy assertions, no API key needed
+npm run test:edge     # 91 robustness + privacy assertions, no API key needed
 npm run build         # typecheck
 ```
 
