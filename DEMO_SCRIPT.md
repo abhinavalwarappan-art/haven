@@ -3,13 +3,7 @@
 **Live:** https://is-this-real-app.vercel.app
 **Theme:** Cybersecurity & Digital Trust
 
-> ⚠️ **Before you present:** confirm the Anthropic account has credits (see README → Known limitations). With an empty balance the app still answers, but from the rules layer only — the reasons get generic and the demo loses its punch. Check by pasting anything: if you see "The AI layer was unavailable", top up first.
->
-> **Warm it up — timing matters.** Run the three examples so they're cached and return instantly instead of taking ~6s each on stage.
->
-> - **Credits topped up:** verdicts cache for an hour, so warming any time in the hour before you present is fine.
-> - **Credits still empty:** rules-only verdicts cache for only **60 seconds** (deliberately — a degraded answer shouldn't outlive the outage). Warm them in the last minute before you go on, or they'll be cold again.
-
+> **No warm-up needed.** Checks run in about 1.5 seconds, so the three examples return almost immediately whether or not they're cached. Just confirm the site loads before you go on.
 ---
 
 ## The hook (15 seconds)
@@ -76,7 +70,7 @@
 >
 > **Two:** the AI was quoting card numbers and Social Security numbers back inside its explanations. Invisible until we had a live API key, because without one everything fell back to the rules layer. Now stripped server-side.
 >
-> That's the difference between a prompt wrapper and a product. 16 out of 16 on our classification suite, 85 assertions on edge cases and privacy. It's live, it's open source, and it's about six seconds a check."
+> That's the difference between a prompt wrapper and a product. 16 out of 16 on our classification suite, 91 assertions on edge cases and privacy. It's live, it's open source, and a check takes about a second and a half."
 
 ---
 
@@ -89,7 +83,7 @@
 > That's the metric we optimised for. Five legitimate messages in the suite, all clean. The rules layer hunts for *legitimacy* signals too — genuine brand domains, order numbers a stranger couldn't know, opt-out footers, and the absence of any ask — with negative weights. Without counter-evidence you'd flag every real bank alert.
 
 **"How fast is it?"**
-> About six seconds cold, instant on a repeat. That six seconds is the model reasoning and writing four specific explanations — we tested a faster setting and it was identical in accuracy, so we took it. Going lower means shorter, vaguer reasons, which is exactly the thing that makes it trustworthy.
+> About a second and a half, and instant on a repeat. That covers the deterministic rules layer, the model reasoning over its evidence, and writing four specific explanations.
 
 **"What's the privacy story?"**
 > We never store the message. Only a salted hash — enough to count duplicates, impossible to reverse. Card numbers and SSNs are stripped from the AI's output before it leaves the server.
@@ -105,4 +99,4 @@
 2. `TEST_RESULTS.md` in the repo — the full 16-case table with verdicts and reasons.
 3. Screenshots of all three verdict states.
 
-**Do not** improvise a new example live. The three buttons are chosen because they tell the whole story in order, and they're cached so they return instantly.
+**Do not** improvise a new example live. The three buttons are chosen because they tell the whole story in order.

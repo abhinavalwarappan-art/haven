@@ -4,6 +4,80 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 5 — provider swap to Gemini, and a polish pass
+
+### Layer 2 moved from Claude Opus 5 to Gemini
+
+Driven by API credit availability, not classification quality. The key in
+`.env.local` was replaced with a Google AI Studio key, so the var was renamed
+`ANTHROPIC_API_KEY` → `GEMINI_API_KEY` (value untouched, verified byte-identical).
+
+`classifier.ts` was the only file that needed rewriting — the pipeline calls
+`classify()` and gets a `Classification` back, so the provider boundary held.
+Structured output moved from Anthropic's `output_config.format` to Gemini's
+`responseSchema` + `responseMimeType`. `CLASSIFIER_EFFORT` now maps to the
+Gemini thinking budget (low=512, medium=2048, high=8192) instead of Anthropic's
+effort levels. Anthropic-specific features with no Gemini equivalent — server-side
+`fallbacks`, prompt caching — were dropped rather than faked.
+
+**`meta.classifier` changed from `'claude'` to `'ai'`.** It was reporting
+`"claude"` while running Gemini, which is simply false, and a neutral value means
+the next swap doesn't need another rename. Touches the SQLite default and the
+Supabase CHECK constraint.
+
+**Result: 16/16 at ~1.5s, down from ~6s.** Four times faster, same accuracy.
+
+### One real regression, caught and fixed
+
+The Zelle contractor-invoice fixture came back `likely_safe` on Gemini where
+Claude said "be careful" — 15/16. Raising the thinking budget didn't move it at
+any level, so it wasn't a tuning problem: the model reads a plausible backstory
+as verification.
+
+The prompt now states the actual test for irreversible payments — not "does the
+sender sound like a stranger" but "can the reader confirm these payment details
+belong to who they think, and what does it cost them if not." Invoice-redirect
+fraud works *precisely because* the job, the tradesperson and the amount are all
+real. This is correct product guidance rather than fixture-fitting: "call them on
+the number you already have" is right whether or not this particular message is
+genuine. Back to 16/16.
+
+### Polish: the verdict card didn't fit a recording frame
+
+The demo's money shot needed a scroll at 1280×720 — reasons and footnote fell
+below the fold, and the narrow mobile column left most of a 16:9 frame empty.
+
+From 900px the card now breaks the reading measure into two columns: the answer
+and what-to-do on the left, the evidence on the right. The whole result state
+plus button and stats now lands inside a 720p frame. Mobile stacking is
+unchanged. Moving the footnote next to the verdict also fixed a badly
+bottom-heavy left column — and it is better information design anyway, since the
+footnote is advice, not evidence.
+
+### The loading state was choreographed for a wait that no longer exists
+
+At 1.9s per step and a 700ms bar transition, a 1.5s check showed one line and a
+bar that barely moved before jumping to done. Steps now advance at 600ms and the
+bar ticks at 130ms with a matched transition, so a typical check shows two or
+three stages and reads as genuine progress — while still degrading sensibly if a
+cold start takes several seconds.
+
+### Browser defaults that were never actually styled
+
+The textarea resize grip (removed — an unstyled artefact on an otherwise
+deliberate surface, and the field scrolls anyway), text selection (constantly
+visible, because returning to compose re-selects the previous message),
+Firefox's inner focus ring, and iOS's grey tap flash.
+
+### Deploy gotcha worth remembering
+
+Changing a Vercel env var is not enough on its own: a cached build keeps the old
+values baked into the function bundle. The first deploy after the swap still
+reported `claude-opus-5` from `/health` with the correct vars set. `vercel --prod
+--force` fixed it. Recorded in the README deploy section.
+
+---
+
 ## Session 4 — code review pass
 
 Ran a full audit: a general reviewer subagent plus two focused adversarial passes (contract agreement, and silent-failure/state). Findings and what changed.

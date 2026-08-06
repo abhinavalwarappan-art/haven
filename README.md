@@ -8,9 +8,8 @@ Built for non-technical users, especially older adults, who are the most targete
 
 Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust**
 
-**Status:** 16/16 on the classification suite · 91/91 on edge and privacy assertions · ~6s per check, instant on repeats · deployed.
+**Status:** 16/16 on the classification suite · 91/91 on edge and privacy assertions · **~1.5s per check**, instant on repeats · deployed.
 
-> ⚠️ **The live demo needs Anthropic API credits.** The account backing it is currently at zero balance, so checks fall back to the rules-only layer and say so. Top up at [Plans & Billing](https://console.anthropic.com/settings/billing) to restore full quality — no redeploy needed.
 
 ---
 
@@ -20,7 +19,7 @@ Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust*
 npm install
 ```
 
-Add your Anthropic API key to `.env.local` (copy `.env.example` if it's missing), then:
+Add your Gemini API key to `.env.local` (copy `.env.example` if it's missing), then:
 
 ```bash
 npm run dev
@@ -79,9 +78,9 @@ Four states: **compose → thinking → result | error.**
 Design notes that are decisions, not decoration:
 
 - **Warm paper and an editorial serif, not a dark security console.** The person using this is frightened. A black screen of red alerts would make that worse, and panic is what makes people act on scams.
-- **The verdict is the whole screen**, not a badge — a large serif sentence on a colour field readable at arm's length.
+- **The verdict is the whole screen**, not a badge — a large serif sentence on a colour field readable at arm's length. On desktop it breaks the reading measure into two columns (answer left, evidence right) so the whole result lands inside a 16:9 recording frame without scrolling.
 - **Confidence is translated, never a percentage.** "We're very confident it is a scam", not "97%". A number invites the reader to do risk arithmetic, which is the wrong task. The `uncertain` verdict gets its own phrasing ("genuinely unclear — there are signs both ways") since high confidence there means confidently ambiguous.
-- **The wait is narrated honestly.** A ~6s check shows rotating copy tracking real pipeline stages — "Checking where the links really go…" — with a bar that eases toward 92% and only completes on a real response. It never claims to be done before it is.
+- **The wait is narrated honestly.** Even at ~1.5s the check shows copy tracking real pipeline stages — "Checking where the links really go…" — with a bar that eases toward 92% and only completes on a real response. It never claims to be done before it is, and it degrades sensibly if a cold start takes longer.
 - **Type is oversized throughout** for imperfect eyesight, and all text meets WCAG AA contrast (verified, ≥4.66:1).
 - **Fonts are locally available** (Iowan Old Style / Charter, Avenir Next) so there is no webfont request to flash or fail on venue wi-fi.
 
@@ -107,9 +106,9 @@ curl -X POST http://localhost:3600/api/check \
   "flags_detected": ["urgency_language", "lookalike_domain", "suspicious_tld"],
   "raw_signals": { /* full Layer 1 output: flags, matched evidence, URL analysis, riskScore */ },
   "meta": {
-    "classifier": "claude",             // or "heuristic_fallback"
-    "model": "claude-opus-5",
-    "duration_ms": 4820,
+    "classifier": "ai",                 // or "heuristic_fallback"
+    "model": "gemini-3.1-flash-lite",
+    "duration_ms": 1540,
     "check_id": "701347a5-…",
     "cached": false,                    // true = served from cache, not re-classified
     "notice": null                      // set to a caveat string when degraded
@@ -166,7 +165,7 @@ Reports which store and classifier are actually active. Useful for confirming yo
                     │  structured signal object (evidence, NOT a verdict)
                     ▼
 ┌───────────────────────────────────────────┐
-│  LAYER 2 — Claude classification agent    │   judgement · plain-English reasons
+│  LAYER 2 — AI classification agent        │   judgement · plain-English reasons
 │  original text + Layer 1 signals          │
 │  structured JSON output                   │
 └───────────────────┬───────────────────────┘
@@ -177,7 +176,7 @@ Reports which store and classifier are actually active. Useful for confirming yo
         store hash only (never raw text)
 ```
 
-**Why not just one Claude call?**
+**Why not just one LLM call?**
 
 - **Grounding.** The model gets concrete evidence — *this exact domain imitates PayPal*, *these exact words demand payment in gift cards* — instead of reasoning from scratch. Reasons come out specific and checkable rather than vague.
 - **Determinism where it's cheap.** Lookalike-domain detection is a string algorithm, not a judgement call. `amaz0n.com` should be caught identically every single time, and it should still be caught when the API is down.
@@ -262,9 +261,9 @@ Verified by `npm run test:edge`, which asserts the response and the database nev
 
 | Variable | Default | Notes |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | — | Required for Layer 2. Without it, every check uses the fallback. |
-| `CLASSIFIER_MODEL` | `claude-opus-5` | |
-| `CLASSIFIER_EFFORT` | `medium` | **Set to `low`** — 4–5× faster at identical accuracy. `.env.local` ships with `low`. |
+| `GEMINI_API_KEY` | — | Required for Layer 2. Without it, every check uses the fallback. |
+| `CLASSIFIER_MODEL` | `gemini-3.1-flash-lite` | |
+| `CLASSIFIER_EFFORT` | `medium` | Maps to the Gemini thinking budget (low=512, medium=2048, high=8192). `.env.local` ships `low`. |
 | `CLASSIFIER_TIMEOUT_MS` | `20000` | Falls back to rules after this. |
 | `HASH_SALT` | placeholder | **Change before deploying.** Server warns if unset. |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | — | Both set → Supabase. Neither → local SQLite. |
@@ -297,7 +296,7 @@ Copy `src/lib/` and `src/store/` across and delete `src/server.ts` and `src/rout
 
 Disclosed in full, since the hackathon asks.
 
-**Claude is the product**, not just a build tool — Layer 2 of the classifier is a Claude Opus 5 call with structured JSON output. That's the AI in "AI-powered scam detection", and it is doing real work: the romance-scam opener scores 0/100 on the deterministic rules and is still caught.
+**A frontier LLM is the product**, not just a build tool — Layer 2 of the classifier is a Gemini call with JSON-schema structured output (it ran on Claude Opus 5 until an API-credit change; the fixtures and grading are unchanged, so the two runs are directly comparable). That's the AI in "AI-powered scam detection", and it is doing real work: the romance-scam opener scores 0/100 on the deterministic rules and is still caught.
 
 **Claude Code wrote most of the implementation**, working from specifications and review. Concretely, it:
 
@@ -321,7 +320,7 @@ Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
 | **In-app rate limit is per-instance** | 12/min/IP (200/min for cache hits, which cost nothing) works for sequential requests. Concurrent requests spread across instances and slip past it — which is why there's also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
 | **The edge rule lives outside this repo** | It's Vercel dashboard state, not `vercel.json`. A redeploy to a *new* Vercel project silently loses it — see "Deploying your own" below. |
 | **Self-hosting has no edge backstop** | On Railway/Render/Fly only the in-process limiter runs. Set `TRUST_PROXY=1` so it reads the right forwarded hop, and put a real limiter in front for anything beyond a demo. |
-| **~6s per check** | The model's floor for reasoning plus four written explanations. Faster means vaguer reasons. |
+| **~1.5s per check** | Comfortably inside the "instant" feel. Cold serverless starts add ~1s. |
 | **`x-forwarded-for` is spoofable** | Only the first hop is trusted. Adequate for a cost guard; real production wants signed tokens or platform-level identity. |
 | **Family alerting is schema only** | Table exists, logic does not. Deliberate scope line. |
 
@@ -331,7 +330,7 @@ Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
 npm i -g vercel && vercel link && vercel --prod
 ```
 
-Set `ANTHROPIC_API_KEY`, `HASH_SALT`, `CLASSIFIER_EFFORT=low` in the Vercel project. `vercel.json` pins `framework: null` — without it Vercel auto-detects Fastify, finds `public/app.js`, and fails looking for a server entrypoint.
+Set `GEMINI_API_KEY`, `HASH_SALT`, `CLASSIFIER_MODEL`, `CLASSIFIER_EFFORT=low` in the Vercel project. **Changing an env var needs `vercel --prod --force`** — a cached build keeps the old values baked into the function bundle, which silently serves the previous config. `vercel.json` pins `framework: null` — without it Vercel auto-detects Fastify, finds `public/app.js`, and fails looking for a server entrypoint.
 
 **Two things the repo can't do for you on a fresh Vercel project:**
 

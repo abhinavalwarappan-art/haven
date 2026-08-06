@@ -10,27 +10,12 @@
 | Theme selection | ✅ | Cybersecurity & Digital Trust |
 | Demo script | ✅ Written | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) — 2 min, rehearsed order |
 | Test evidence | ✅ | [TEST_RESULTS.md](TEST_RESULTS.md) — 16/16, full reasoning shown |
-| **API credits** | 🔴 **BLOCKED** | Balance is zero — live demo is degraded until topped up |
+| API credits | ✅ Live | Gemini key active; live demo returns real AI verdicts |
 | **Demo video** | ⬜ **TODO** | Needs recording |
 | **Team info** | ⬜ **TODO** | Placeholder below |
 | **Pitch deck** | ⬜ **TODO** | If required |
 
 ---
-
-## 🔴 Blocking: top up Anthropic credits
-
-The live URL currently answers from the **rules layer only** and says so in the UI. Full quality returns the moment the balance is positive — no redeploy, no config change.
-
-→ https://console.anthropic.com/settings/billing
-
-**Verify it's fixed:** paste anything into the live site. If you *don't* see "The AI layer was unavailable," you're good. Or:
-
-```bash
-curl -s https://is-this-real-app.vercel.app/api/check -H 'content-type: application/json' \
-  -d '{"text":"USPS: package held, pay $2.99 at http://usps-track.icu/pay"}' | grep -o '"classifier":"[a-z_]*"'
-```
-
-Want `"classifier":"claude"`. If it says `"heuristic_fallback"`, credits are still empty.
 
 ---
 
@@ -44,12 +29,12 @@ Want `"classifier":"claude"`. If it says `"heuristic_fallback"`, credits are sti
 >
 > "Is This Real?" is one box and one button. Paste a message, get back "This looks like a scam," "This looks legitimate," or "Be careful with this one" — with 2–4 specific reasons written for a non-technical reader.
 >
-> Under the hood it runs two layers: a deterministic rules engine that catches lookalike domains and gift-card demands offline and identically every time, feeding structured evidence into a Claude classifier that reads context. Neither layer is sufficient alone — the romance-scam opener in our test set scores 0/100 on rules and is still caught.
+> Under the hood it runs two layers: a deterministic rules engine that catches lookalike domains and gift-card demands offline and identically every time, feeding structured evidence into a Gemini classifier that reads context. Neither layer is sufficient alone — the romance-scam opener in our test set scores 0/100 on rules and is still caught.
 >
 > The metric we optimised for isn't catching scams; it's *not* flagging real messages. A detector that cries wolf gets ignored on the day it matters. All five legitimate messages in our evaluation set — including a real bank fraud alert — come back clean.
 
 **Technical summary**
-> TypeScript · Fastify · Claude Opus 5 (structured JSON output) · Vercel serverless + edge firewall · SQLite locally, Supabase adapter ready.
+> TypeScript · Fastify · Google Gemini (JSON-schema structured output) · Vercel serverless + edge firewall · SQLite locally, Supabase adapter ready.
 > 16/16 on a hand-built classification suite (8 scams, 5 legitimate-but-suspicious-looking, 3 borderline). 91 edge-case and privacy assertions. Messages are never stored — only a salted HMAC. Card numbers and SSNs are stripped from AI output before it leaves the server.
 
 ---
@@ -79,7 +64,7 @@ Suggested shape (~90s):
 
 **Record on a phone in portrait** — the UI is mobile-first and it's a mobile product. Warm the three examples immediately before recording so they return instantly (see the warm-up note at the top of DEMO_SCRIPT.md — the window is only 60s while credits are empty).
 
-**Before recording, confirm credits are topped up** — rules-only reasons are generic and will undercut the demo.
+**Checks now run in ~1.5s**, so the wait is barely perceptible on camera — you no longer need to pre-warm the examples to avoid a pause.
 
 ---
 
@@ -93,7 +78,7 @@ npm run test:edge      # 91 edge + privacy assertions
 npm run test:limits    # 31 rate-limit, cache and hashing assertions
 ```
 
-- [ ] Credits topped up, live URL returns `"classifier":"claude"`
+- [x] Live URL returns `"classifier":"ai"` with a real model
 - [ ] Live URL loads on a phone
 - [ ] All three examples return correct verdicts
 - [ ] Video recorded
