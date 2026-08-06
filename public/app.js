@@ -87,8 +87,15 @@ function confidenceCopy(verdict, confidence) {
 
 /* ── Thinking copy ───────────────────────────────────────────────────────
    These track what the pipeline is genuinely doing, in order. Honest
-   narration beats a spinner: it turns a ~6 second wait from "is it broken?"
-   into "it is doing the work I asked for". */
+   narration beats a spinner: it turns the wait from "is it broken?" into
+   "it is doing the work I asked for".
+
+   Retuned for the current ~1.5s check. The previous cadence was built for a
+   ~6s wait: at 1.9s a step, a fast check showed one line and the bar crawled
+   to 15% before the answer arrived, which read as a stutter rather than
+   progress. Steps now advance at 600ms so a typical check shows two or three,
+   and the bar is paced to look right at ~1.5s while still degrading sensibly
+   if a cold start takes several seconds. */
 const THINKING_STEPS = [
   'Reading the message…',
   'Checking where the links really go…',
@@ -96,6 +103,8 @@ const THINKING_STEPS = [
   'Weighing it all up…',
   'Almost there…',
 ];
+
+const STEP_MS = 600;
 
 let thinkingTimer = null;
 let progressTimer = null;
@@ -105,7 +114,7 @@ function startThinking() {
   let progress = 0;
 
   ui.thinkingCopy.textContent = THINKING_STEPS[0];
-  ui.thinkingFill.style.width = '6%';
+  ui.thinkingFill.style.width = '8%';
 
   thinkingTimer = setInterval(() => {
     step = Math.min(step + 1, THINKING_STEPS.length - 1);
@@ -114,14 +123,16 @@ function startThinking() {
     ui.thinkingCopy.style.animation = 'none';
     void ui.thinkingCopy.offsetHeight;
     ui.thinkingCopy.style.animation = '';
-  }, 1900);
+  }, STEP_MS);
 
   // Eases toward 92% and stops. It never completes on its own — only a real
   // response finishes the bar, so the UI never claims to be done before it is.
+  // The faster tick and larger coefficient put it around 70% at 1.5s, which
+  // reads as genuine progress rather than a bar that barely moved.
   progressTimer = setInterval(() => {
-    progress += (92 - progress) * 0.12;
+    progress += (92 - progress) * 0.14;
     ui.thinkingFill.style.width = `${progress.toFixed(1)}%`;
-  }, 420);
+  }, 130);
 }
 
 function stopThinking() {

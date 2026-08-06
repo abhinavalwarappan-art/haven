@@ -67,14 +67,16 @@
       <!-- ────────────────────────── RESULT ───────────────────────── -->
       <section class="stage stage--result" id="stage-result" hidden aria-labelledby="verdict-heading" tabindex="-1">
         <article class="verdict" id="verdict">
-          <p class="verdict__eyebrow" id="verdict-eyebrow">Our answer</p>
-          <h2 class="verdict__headline" id="verdict-heading">—</h2>
-          <p class="verdict__confidence" id="verdict-confidence"></p>
+          <div class="verdict__lede">
+            <p class="verdict__eyebrow" id="verdict-eyebrow">Our answer</p>
+            <h2 class="verdict__headline" id="verdict-heading">—</h2>
+            <p class="verdict__confidence" id="verdict-confidence"></p>
+          </div>
 
-          <hr class="rule" />
-
-          <h3 class="reasons__heading">Why we think so</h3>
-          <ul class="reasons" id="reasons"></ul>
+          <div class="verdict__body">
+            <h3 class="reasons__heading">Why we think so</h3>
+            <ul class="reasons" id="reasons"></ul>
+          </div>
 
           <p class="verdict__footnote" id="verdict-footnote" hidden></p>
         </article>

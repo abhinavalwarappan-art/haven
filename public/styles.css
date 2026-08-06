@@ -201,8 +201,15 @@ textarea {
   font-family: var(--font-ui);
   font-size: var(--text-base);
   line-height: 1.6;
-  resize: vertical;
-  min-height: 8.5rem;
+  /* No resize grip: the browser default is an unstyled artefact in the corner
+     of an otherwise deliberate surface, and the field already fits a long
+     paste by scrolling. */
+  resize: none;
+  min-height: 7rem;
+  max-height: 34vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-edge) transparent;
 }
 
 textarea:focus { outline: none; }
@@ -345,7 +352,29 @@ textarea::placeholder { color: var(--ink-faint); }
   width: 0%;
   border-radius: 99px;
   background: linear-gradient(90deg, var(--accent), oklch(55% 0.11 255));
-  transition: width 700ms var(--ease);
+  /* Matched to the 130ms progress tick — at 700ms the bar lagged so far behind
+     the real answer that it jumped at the end. */
+  transition: width 200ms linear;
+  position: relative;
+  overflow: hidden;
+}
+
+/* A slow sheen travelling the filled portion. Compositor-only, and it gives
+   the bar a pulse without implying a specific remaining duration. */
+.thinking__bar i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    oklch(100% 0 0 / 0.55) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  animation: sheen 1.15s var(--ease) infinite;
+}
+
+@keyframes sheen {
+  to { transform: translateX(100%); }
 }
 
 .thinking__copy {
@@ -354,7 +383,12 @@ textarea::placeholder { color: var(--ink-faint); }
   font-size: var(--text-xl);
   line-height: 1.25;
   letter-spacing: -0.015em;
-  animation: fade var(--dur) var(--ease);
+  animation: stepIn 260ms var(--ease);
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
@@ -369,11 +403,32 @@ textarea::placeholder { color: var(--ink-faint); }
 /* ── Verdict ──────────────────────────────────────────────────────────── */
 
 .verdict {
+  position: relative;
   border: 1px solid var(--edge, var(--paper-edge));
-  background: var(--tint, var(--paper-deep));
+  /* A whisper of a gradient rather than a flat fill — it catches light across
+     the card and stops it reading as a coloured rectangle. */
+  background:
+    linear-gradient(163deg,
+      color-mix(in oklch, var(--tint, var(--paper-deep)) 100%, white 8%) 0%,
+      var(--tint, var(--paper-deep)) 58%,
+      color-mix(in oklch, var(--tint, var(--paper-deep)) 92%, var(--hue, black) 8%) 100%);
   border-radius: var(--radius);
   padding: clamp(1.5rem, 1.2rem + 1.6vw, 2.25rem);
   box-shadow: var(--shadow-lift);
+  overflow: hidden;
+}
+
+/* A hairline of the verdict colour along the top edge. Reads as a considered
+   detail at a glance and reinforces the colour coding without shouting. */
+.verdict::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--hue, var(--ink)) 0%,
+    color-mix(in oklch, var(--hue, var(--ink)) 45%, transparent) 62%,
+    transparent 100%);
 }
 
 .verdict[data-verdict='scam']                 { --tint: var(--danger-tint);  --edge: var(--danger-edge);  --hue: var(--danger); }
@@ -407,11 +462,12 @@ textarea::placeholder { color: var(--ink-faint); }
   color: var(--ink-soft);
 }
 
-.rule {
-  border: 0;
+/* Stacked layout: separate the answer from the evidence. On desktop the
+   vertical hairline in the 900px block does this job instead. */
+.verdict__body {
+  margin-top: 1.5rem;
+  padding-top: 1.35rem;
   border-top: 1px solid var(--edge);
-  opacity: 0.6;
-  margin: 1.5rem 0 1.25rem;
 }
 
 .reasons__heading {
@@ -518,4 +574,150 @@ textarea::placeholder { color: var(--ink-faint); }
     --ink-faint: oklch(48% 0.014 70);
     --paper-edge: oklch(74% 0.02 84);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Desktop composition
+   ───────────────────────────────────────────────────────────────────────────
+   Everything above is mobile-first and stays that way. From 900px the verdict
+   card — the one moment that matters most — breaks out of the reading measure
+   into two columns: the answer on the left, the evidence on the right.
+
+   Two reasons. It stops a 16:9 frame reading as a phone screenshot stranded in
+   dead space, and it makes the whole card fit above the fold at 720p, which is
+   what a screen recording actually captures. Before this, the reasons and the
+   footnote were below the fold and the money shot needed a scroll.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 900px) {
+  .stage--result {
+    /* Break the measure symmetrically, without a horizontal scrollbar. */
+    width: min(58rem, calc(100vw - 3rem));
+    margin-inline: calc((min(58rem, 100vw - 3rem) - 100%) / -2);
+  }
+
+  .verdict {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+    grid-template-areas:
+      'lede body'
+      'note body';
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(2rem, 1rem + 3vw, 3.25rem);
+    align-items: start;
+    padding: clamp(2rem, 1.4rem + 1.8vw, 2.75rem);
+  }
+
+  .verdict__lede { grid-area: lede; }
+  .verdict__body { grid-area: body; }
+
+  /* The footnote is advice, not evidence — it belongs under the verdict it
+     qualifies, not at the end of the reasons list. Moving it also balances
+     the columns, which were badly bottom-heavy on the left. */
+  .verdict__footnote {
+    grid-area: note;
+    align-self: end;
+    margin-top: 2rem;
+    padding-top: 1.15rem;
+  }
+
+  /* A hairline between answer and evidence, in the verdict's own colour. */
+  .verdict__body {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+    border-left: 1px solid var(--edge);
+    padding-left: clamp(2rem, 1rem + 3vw, 3.25rem);
+    margin-left: calc(clamp(2rem, 1rem + 3vw, 3.25rem) * -1);
+  }
+
+  .verdict__lede { padding-top: 0.15rem; }
+
+  /* The headline can breathe now that it owns a column. */
+  :root { --verdict: clamp(2.6rem, 1.4rem + 2.6vw, 3.6rem); }
+
+  .verdict__confidence { margin-top: 1rem; }
+
+  .cta--ghost { max-width: 20rem; }
+}
+
+/* Short-and-wide viewports (a 16:9 recording at 720p) get tighter vertical
+   rhythm so the compose state also lands in frame without scrolling. */
+@media (min-width: 900px) and (max-height: 820px) {
+  .shell { padding-block: 1.75rem 1.5rem; }
+  .masthead { margin-bottom: 1.35rem; }
+  textarea { min-height: 5.5rem; max-height: 26vh; }
+  .examples { margin-top: 1.4rem; }
+  .footer { margin-top: 1.5rem; padding-top: 1rem; }
+
+  /* The verdict card plus its follow-on button has to clear a 720p frame
+     without a scroll — that frame is what a demo recording captures. */
+  .verdict { padding: 1.75rem 2rem; }
+  :root { --verdict: clamp(2.4rem, 1.3rem + 2.2vw, 3.1rem); }
+  .reasons { gap: 0.7rem; }
+  .verdict__footnote { margin-top: 1.4rem; }
+  .cta--ghost { margin-top: 0.85rem; padding-block: 0.75rem; }
+}
+
+/* ── Details that were browser defaults ─────────────────────────────────── */
+
+/* Text selection. The default slate-blue is the one piece of unstyled chrome
+   that shows constantly here, because returning to compose re-selects the
+   previous message so a new paste replaces it. */
+::selection {
+  background: oklch(84% 0.055 250 / 0.55);
+  color: var(--ink);
+}
+
+/* Native focus rings differ per browser; these match the palette and, unlike
+   :focus, only appear for keyboard users. */
+:where(a, button, textarea, [tabindex]):focus-visible {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Firefox draws its own inner dotted ring on buttons. */
+button::-moz-focus-inner { border: 0; }
+
+/* iOS Safari adds a grey flash on tap that fights the designed active state. */
+button, .chip { -webkit-tap-highlight-color: transparent; }
+
+/* ── Micro-interactions ─────────────────────────────────────────────────── */
+
+/* The CTA carries the weight of the whole screen, so its press should feel
+   physical: it sinks and the shadow tightens, rather than just changing colour. */
+.cta {
+  transition:
+    transform 180ms var(--ease),
+    box-shadow 260ms var(--ease),
+    opacity var(--dur-fast) var(--ease),
+    background-color 200ms var(--ease);
+}
+
+.cta:active:not(:disabled) {
+  transform: translateY(1px) scale(0.994);
+  transition-duration: 60ms;
+}
+
+.chip:active {
+  transform: translateX(2px) scale(0.995);
+  transition-duration: 60ms;
+}
+
+/* The verdict headline arrives a beat after the card, so the eye lands on the
+   card first and then reads the answer — rather than everything appearing at
+   once and competing. */
+.verdict__lede > * {
+  animation: rise 520ms var(--ease) both;
+}
+.verdict__eyebrow    { animation-delay: 60ms; }
+.verdict__headline   { animation-delay: 110ms; }
+.verdict__confidence { animation-delay: 200ms; }
+.verdict__footnote   { animation: rise 520ms var(--ease) both; animation-delay: 320ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .verdict__lede > *,
+  .verdict__footnote { animation: none; }
+  .thinking__bar i::after { animation: none; }
 }
