@@ -90,7 +90,7 @@ Suggested shape (~90s):
 npm run build          # typecheck
 npm run test:checks    # 16/16 classification
 npm run test:edge      # 85 edge + privacy assertions
-npm run test:limits    # 23 rate-limit + cache assertions
+npm run test:limits    # 30 rate-limit, cache and hashing assertions
 ```
 
 - [ ] Credits topped up, live URL returns `"classifier":"claude"`

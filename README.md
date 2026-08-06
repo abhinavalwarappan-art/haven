@@ -110,12 +110,29 @@ curl -X POST http://localhost:3600/api/check \
     "classifier": "claude",             // or "heuristic_fallback"
     "model": "claude-opus-5",
     "duration_ms": 4820,
-    "check_id": "701347a5-…"
+    "check_id": "701347a5-…",
+    "cached": false,                    // true = served from cache, not re-classified
+    "notice": null                      // set to a caveat string when degraded
   }
 }
 ```
 
-Errors return `400` with `{ error, message }` — the message is written for the end user, not the developer. Codes: `empty_input`, `invalid_type`, `too_long`, `invalid_body`.
+`meta.cached` is `true` when the verdict came from the cache. `duration_ms` stays honest either way, so a fast response is never mistaken for a fast *classification*.
+
+`meta.notice` is non-null when the AI layer didn't run — **if you consume this API, surface it**, because a rules-only verdict can be confidently wrong and the caveat is deliberately not inside `reasons`.
+
+**Errors** return `{ error, message }`, with `message` written for the end user:
+
+| Status | `error` | When |
+| --- | --- | --- |
+| 400 | `empty_input`, `invalid_type`, `too_long`, `invalid_body` | Bad request |
+| 429 | `rate_limited` | Per-IP limit hit. Includes `retry_after_seconds` and a `retry-after` header |
+| 429 | `busy` | Global cost ceiling hit |
+| 500 | `check_failed` | Unexpected server error |
+
+### `GET /api/limits`
+
+Current rate-limit configuration — `window_ms`, `max_per_ip`, `max_per_ip_cached`, `global_max`.
 
 ### `GET /api/stats`
 
@@ -299,7 +316,9 @@ Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
 | **API credits** | The live demo degrades to rules-only when the Anthropic balance hits zero. It says so in the UI rather than pretending. |
 | **Stats are per-instance on Vercel** | Serverless has no shared state, so the counter reflects one warm instance and resets on cold start. Fine for demo texture; the Supabase adapter is the real fix. |
 | **Cache is per-instance** | Same reason. In practice one demo session stays on one warm instance, so repeats are instant. |
-| **In-app rate limit is per-instance** | 12/min/IP works for sequential requests (a human clicking). Concurrent requests spread across instances and slip past it — which is why there's also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
+| **In-app rate limit is per-instance** | 12/min/IP (200/min for cache hits, which cost nothing) works for sequential requests. Concurrent requests spread across instances and slip past it — which is why there's also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
+| **The edge rule lives outside this repo** | It's Vercel dashboard state, not `vercel.json`. A redeploy to a *new* Vercel project silently loses it — see "Deploying your own" below. |
+| **Self-hosting has no edge backstop** | On Railway/Render/Fly only the in-process limiter runs. Set `TRUST_PROXY=1` so it reads the right forwarded hop, and put a real limiter in front for anything beyond a demo. |
 | **~6s per check** | The model's floor for reasoning plus four written explanations. Faster means vaguer reasons. |
 | **`x-forwarded-for` is spoofable** | Only the first hop is trusted. Adequate for a cost guard; real production wants signed tokens or platform-level identity. |
 | **Family alerting is schema only** | Table exists, logic does not. Deliberate scope line. |
@@ -312,4 +331,20 @@ npm i -g vercel && vercel link && vercel --prod
 
 Set `ANTHROPIC_API_KEY`, `HASH_SALT`, `CLASSIFIER_EFFORT=low` in the Vercel project. `vercel.json` pins `framework: null` — without it Vercel auto-detects Fastify, finds `public/app.js`, and fails looking for a server entrypoint.
 
-Railway / Render / Fly run it unchanged with `npm start`, and get real SQLite persistence plus a working in-process rate limiter.
+**Two things the repo can't do for you on a fresh Vercel project:**
+
+```bash
+# 1. The edge rate limit — the only limiter that works across serverless
+#    instances. This is dashboard state; a new project starts without it.
+vercel firewall rules add "check-api-rate-limit" --action rate_limit \
+  --condition '{"type":"path","op":"pre","value":"/api/check"}' \
+  --rate-limit-requests 40 --rate-limit-window 60 --rate-limit-keys ip \
+  --rate-limit-action deny --duration 1m --yes
+vercel firewall publish --yes
+
+# 2. Deployment Protection is ON by default and 302s every URL to SSO,
+#    which makes a public demo unreachable.
+vercel project protection disable <project> --sso
+```
+
+Railway / Render / Fly run it unchanged with `npm start` and get real SQLite persistence. **Set `TRUST_PROXY=1` there** so the rate limiter reads the forwarded hop your proxy appended; without it (and without a proxy) it correctly falls back to the socket address and ignores forwarding headers, which are otherwise just spoofable user input.

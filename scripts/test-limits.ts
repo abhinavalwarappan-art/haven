@@ -93,14 +93,48 @@ ok(
 // ── Client identification ─────────────────────────────────────────────────
 section('Client identification');
 
-ok('prefers x-forwarded-for', clientIdFrom({ 'x-forwarded-for': '203.0.113.7' }, '10.0.0.1') === '203.0.113.7');
+// The security-critical property: with no trusted proxy in front of us,
+// forwarding headers are just user input and must be ignored entirely.
+// Reading them made the per-IP limiter bypassable by rotating one header.
+delete process.env.VERCEL;
+delete process.env.TRUST_PROXY;
+
 ok(
-  'takes only the first forwarded hop (rest are attacker-controlled)',
-  clientIdFrom({ 'x-forwarded-for': '203.0.113.7, 10.0.0.5, 172.16.0.9' }, '10.0.0.1') === '203.0.113.7'
+  'IGNORES x-forwarded-for when no proxy is trusted (spoof defence)',
+  clientIdFrom({ 'x-forwarded-for': '203.0.113.7' }, '10.0.0.1') === '10.0.0.1'
 );
-ok('falls back to x-real-ip', clientIdFrom({ 'x-real-ip': '198.51.100.4' }, '10.0.0.1') === '198.51.100.4');
+ok(
+  'IGNORES x-real-ip when no proxy is trusted',
+  clientIdFrom({ 'x-real-ip': '198.51.100.4' }, '10.0.0.1') === '10.0.0.1'
+);
 ok('falls back to the socket address', clientIdFrom({}, '10.0.0.1') === '10.0.0.1');
 ok('never returns empty', clientIdFrom({ 'x-forwarded-for': '   ' }, undefined) === 'unknown');
+
+// Platform header wins unconditionally — Vercel overwrites it at the edge.
+ok(
+  'prefers the platform header the client cannot forge',
+  clientIdFrom(
+    { 'x-vercel-forwarded-for': '203.0.113.7', 'x-forwarded-for': '1.1.1.1' },
+    '10.0.0.1'
+  ) === '203.0.113.7'
+);
+
+process.env.TRUST_PROXY = '1';
+ok(
+  'behind a trusted proxy, takes the RIGHTMOST hop (the one our proxy appended)',
+  clientIdFrom({ 'x-forwarded-for': '1.1.1.1, 2.2.2.2, 203.0.113.7' }, '10.0.0.1') ===
+    '203.0.113.7',
+  'leftmost is client-supplied and forgeable; proxies append to the right'
+);
+ok(
+  'a forged leading entry cannot displace the real hop',
+  clientIdFrom({ 'x-forwarded-for': 'evil-spoof, 203.0.113.7' }, '10.0.0.1') === '203.0.113.7'
+);
+ok(
+  'behind a trusted proxy, falls back to x-real-ip',
+  clientIdFrom({ 'x-real-ip': '198.51.100.4' }, '10.0.0.1') === '198.51.100.4'
+);
+delete process.env.TRUST_PROXY;
 
 // ── Cache ─────────────────────────────────────────────────────────────────
 section('Verdict cache');
@@ -131,10 +165,18 @@ cacheHas('nope');
 const after = cacheStats();
 ok('cacheHas does not affect hit/miss stats', before.hits === after.hits && before.misses === after.misses);
 
-// A degraded answer must never be pinned in place.
+// A degraded answer IS cached, but briefly — long enough that repeats during
+// an outage stay free, short enough that a real verdict takes over soon after
+// the API recovers. Not caching it at all made the failure modes compound:
+// nothing cached -> every repeat burns quota -> 429 on top of a degraded answer.
 cacheClear();
 cacheStore('degraded', { ...entry, classifier: 'heuristic_fallback', model: null });
-ok('refuses to cache a rules-only fallback verdict', !cacheHas('degraded'));
+ok('caches a rules-only fallback (so repeats stay free during an outage)', cacheHas('degraded'));
+ok(
+  'but with a much shorter TTL than a real verdict',
+  cacheStats().fallback_ttl_ms < cacheStats().ttl_ms,
+  `fallback=${cacheStats().fallback_ttl_ms} full=${cacheStats().ttl_ms}`
+);
 
 // Bounded growth.
 cacheClear();

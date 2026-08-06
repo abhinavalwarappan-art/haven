@@ -193,9 +193,9 @@ function renderResult(data) {
   );
 
   // When the AI layer was unavailable we say so, rather than presenting a
-  // rules-only answer with the same authority as a full one.
-  const degraded = data.meta?.classifier === 'heuristic_fallback';
-  const notes = [copy.footnote, degraded ? 'Our detailed checker was unavailable, so this is a quick automatic assessment — please double-check before acting on it.' : null].filter(Boolean);
+  // rules-only answer with the same authority as a full one. The wording comes
+  // from meta.notice so the API, the UI and the CLI can't drift apart.
+  const notes = [copy.footnote, data.meta?.notice].filter(Boolean);
 
   ui.footnote.textContent = notes.join(' ');
   ui.footnote.hidden = notes.length === 0;

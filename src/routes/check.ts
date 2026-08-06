@@ -14,7 +14,12 @@ import {
 } from '../lib/pipeline.js';
 import { hashExact } from '../lib/privacy.js';
 import { cacheHas } from '../lib/cache.js';
-import { clientIdFrom, consume, rateLimitConfig } from '../lib/rate-limit.js';
+import {
+  CACHED_MAX_REQUESTS,
+  clientIdFrom,
+  consume,
+  rateLimitConfig,
+} from '../lib/rate-limit.js';
 
 interface CheckBody {
   text?: unknown;
@@ -47,13 +52,24 @@ export function registerCheckRoute(app: FastifyInstance): void {
       throw err;
     }
 
-    // Only spend quota on requests that will actually do paid work. A repeat
-    // check of an already-classified message is served from cache for free,
-    // so re-running a demo example never eats into anyone's allowance.
-    if (!cacheHas(hashExact(text))) {
-      const decision = consume(
-        clientIdFrom(request.headers as Record<string, unknown>, request.ip)
-      );
+    // Two budgets. A cache hit costs nothing, so it gets a much larger
+    // allowance and never counts toward the global cost ceiling — re-running a
+    // demo example stays effectively free. But it is still a billed function
+    // invocation, so it is not *unlimited*: exempting it from counting
+    // entirely would let one cached message be replayed without bound.
+    const isCached = cacheHas(hashExact(text));
+    const clientId = clientIdFrom(
+      request.headers as Record<string, unknown>,
+      request.ip
+    );
+
+    {
+      const decision = isCached
+        ? consume(clientId, Date.now(), {
+            limit: CACHED_MAX_REQUESTS,
+            countGlobal: false,
+          })
+        : consume(clientId);
 
       if (!decision.allowed) {
         reply.header('retry-after', String(decision.retryAfterSeconds));

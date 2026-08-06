@@ -16,12 +16,48 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { buildServer } from '../src/server.js';
 
 const app = buildServer({ serveStatic: false });
-const ready = app.ready();
+
+// Kick off readiness at module scope, but attach a catch immediately: an
+// unhandled rejection here would take down the whole cold start before any
+// request could report the error. The rejection is re-surfaced per request.
+let readyError: unknown = null;
+// Promise.resolve() because Fastify's ready() returns FastifyInstance &
+// PromiseLike, which has .then but not .catch.
+const ready = Promise.resolve(app.ready()).catch((err: unknown) => {
+  readyError = err;
+});
 
 export default async function handler(
   req: IncomingMessage,
   res: ServerResponse
 ): Promise<void> {
   await ready;
-  app.server.emit('request', req, res);
+
+  if (readyError) {
+    res.statusCode = 500;
+    res.setHeader('content-type', 'application/json');
+    res.end(
+      JSON.stringify({
+        error: 'server_unavailable',
+        message: 'The checker is starting up or misconfigured. Please try again shortly.',
+      })
+    );
+    return;
+  }
+
+  try {
+    app.server.emit('request', req, res);
+  } catch (err) {
+    // A synchronous throw out of the emit would otherwise become an uncaught
+    // exception and kill the instance rather than failing this one request.
+    app.log.error(
+      { err: err instanceof Error ? err.message : String(err) },
+      'request dispatch failed'
+    );
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ error: 'check_failed', message: 'Something went wrong.' }));
+    }
+  }
 }

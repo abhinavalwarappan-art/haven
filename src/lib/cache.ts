@@ -22,6 +22,18 @@ import type { CheckResponse } from './types.js';
 /** Cached long enough to cover a demo session, short enough to stay fresh. */
 const TTL_MS = Number(process.env.CACHE_TTL_MS || 60 * 60 * 1000);
 
+/**
+ * Rules-only verdicts get a much shorter life.
+ *
+ * Not caching them at all was the first instinct — a degraded answer pinned for
+ * an hour after the API recovers is clearly wrong. But that made the failure
+ * modes compound: API down → nothing caches → every repeat consumes rate-limit
+ * quota → someone re-clicking a demo example gets a 429 *on top of* an already
+ * degraded answer. A short TTL keeps repeats free during an outage while
+ * letting real verdicts take over within a minute of recovery.
+ */
+const FALLBACK_TTL_MS = Number(process.env.CACHE_FALLBACK_TTL_MS || 60 * 1000);
+
 /** Bounded so a long-running instance cannot grow without limit. */
 const MAX_ENTRIES = Number(process.env.CACHE_MAX_ENTRIES || 500);
 
@@ -78,10 +90,8 @@ export function cacheHas(hash: string): boolean {
 }
 
 export function cacheStore(hash: string, value: CachedVerdict): void {
-  // A rules-only answer is a degraded result produced because the AI layer was
-  // unavailable. Caching it would pin that degradation in place for an hour
-  // after the API recovered.
-  if (value.classifier === 'heuristic_fallback') return;
+  const ttl =
+    value.classifier === 'heuristic_fallback' ? FALLBACK_TTL_MS : TTL_MS;
 
   if (store.size >= MAX_ENTRIES) {
     // Map preserves insertion order, so the first key is the least recently
@@ -89,11 +99,18 @@ export function cacheStore(hash: string, value: CachedVerdict): void {
     const oldest = store.keys().next().value;
     if (oldest !== undefined) store.delete(oldest);
   }
-  store.set(hash, { value, expiresAt: Date.now() + TTL_MS });
+  store.set(hash, { value, expiresAt: Date.now() + ttl });
 }
 
 export function cacheStats() {
-  return { size: store.size, hits, misses, ttl_ms: TTL_MS, max_entries: MAX_ENTRIES };
+  return {
+    size: store.size,
+    hits,
+    misses,
+    ttl_ms: TTL_MS,
+    fallback_ttl_ms: FALLBACK_TTL_MS,
+    max_entries: MAX_ENTRIES,
+  };
 }
 
 /** Test hook. */

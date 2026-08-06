@@ -25,9 +25,10 @@ export interface CheckOptions {
   /** Skip persistence. Used by the test harness so runs don't pollute stats. */
   persist?: boolean;
   /**
-   * Skip the verdict cache. The evaluation harness sets this so every fixture
-   * is genuinely re-classified — a suite that graded cached answers would
-   * report yesterday's accuracy.
+   * Use the verdict cache. Defaults to true; pass `false` to bypass it. The
+   * evaluation harness passes false so every fixture is genuinely
+   * re-classified — a suite that graded cached answers would report a previous
+   * run's accuracy as this one's.
    */
   useCache?: boolean;
 }
@@ -67,7 +68,7 @@ export async function runCheck(
   if (options.useCache !== false) {
     const hit = cacheLookup(cacheKey);
     if (hit) {
-      return {
+      const response: CheckResponse = {
         verdict: hit.verdict,
         confidence: hit.confidence,
         reasons: hit.reasons,
@@ -79,8 +80,16 @@ export async function runCheck(
           duration_ms: Date.now() - started,
           check_id: null,
           cached: true,
+          notice: noticeFor(hit.classifier),
         },
       };
+      // Cached checks are still checks. Recording them keeps /api/stats
+      // counting what a user would count — without this the demo counter
+      // visibly stalls while judges re-click the same three examples.
+      if (options.persist !== false) {
+        response.meta.check_id = await persist(text, response, hit.classifier);
+      }
+      return response;
     }
   }
 
@@ -112,6 +121,7 @@ export async function runCheck(
       duration_ms: Date.now() - started,
       check_id: null,
       cached: false,
+      notice: noticeFor(source),
     },
   };
 
@@ -128,27 +138,55 @@ export async function runCheck(
   }
 
   if (options.persist !== false) {
-    // Storage must never break a check. If the database is down the user still
-    // gets their answer; only the demo counter loses a row.
-    try {
-      const stored = await getStore().recordCheck({
-        input_text_hash: hashInput(text),
-        input_length: text.length,
-        verdict: response.verdict,
-        confidence: response.confidence,
-        flags_detected: response.flags_detected,
-        classifier: source,
-      });
-      response.meta.check_id = stored?.id ?? null;
-    } catch (err) {
-      console.error(
-        '[store] failed to record check:',
-        err instanceof Error ? err.message : String(err)
-      );
-    }
+    response.meta.check_id = await persist(text, response, source);
   }
 
   return response;
+}
+
+/**
+ * Record a check. Storage must never break a check — if the database is down
+ * the user still gets their answer; only the demo counter loses a row.
+ */
+async function persist(
+  text: string,
+  response: CheckResponse,
+  classifier: CheckResponse['meta']['classifier']
+): Promise<string | null> {
+  try {
+    const stored = await getStore().recordCheck({
+      // Normalized hash here on purpose: storage wants the same scam pasted by
+      // many people to collapse to one identity. The cache uses hashExact.
+      input_text_hash: hashInput(text),
+      input_length: text.length,
+      verdict: response.verdict,
+      confidence: response.confidence,
+      flags_detected: response.flags_detected,
+      classifier,
+    });
+    return stored?.id ?? null;
+  } catch (err) {
+    console.error(
+      '[store] failed to record check:',
+      err instanceof Error ? err.message : String(err)
+    );
+    return null;
+  }
+}
+
+/**
+ * In-band caveat for API consumers that render only `reasons`.
+ *
+ * The "our checker was unavailable" line was deliberately removed from
+ * `reasons` (it describes the tool, not the message, and it printed twice).
+ * But that left a degraded verdict indistinguishable from a full one for any
+ * caller that doesn't inspect `meta.classifier` — and the rules-only fallback
+ * can be confidently wrong. This puts the caveat back in the payload.
+ */
+function noticeFor(classifier: CheckResponse['meta']['classifier']): string | null {
+  return classifier === 'heuristic_fallback'
+    ? 'The AI layer was unavailable, so this is a quick rules-only assessment — treat it as a hint, not an answer, and double-check before acting on it.'
+    : null;
 }
 
 /**

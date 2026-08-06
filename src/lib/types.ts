@@ -141,6 +141,12 @@ export interface CheckResponse {
      * fast *classification* — `duration_ms` stays honest either way.
      */
     cached: boolean;
+    /**
+     * Human-readable caveat when the result is degraded, else null. Exists so
+     * an API consumer that renders only `reasons` still learns the AI layer
+     * didn't run.
+     */
+    notice: string | null;
   };
 }
 

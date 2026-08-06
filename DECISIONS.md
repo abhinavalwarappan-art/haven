@@ -4,6 +4,44 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 4 — code review pass
+
+Ran a full audit including a dispatched reviewer subagent. Findings and what changed.
+
+### 🔴 The rate limiter was bypassable with one header
+
+`clientIdFrom` read the **leftmost** `X-Forwarded-For` entry, with a comment claiming that was the trusted one. That is backwards. Proxies **append** the address they observed, so the list reads `client, proxy1, proxy2` — a caller who sends their own `X-Forwarded-For` gets the real address appended *after* their forged value. The leftmost entry is therefore whatever the caller typed.
+
+Confirmed rather than assumed: against a limit of 3, six requests rotating `X-Forwarded-For` all returned 200. The per-IP limiter did nothing against anyone who bothered to rotate one header.
+
+Now: prefer `x-vercel-forwarded-for` (the platform overwrites it at the edge, so it can't be forged); behind a declared trusted proxy take the **rightmost** hop; and with no proxy in front, ignore forwarding headers entirely and use the socket address — because there they are just user input. Re-ran the same bypass: `200 200 200 429 429 429`.
+
+The live Vercel deployment was never wide open — the edge firewall rule keys on the true client IP — but the documented self-hosting path (Railway/Render) had no protection at all.
+
+### The failure modes compounded during an outage
+
+Refusing to cache rules-only verdicts was right in isolation (a degraded answer shouldn't be pinned for an hour after recovery) but it meant: API down → nothing caches → every repeat consumes quota → someone re-clicking a demo example gets a 429 *on top of* a degraded answer. Reproduced: 10 identical requests → 3 × 200 then 7 × 429.
+
+Fallbacks are now cached with a **60-second** TTL instead of not at all. Repeats stay free during an outage; a real verdict takes over within a minute of recovery. Same test now: 8 × 200.
+
+### Cache hits were replayable without limit
+
+Skipping `consume()` entirely on a cache hit made repeats not just free but *unbounded* — one message submitted, then replayed forever, each replay still a billed function invocation. Cache hits now consume a separate, much larger budget (200/min vs 12/min) and don't count toward the global cost ceiling.
+
+### Other fixes
+
+- **`test-checks.ts` clobbered its own evidence.** A run where the AI layer never fired still overwrote `TEST_RESULTS.md`, replacing a real 16/16 with a meaningless rules-only 11/16. This actually happened during the review. Fully-degraded runs now write `TEST_RESULTS.degraded.md` and exit non-zero.
+- **Cache key vs storage key.** The cache used the normalized hash, which lowercases. Layer 1 is case-sensitive (it counts shouted words), so an ALL-CAPS message and its lowercase twin shared an entry and one got `raw_signals` describing the other. Split into `hashExact` (cache) and `hashInput` (storage, where deduping is intended).
+- **`api/` wasn't type-checked.** `tsconfig.json` excluded it while `vercel.json` uses `tsc --noEmit` as the build gate — the one file whose breakage takes production down was outside the check gating every deploy.
+- **Degraded results had no in-band caveat.** Removing the "checker unavailable" line from `reasons` fixed a double-render in the UI but left API consumers unable to tell a degraded verdict from a real one. Added `meta.notice`; the UI and CLI now render from it so the three surfaces can't drift.
+- **Cached checks didn't reach `/api/stats`**, so the demo counter visibly stalled while judges re-clicked examples. They're recorded now.
+- **`api/index.ts` hardening** — `app.ready()` had no `.catch`, so a startup rejection would have killed the instance on cold start instead of returning an error.
+- Bucket eviction was FIFO-by-first-seen rather than LRU; a literal NUL byte in the edge-test fixtures made git treat that file as binary and its diffs unreviewable.
+
+31 rate-limit/cache/hashing assertions and 85 edge assertions, all passing.
+
+---
+
 ## Session 3 — caching, rate limiting, deployment
 
 ### 🔴 The Anthropic account ran out of credits
