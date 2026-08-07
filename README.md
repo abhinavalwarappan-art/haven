@@ -2,11 +2,11 @@
 
 *Your safe place to check anything.*
 
-A landing page that explains the problem, and a tool that solves it. Paste in any suspicious text message, email, or DM and get a plain-English verdict — **"This looks like a scam," "This looks legitimate,"** or **"Be careful with this one"** — with specific reasons why.
+A landing page that explains the problem, and a tool that solves it. Paste in any suspicious text message, email, or DM and get a plain-English verdict: **"This looks like a scam," "This looks legitimate,"** or **"Be careful with this one"**, with specific reasons why.
 
 Built for non-technical users, especially older adults, who are the most targeted by scams and the least equipped to spot them.
 
-**🔗 Live demo: https://havenscamprotection.website**
+**Live demo: https://havenscamprotection.website**
 
 Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust**
 
@@ -27,7 +27,7 @@ Add your Gemini API key to `.env.local` (copy `.env.example` if it's missing), t
 npm run dev
 ```
 
-Open **http://localhost:3600**. That serves both the UI and the API from one process — it's the only command you need to demo this.
+Open **http://localhost:3600**. That serves both the UI and the API from one process, and it is the only command you need to demo this.
 
 Generate a hashing salt for `HASH_SALT` with:
 
@@ -35,7 +35,7 @@ Generate a hashing salt for `HASH_SALT` with:
 node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
 ```
 
-> **No API key?** Everything still runs — the rules layer answers alone and the UI says so explicitly. Classification quality is much lower, so don't judge the tool by it.
+> **No API key?** Everything still runs: the rules layer answers alone and the UI says so explicitly. Classification quality is much lower, so don't judge the tool by it.
 
 ### Demoing it
 
@@ -43,9 +43,9 @@ The UI ships with three one-click examples chosen to tell a story:
 
 | Click | What it shows |
 | --- | --- |
-| **A delivery text** → 🔴 scam | Catches the fake domain and the fee |
-| **A shipping update** → 🟢 legitimate | Nearly identical shape, correctly cleared. **This is the proof it doesn't cry wolf** |
-| **A wrong number** → 🔴 scam | Scores **0/100** on the rules layer and is still caught — the argument for the AI layer |
+| **A delivery text** → scam | Catches the fake domain and the fee |
+| **A shipping update** → legitimate | Nearly identical shape, correctly cleared. **This is the proof it doesn't cry wolf** |
+| **A wrong number** → scam | Scores **0/100** on the rules layer and is still caught. That is the argument for the AI layer |
 
 ---
 
@@ -57,12 +57,12 @@ This is the thing to look at first.
 npm run test:checks
 ```
 
-Runs 16 curated messages (8 real scam patterns, 5 legitimate-but-suspicious-looking, 3 genuinely ambiguous) through the full pipeline and writes **[`TEST_RESULTS.md`](TEST_RESULTS.md)** — a readable table of input, verdict, confidence, and reasons, with the two failure modes that matter called out separately:
+Runs 16 curated messages (8 real scam patterns, 5 legitimate-but-suspicious-looking, 3 genuinely ambiguous) through the full pipeline and writes **[`TEST_RESULTS.md`](TEST_RESULTS.md)**, a readable table of input, verdict, confidence, and reasons, with the two failure modes that matter called out separately:
 
-- 🚨 **Cried wolf** — a legitimate message flagged as a scam.
-- 🚨 **Missed scam** — an obvious scam called safe.
+- **Cried wolf**: a legitimate message flagged as a scam.
+- **Missed scam**: an obvious scam called safe.
 
-Takes ~5 minutes. Exits non-zero if either critical failure occurs.
+Takes about 15 seconds. Exits non-zero if either critical failure occurs.
 
 ```bash
 npm run test:edge     # 91 robustness + privacy assertions, no API key needed
@@ -73,31 +73,39 @@ npm run build         # typecheck
 
 ## The interface
 
-Two routes, one React app (Vite + Motion), built into `public/` and served by
-the same Fastify process locally and Vercel's CDN in production.
+Six routes, one React app (Vite + Motion), built into `public/` and served by
+the same Fastify process locally and Vercel's CDN in production. No second
+chunk and no third-party request: **128kb of JS and 7.5kb of CSS, gzipped.**
 
 | Route | What it is |
 | --- | --- |
-| `/` | The landing page: the problem, the architecture, a live verdict card, the privacy story |
+| `/` | The landing page. The problem, how it works in brief, a live verdict card, the privacy story, and the way in |
 | `/check` | The tool. Four states: **compose → thinking → result \| error** |
+| `/how-it-works` | One real scam text walked the whole way through both passes, ending in the real verdict card |
+| `/privacy` | What is kept and what is not, what the hash buys, and a privacy bug that shipped |
+| `/privacy-policy` | The formal version, written to match what the code does |
+| `/terms` | What Haven is and, more importantly, what an answer here does not mean |
 
-The landing page's hero renders a WebGL stack of messages, one of them a scam.
-It is lazy-loaded in its own chunk, so `/check` never downloads a byte of
-Three.js, and anyone with `prefers-reduced-motion` set gets a static CSS
-illustration instead — the chunk is never even fetched.
+`/how-it-works` and `/privacy` are routes rather than sections on `/` because
+both are things a cautious person goes looking for *deliberately*, usually
+before pasting anything. The landing page keeps a teaser of each that hands
+off.
 
-The "what you get back" section on `/` renders the **real** `VerdictLetter`
-component with a fixed result rather than a screenshot, so the marketing page
-cannot drift from the product.
+The "what you get back" section on `/` and the last step of `/how-it-works`
+both render the **real `VerdictCard`** with a fixed result rather than a
+screenshot, so the pages that sell the product cannot drift from it.
 
 Design notes that are decisions, not decoration:
 
-- **Warm paper and an editorial serif, not a dark security console.** The person using this is frightened. A black screen of red alerts would make that worse, and panic is what makes people act on scams.
-- **The verdict is the whole screen**, not a badge — a large serif sentence on a colour field readable at arm's length. On desktop it breaks the reading measure into two columns (answer left, evidence right) so the whole result lands inside a 16:9 recording frame without scrolling.
-- **Confidence is translated, never a percentage.** "We're very confident it is a scam", not "97%". A number invites the reader to do risk arithmetic, which is the wrong task. The `uncertain` verdict gets its own phrasing ("genuinely unclear — there are signs both ways") since high confidence there means confidently ambiguous.
-- **The wait is narrated honestly.** Even at ~1.5s the check shows copy tracking real pipeline stages — "Checking where the links really go…" — with a bar that eases toward 92% and only completes on a real response. It never claims to be done before it is, and it degrades sensibly if a cold start takes longer.
-- **Type is oversized throughout** for imperfect eyesight, and all text meets WCAG AA contrast (verified, ≥4.66:1).
-- **Fonts are self-hosted** (Instrument Serif and Instrument Sans, 59kb for three files) so there is no third-party request to flash or fail on venue wi-fi.
+- **Soft dreamcore, not a dark security console.** Pastel sky, glass panels, a reflective-interior photograph. The person using this is frightened and possibly 75; a black screen of red alerts would make that worse, and panic is what makes people act on scams. Every other entrant in a cybersecurity bracket ships dark mode and a neon padlock, which is a look designed to make the *builder* feel serious.
+- **Colour discipline carries the answer.** The site is quiet pastel everywhere except the verdict card, so when a saturated colour finally appears it means something. The three verdict hues are the only saturated colour on the site.
+- **The verdict card stays calm glass**; the verdict colour lives in the ink (icon, headline, reason markers) so the answer reads instantly without the screen turning into an alarm. Reasons sit in a bento grid, marked with a neutral dash rather than a tick, because a checkmark beside "the link is fake" reads as *verified*, which is the opposite of what a scam reason means.
+- **Confidence is translated, never a percentage.** "We're very confident it is a scam", not "97%". A number invites the reader to do risk arithmetic, which is the wrong task. The `uncertain` verdict gets its own phrasing ("This one is genuinely unclear. There are signs both ways.") since high confidence there means confidently ambiguous.
+- **The wait is narrated honestly.** Even at ~1.5s the check shows copy tracking real pipeline stages, "Checking where the links really go…", with a bar that eases toward 92% and only completes on a real response. It never claims to be done before it is.
+- **Plain punctuation throughout.** No em dashes and no emoji in anything a user reads, including model-written reasons: a `plainPunctuation()` pass normalises those on the server, since asking the model was never going to be reliable.
+- **Type is oversized** for imperfect eyesight. All text meets WCAG AA, verified with a hand-written OKLCH→sRGB converter across 106 elements. **Tightest 6.14:1 against a 4.5 requirement**, zero failures.
+- **Fonts are self-hosted** (Libre Caslon Text and Plus Jakarta Sans, **44kb for two files**) so there is no third-party request to flash or fail on venue wi-fi.
+- **A 1280×720 recording frame fits the whole verdict** without scrolling, including the worst case the API produces.
 
 ## The API
 
@@ -114,7 +122,7 @@ curl -X POST http://localhost:3600/api/check \
   "verdict": "scam",                    // "scam" | "likely_safe" | "uncertain_be_careful"
   "confidence": 94,                     // 0-100
   "reasons": [
-    "The link goes to \"chase-secure.tk\", not chase.com — it only looks like Chase.",
+    "The link goes to \"chase-secure.tk\", not chase.com, so it only looks like Chase.",
     "It threatens to close your account to rush you into acting without thinking.",
     "If you're unsure, call the number on the back of your card instead of using this link."
   ],
@@ -133,7 +141,7 @@ curl -X POST http://localhost:3600/api/check \
 
 `meta.cached` is `true` when the verdict came from the cache. `duration_ms` stays honest either way, so a fast response is never mistaken for a fast *classification*.
 
-`meta.notice` is non-null when the AI layer didn't run — **if you consume this API, surface it**, because a rules-only verdict can be confidently wrong and the caveat is deliberately not inside `reasons`.
+`meta.notice` is non-null when the AI layer did not run. **If you consume this API, surface it**, because a rules-only verdict can be confidently wrong and the caveat is deliberately not inside `reasons`.
 
 **Errors** return `{ error, message }`, with `message` written for the end user:
 
@@ -146,7 +154,7 @@ curl -X POST http://localhost:3600/api/check \
 
 ### `GET /api/limits`
 
-Current rate-limit configuration — `window_ms`, `max_per_ip`, `max_per_ip_cached`, `global_max`.
+Current rate-limit configuration: `window_ms`, `max_per_ip`, `max_per_ip_cached`, `global_max`.
 
 ### `GET /api/stats`
 
@@ -154,7 +162,7 @@ Current rate-limit configuration — `window_ms`, `max_per_ip`, `max_per_ip_cach
 { "total_checks": 412, "scams_flagged": 173, "likely_safe": 190, "uncertain": 49, "scam_rate": 42.0 }
 ```
 
-Aggregates only — individual checks are never exposed.
+Aggregates only. Individual checks are never exposed.
 
 ### `GET /api/examples`
 
@@ -173,14 +181,14 @@ Reports which store and classifier are actually active. Useful for confirming yo
         │
         ▼
 ┌───────────────────────────────────────────┐
-│  LAYER 1 — rules / heuristics             │   fast · deterministic · offline
+│  LAYER 1: rules / heuristics             │   fast · deterministic · offline
 │  urgency · payment · links · identity     │
 │  + legitimacy counter-evidence            │
 └───────────────────┬───────────────────────┘
                     │  structured signal object (evidence, NOT a verdict)
                     ▼
 ┌───────────────────────────────────────────┐
-│  LAYER 2 — AI classification agent        │   judgement · plain-English reasons
+│  LAYER 2: AI classification agent        │   judgement · plain-English reasons
 │  original text + Layer 1 signals          │
 │  structured JSON output                   │
 └───────────────────┬───────────────────────┘
@@ -193,21 +201,21 @@ Reports which store and classifier are actually active. Useful for confirming yo
 
 **Why not just one LLM call?**
 
-- **Grounding.** The model gets concrete evidence — *this exact domain imitates PayPal*, *these exact words demand payment in gift cards* — instead of reasoning from scratch. Reasons come out specific and checkable rather than vague.
+- **Grounding.** The model gets concrete evidence (*this exact domain imitates PayPal*, *these exact words demand payment in gift cards*) instead of reasoning from scratch. Reasons come out specific and checkable rather than vague.
 - **Determinism where it's cheap.** Lookalike-domain detection is a string algorithm, not a judgement call. `amaz0n.com` should be caught identically every single time, and it should still be caught when the API is down.
-- **Graceful degradation.** No API key, rate limit, timeout, or model refusal takes the product offline — Layer 1 answers alone, clearly marked.
+- **Graceful degradation.** No API key, rate limit, timeout, or model refusal takes the product offline. Layer 1 answers alone, clearly marked.
 - **Explainability.** For a Digital Trust pitch, "here is exactly what we detected and why" is far stronger than "the AI said so."
 
-**Why not just the rules?** Because rules are blind to context. In the test set, the romance-scam opener scores **0/100** on Layer 1 — no links, no payment ask, no urgency, nothing to match. The AI layer calls it a scam at 93% confidence because it understands what the message is *setting up*. That case alone is the argument for the second layer.
+**Why not just the rules?** Because rules are blind to context. In the test set, the romance-scam opener scores **0/100** on Layer 1: no links, no payment ask, no urgency, nothing to match. The AI layer calls it a scam at 95% confidence because it understands what the message is *setting up*. That case alone is the argument for the second layer.
 
 ### The hard part: not crying wolf
 
-The failure that kills this product isn't missing a scam — it's flagging a real bank alert. Users who get burned once stop trusting the tool and then ignore it on the day it matters.
+The failure that kills this product is not missing a scam. It is flagging a real bank alert. Users who get burned once stop trusting the tool and then ignore it on the day it matters.
 
 Three design decisions address this directly:
 
 1. **Layer 1 produces evidence, never a verdict.** `riskScore` is advisory input to the model and is never surfaced as an answer.
-2. **Layer 1 also hunts for *legitimacy* signals** — a genuine brand domain, an order number a stranger couldn't know, a compliant `reply STOP` footer, the absence of any ask. Without counter-evidence, an accumulate-suspicion-only system flags every urgent message.
+2. **Layer 1 also hunts for *legitimacy* signals**: a genuine brand domain, an order number a stranger couldn't know, a compliant `reply STOP` footer, the absence of any ask. Without counter-evidence, an accumulate-suspicion-only system flags every urgent message.
 3. **The prompt makes the discriminator explicit:** judge by *what the message asks you to do*, not by tone. Real companies use urgency constantly; they don't ask for gift cards.
 
 All 5 legitimate fixtures score **0/100** on Layer 1 and come back `likely_safe`.
@@ -219,14 +227,20 @@ All 5 legitimate fixtures score **0/100** on Layer 1 and come back `likely_safe`
 ```
 web/                       the frontend source (React + Vite + Motion)
 ├── index.html             document shell, font preloads
-├── public/fonts/          self-hosted Instrument Serif + Sans
+├── public/
+│   ├── fonts/             self-hosted Libre Caslon Text + Plus Jakarta Sans
+│   └── images/            haven-hero.webp (226kb, from a 6.5mb PNG)
 └── src/
-    ├── App.tsx            router: / and /check
-    ├── routes/            Landing.tsx · Check.tsx
-    ├── components/        the tool's four stages + VerdictLetter
-    │   └── landing/       hero, 3D stack, sections
-    ├── lib/               api · copy · motion · types
-    └── styles/            tokens · fonts · global · compose · thinking · letter · landing
+    ├── App.tsx            router: the six routes
+    ├── routes/            Landing · Check · HowItWorks · Privacy · PrivacyPolicy · Terms
+    ├── components/        the tool's four stages + VerdictCard
+    │   ├── Chrome.tsx     nav + footer, shared by every route
+    │   ├── PageShell.tsx  masthead + scroll reset for the content pages
+    │   ├── LegalDoc.tsx   numbered-clause layout for the policy and terms
+    │   ├── Icons.tsx      hand-rolled stroke SVGs (no icon-font request)
+    │   └── landing/       hero, problem, teasers, live demo, final CTA
+    ├── lib/               api · copy · motion · useRise · types
+    └── styles/            tokens · fonts · global · compose · thinking · verdict · landing · pages
 public/                    build output (generated; served by Fastify and Vercel)
 src/
 ├── server.ts              Fastify app (API + static UI)
@@ -252,28 +266,29 @@ supabase/migrations/       0001_init.sql
 vercel.json                framework:null + routes (see "Deploying your own")
 ```
 
-All logic lives in `src/lib/`, so the HTTP layer is disposable — the same `runCheck()` powers the API, the CLI, and the test harness.
+All logic lives in `src/lib/`, so the HTTP layer is disposable. The same `runCheck()` powers the API, the CLI, and the test harness.
 
 ---
 
 ## Data layer
 
-**SQLite, deliberately** — Node's built-in `node:sqlite`, zero configuration, no native build. It backs the `/api/stats` counter and needs no provisioning, which is the right trade for a hackathon demo.
+**SQLite locally, in-memory on Vercel.** The store picks itself: `node:sqlite` (Node's built-in, zero configuration, no native build) when there is a real filesystem, and an in-memory store on serverless, where there isn't one. It backs the `/api/stats` counter and needs no provisioning, which is the right trade for a hackathon demo. The practical consequence is that the deployed counter resets on redeploy, which the limitations table below states outright.
 
-A **Supabase adapter is written and ready but unused.** The account is at its free-project limit, and switching is two env vars (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) plus applying [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) — no code changes. It's there so "how would this scale?" has a real answer, not a slide.
+A **Supabase adapter is written and ready but unused.** The account is at its free-project limit, and switching is two env vars (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) plus applying [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), with no code changes. It's there so "how would this scale?" has a real answer, not a slide.
 
-**Tables:** `checks` (one row per check) and `family_links` (**stub schema only** — the "alert my adult child when Mum gets a scam text" idea is roadmap, not built).
+**Tables:** `checks` (one row per check) and `family_links` (**stub schema only**: the "alert my adult child when Mum gets a scam text" idea is roadmap, not built).
 
 ### Privacy
 
 The pitch is digital trust, so the raw text never persists:
 
+- **The message text is sent to Google.** Reading it in context means calling the Gemini API, so the text leaves this server while it is being checked. That is stated on `/privacy` and in the privacy policy rather than buried, because a privacy claim that talks about hashing while omitting where the text actually goes is misleading by omission.
 - Only a **salted HMAC-SHA256** of the normalized input is stored. Not reversible; rotating `HASH_SALT` unlinks old rows by design.
-- **Card numbers and Social Security numbers are stripped from the AI's written reasons** before they leave the server. The model is also told not to repeat them — this is the belt-and-braces layer, because a pasted message often contains the reader's own details and a reason that quotes them back lands in every intermediary's request log.
-- Input is normalized before hashing, so the same scam pasted by 50 people collapses to one hash — enough for a "seen 50 times tonight" counter without retaining anything.
+- **Card numbers and Social Security numbers are stripped from the AI's written reasons** before they leave the server. The model is also told not to repeat them. This is the belt-and-braces layer, because a pasted message often contains the reader's own details and a reason that quotes them back lands in every intermediary's request log.
+- Input is normalized before hashing, so the same scam pasted by 50 people collapses to one hash, enough for a "seen 50 times tonight" counter without retaining anything.
 - Logs redact request bodies at the Fastify level, and `redact()` strips emails, card numbers, phone numbers and SSNs from anything else headed for stdout.
 - Evidence snippets in the response are hard-clipped to 80 characters so a detector can never echo a whole message back.
-- `checks` has RLS enabled with **no public policies** — the anon key cannot read rows. The public counter reads the `check_stats` aggregate view.
+- `checks` has RLS enabled with **no public policies**: the anon key cannot read rows. The public counter reads the `check_stats` aggregate view.
 
 Verified by `npm run test:edge`, which asserts the response and the database never contain a test card number or SSN.
 
@@ -283,12 +298,17 @@ Verified by `npm run test:edge`, which asserts the response and the database nev
 
 | Variable | Default | Notes |
 | --- | --- | --- |
-| `GEMINI_API_KEY` | — | Required for Layer 2. Without it, every check uses the fallback. |
+| `GEMINI_API_KEY` | none | Required for Layer 2. Without it, every check uses the fallback. |
 | `CLASSIFIER_MODEL` | `gemini-3.1-flash-lite` | |
-| `CLASSIFIER_EFFORT` | `medium` | Maps to the Gemini thinking budget (low=512, medium=2048, high=8192). `.env.local` ships `low`. |
+| `CLASSIFIER_EFFORT` | `low` | Maps to the Gemini thinking budget (low=512, medium=2048, high=8192). `low` measured as accurate as higher settings on the fixture set and is much faster, so it is the default. |
 | `CLASSIFIER_TIMEOUT_MS` | `20000` | Falls back to rules after this. |
 | `HASH_SALT` | placeholder | **Change before deploying.** Server warns if unset. |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | — | Both set → Supabase. Neither → local SQLite. |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | none | Both set → Supabase. Neither → SQLite locally, in-memory on serverless. |
+| `STORE` | auto | Set to `memory` to force the in-memory store. |
+| `TRUST_PROXY` | off | Set to `1` behind a proxy so the rate limiter reads the forwarded hop instead of the socket address. Vercel sets this implicitly. |
+| `RATE_LIMIT_MAX` | `12` | Uncached checks per IP per minute. |
+| `RATE_LIMIT_CACHED_MAX` | `200` | Cache hits per IP per minute. They cost nothing, so the ceiling is higher. |
+| `RATE_LIMIT_GLOBAL_MAX` | `240` | Total per minute, the cost guard. |
 | `PORT` | `3600` | |
 | `CORS_ORIGIN` | `*` | |
 
@@ -296,9 +316,11 @@ Verified by `npm run test:edge`, which asserts the response and the database nev
 
 ## Deploying
 
-Standalone Node service — deploys to **Railway / Render / Fly with no changes**: set the env vars, run `npm start`.
+**Vercel** is what the live demo runs on, and it needs no adapter: `api/index.ts` hands the same Fastify app to the serverless runtime, and `vercel.json` serves the built `public/` directory alongside it. See "Deploying your own" at the bottom for the two pieces of dashboard state a fresh project starts without.
 
-For **Vercel**, the core is already framework-agnostic. A Next.js route handler is a thin wrapper:
+**Railway / Render / Fly** run it unchanged as a standalone Node service: set the env vars and run `npm start`. You get real SQLite persistence there instead of the in-memory store.
+
+Porting it into another framework is also cheap, because all the logic lives in `src/lib/` and the HTTP layer is disposable. In Next.js, for example, a route handler is a thin wrapper:
 
 ```ts
 // app/api/check/route.ts
@@ -310,7 +332,7 @@ export async function POST(req: Request) {
 }
 ```
 
-Copy `src/lib/` and `src/store/` across and delete `src/server.ts` and `src/routes/`.
+Copy `src/lib/` and `src/store/` across and drop `src/server.ts` and `src/routes/`.
 
 ---
 
@@ -318,17 +340,27 @@ Copy `src/lib/` and `src/store/` across and delete `src/server.ts` and `src/rout
 
 Disclosed in full, since the hackathon asks.
 
-**A frontier LLM is the product**, not just a build tool — Layer 2 of the classifier is a Gemini call with JSON-schema structured output (it ran on Claude Opus 5 until an API-credit change; the fixtures and grading are unchanged, so the two runs are directly comparable). That's the AI in "AI-powered scam detection", and it is doing real work: the romance-scam opener scores 0/100 on the deterministic rules and is still caught.
+**A frontier LLM is the product**, not just a build tool. Layer 2 of the classifier is a Gemini call with JSON-schema structured output (it ran on Claude Opus 5 until an API-credit change; the fixtures and grading are unchanged, so the two runs are directly comparable). That's the AI in "AI-powered scam detection", and it is doing real work: the romance-scam opener scores 0/100 on the deterministic rules and is still caught.
 
 **Claude Code wrote most of the implementation**, working from specifications and review. Concretely, it:
 
 - built both classification layers, the API, the store adapters, and the web UI;
-- wrote the 16-message evaluation set and the 85-assertion edge suite;
-- found and fixed the two bugs described below, both surfaced by tests it wrote.
+- wrote the 16-message evaluation set and the 91-assertion edge suite;
+- found and fixed the bugs in the next section, all of them surfaced by tests it wrote rather than by us noticing.
 
 **What was human-directed:** the product concept and target user, the two-layer architecture, the anti-cry-wolf requirement as the primary success metric, the tone rules for user-facing copy, the effort/latency tradeoff decision, scope boundaries (what got cut), and review of every classification result.
 
 **What was not AI-generated:** the 16 evaluation fixtures are grounded in documented FTC / FBI IC3 / USPS / IRS scam-warning patterns rather than invented, and the expected verdicts were set by human judgement before running them.
+
+## Two bugs worth reading about
+
+Both were found by tests, not by looking. Full write-ups, and the smaller ones alongside them, are in [DECISIONS.md](DECISIONS.md).
+
+**1. Unicode normalization was laundering fake domains.** Folding Cyrillic `раypal.com` to Latin `paypal.com` made the link detector credit it as *the real PayPal domain*, attaching a legitimacy signal to an impersonation site. The anti-evasion step was actively worse than doing nothing. Fixed by keeping an unfolded copy of the text: a brand domain is credited only when it appears verbatim there, and any domain containing non-Latin characters is flagged as a lookalike. Real internationalized domains arrive as punycode, so raw Cyrillic in a domain is inherently suspect.
+
+**2. The written answers were quoting card numbers back.** Model reasons repeated payment card numbers and Social Security numbers out of the pasted message. Nothing was ever stored, but that text crossed the network where any intermediary could log it. It hid because the privacy tests passed for as long as there was no API key: the rules layer never echoes its input, so the assertions only failed the moment a real key was present. Fixed on the server with `redactHighRisk()` and reinforced in the prompt. Deliberately narrow, since naming the *scammer's* number is useful advice.
+
+The second one is on the site's [privacy page](https://havenscamprotection.website/privacy) as well. A privacy claim nobody has tested is worth very little, and the test that caught this one still runs.
 
 ## Known limitations
 
@@ -336,11 +368,11 @@ Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
 
 | Limitation | Detail |
 | --- | --- |
-| **API credits** | The live demo degrades to rules-only when the Anthropic balance hits zero. It says so in the UI rather than pretending. |
+| **API credits** | The live demo degrades to rules-only if the Gemini key stops working. It says so in the UI rather than pretending. |
 | **Stats are per-instance on Vercel** | Serverless has no shared state, so the counter reflects one warm instance and resets on cold start. Fine for demo texture; the Supabase adapter is the real fix. |
 | **Cache is per-instance** | Same reason. In practice one demo session stays on one warm instance, so repeats are instant. |
-| **In-app rate limit is per-instance** | 12/min/IP (200/min for cache hits, which cost nothing) works for sequential requests. Concurrent requests spread across instances and slip past it — which is why there's also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
-| **The edge rule lives outside this repo** | It's Vercel dashboard state, not `vercel.json`. A redeploy to a *new* Vercel project silently loses it — see "Deploying your own" below. |
+| **In-app rate limit is per-instance** | 12/min/IP (200/min for cache hits, which cost nothing) works for sequential requests. Concurrent requests spread across instances and slip past it, which is why there is also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
+| **The edge rule lives outside this repo** | It's Vercel dashboard state, not `vercel.json`. A redeploy to a *new* Vercel project silently loses it. See "Deploying your own" below. |
 | **Self-hosting has no edge backstop** | On Railway/Render/Fly only the in-process limiter runs. Set `TRUST_PROXY=1` so it reads the right forwarded hop, and put a real limiter in front for anything beyond a demo. |
 | **~1.5s per check** | Comfortably inside the "instant" feel. Cold serverless starts add ~1s. |
 | **`x-forwarded-for` is spoofable** | Only the first hop is trusted. Adequate for a cost guard; real production wants signed tokens or platform-level identity. |
@@ -352,12 +384,12 @@ Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
 npm i -g vercel && vercel link && vercel --prod
 ```
 
-Set `GEMINI_API_KEY`, `HASH_SALT`, `CLASSIFIER_MODEL`, `CLASSIFIER_EFFORT=low` in the Vercel project. **Changing an env var needs `vercel --prod --force`** — a cached build keeps the old values baked into the function bundle, which silently serves the previous config. `vercel.json` pins `framework: null` — without it Vercel auto-detects Fastify, finds `public/app.js`, and fails looking for a server entrypoint.
+Set `GEMINI_API_KEY`, `HASH_SALT`, `CLASSIFIER_MODEL`, `CLASSIFIER_EFFORT=low` in the Vercel project. **Changing an env var needs `vercel --prod --force`**, because a cached build keeps the old values baked into the function bundle, which silently serves the previous config. `vercel.json` pins `framework: null`. Without it Vercel auto-detects Fastify, finds `public/app.js`, and fails looking for a server entrypoint.
 
 **Two things the repo can't do for you on a fresh Vercel project:**
 
 ```bash
-# 1. The edge rate limit — the only limiter that works across serverless
+# 1. The edge rate limit: the only limiter that works across serverless
 #    instances. This is dashboard state; a new project starts without it.
 vercel firewall rules add "check-api-rate-limit" --action rate_limit \
   --condition '{"type":"path","op":"pre","value":"/api/check"}' \
