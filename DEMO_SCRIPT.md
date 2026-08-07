@@ -1,6 +1,6 @@
 # Demo Script — 2 minutes
 
-**Live:** https://haven-safe.vercel.app
+**Live:** https://havenscamprotection.website
 **Theme:** Cybersecurity & Digital Trust
 
 > **No warm-up needed.** Checks run in about 1.5 seconds, so the three examples return almost immediately whether or not they're cached. Just confirm the site loads before you go on.

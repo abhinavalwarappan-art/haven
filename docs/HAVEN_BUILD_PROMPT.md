@@ -12,7 +12,7 @@ hackathon (NextGen Innovation 2026, Cybersecurity & Digital Trust theme). The
 **backend is done, live, and must not be touched**: `src/`, `api/`,
 `scripts/`, `fixtures/`. It's a two-layer pipeline (deterministic rules +
 Gemini classification) with a real, deployed API at
-`https://haven-safe.vercel.app`. 16/16 on the classification suite, 91
+`https://havenscamprotection.website`. 16/16 on the classification suite, 91
 edge-case assertions, all currently green.
 
 The **frontend** is React 19 + Vite + Motion (`web/`), currently two routes:
@@ -205,7 +205,7 @@ project's history:
 
 `vercel --prod --force` (force avoids a stale cached build — this has bitten
 prior sessions, see `DECISIONS.md`). Re-alias to
-`haven-safe.vercel.app` if the deploy produces a new preview URL.
+`havenscamprotection.website` if the deploy produces a new preview URL.
 Confirm the live URL passes everything in the verification section above,
 not just the local dev build.
 

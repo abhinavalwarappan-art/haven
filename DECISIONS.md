@@ -13,19 +13,29 @@ but what the project is called wherever it exists.
 | | Before | After |
 | --- | --- | --- |
 | Vercel project | `is-this-real` | `haven` |
-| Live URL | `is-this-real-app.vercel.app` | `haven-safe.vercel.app` |
+| Canonical URL | `is-this-real-app.vercel.app` | `havenscamprotection.website` |
 | GitHub | `abhinavalwarappan-art/is-this-real` | `abhinavalwarappan-art/haven` |
 | Local directory | `~/Downloads/is-this-real` | `~/Downloads/haven` |
 | Package name | `is-this-real` | `haven` |
 
-### The good domains were gone
+### The good subdomains were gone, and it turned out not to matter
 
 `haven.vercel.app`, `haven-app`, `haven-check`, `usehaven`, `gethaven` and
-`havenapp` are all taken by other people. Rather than guess, three that were
-still free got claimed up front (`haven-safe`, `tryhaven`,
-`haven-scam-check`) so the choice could be made from real options instead of
-from what happened to be available at the moment of deciding. `haven-safe`
-is the primary; the other two are held and point at the same deployment.
+`havenapp` are all taken by other people. Three that were still free got
+claimed up front (`haven-safe`, `tryhaven`, `haven-scam-check`) so the choice
+could be made from real options rather than from whatever happened to be free
+at the moment of deciding.
+
+Then the alias list turned up **`havenscamprotection.website`**, a real domain
+already attached to the project and already serving the current build. That is
+the canonical URL now, and the three subdomains are kept as short links.
+
+The deciding factor was not that it looks better, though it does. A custom
+domain attached to the project **follows production automatically**, so a
+`git push` updates it. A `.vercel.app` alias set from the CLI is pinned to one
+specific deployment and does not move. Putting a pinned alias in a submission
+means every future push silently leaves the judges' link on an older build,
+and nothing about the site would look broken enough to notice.
 
 ### The old URL still works, deliberately
 
@@ -47,11 +57,16 @@ whole subject is telling the real thing from the convincing-looking one.
 
 ### Verification
 
-Every one of the six routes checked on **all four hostnames**, not just the
-new primary: `/`, `/check`, `/how-it-works`, `/privacy`, `/privacy-policy`
-and `/terms` return 200 on each. Build, 31/31 limits and 91/91 edge all
-re-run from the renamed directory, since a path move is exactly the kind of
-change that breaks quietly and only shows up later.
+Every one of the six routes checked on **every hostname**, not just the
+canonical one: `/`, `/check`, `/how-it-works`, `/privacy`, `/privacy-policy`
+and `/terms` return 200 on each. Every host was then confirmed to be serving
+the **same asset hash**, which is the check that actually catches a stale
+alias; six hosts all returning 200 while one of them serves last week's
+bundle is exactly the failure this rename could have introduced.
+
+Build, 31/31 limits and 91/91 edge all re-run from the renamed directory,
+since a path move is the kind of change that breaks quietly and only shows up
+later.
 
 ---
 

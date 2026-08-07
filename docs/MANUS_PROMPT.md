@@ -32,7 +32,7 @@ Base URL (already live, already deployed, CORS is already open with
 directly with no backend changes needed):
 
 ```
-https://haven-safe.vercel.app
+https://havenscamprotection.website
 ```
 
 ### `POST /api/check`
@@ -284,7 +284,7 @@ designed, not templated.
 - **Standalone project.** New repo/codebase, independently deployable
   (Vercel, Netlify, or your default — your choice of framework/stack).
   Do not attempt to merge into or modify the existing backend repository.
-- **Consume the live API directly** at `https://haven-safe.vercel.app`
+- **Consume the live API directly** at `https://havenscamprotection.website`
   as documented above. CORS is already open (`*`), so no proxy or backend
   change is required to call it from a different domain.
 - Mobile-first responsive, but genuinely well-composed on desktop too —

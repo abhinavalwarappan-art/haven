@@ -4,7 +4,7 @@
 
 | Item | Status | Value |
 | --- | --- | --- |
-| Live demo URL | ✅ Ready | https://haven-safe.vercel.app |
+| Live demo URL | ✅ Ready | https://havenscamprotection.website |
 | Source code | ✅ Public | https://github.com/abhinavalwarappan-art/haven |
 | Project description | ✅ Drafted | Below — copy/paste |
 | Theme selection | ✅ | Cybersecurity & Digital Trust |

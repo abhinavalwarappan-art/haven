@@ -6,7 +6,7 @@ A landing page that explains the problem, and a tool that solves it. Paste in an
 
 Built for non-technical users, especially older adults, who are the most targeted by scams and the least equipped to spot them.
 
-**🔗 Live demo: https://haven-safe.vercel.app**
+**🔗 Live demo: https://havenscamprotection.website**
 
 Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust**
 
