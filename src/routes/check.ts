@@ -25,6 +25,19 @@ interface CheckBody {
   text?: unknown;
 }
 
+/**
+ * A wait, in words a worried person can act on.
+ *
+ * The hourly tier can return a retry-after near 3600, and "please wait about
+ * 3540 seconds" is not something you say to someone who is already anxious
+ * about a message on their phone.
+ */
+function humanWait(seconds: number): string {
+  if (seconds < 90) return `${seconds} seconds`;
+  const minutes = Math.ceil(seconds / 60);
+  return minutes === 1 ? 'a minute' : `${minutes} minutes`;
+}
+
 export function registerCheckRoute(app: FastifyInstance): void {
   app.post<{ Body: CheckBody }>('/api/check', async (request, reply) => {
     const body = request.body;
@@ -73,13 +86,14 @@ export function registerCheckRoute(app: FastifyInstance): void {
 
       if (!decision.allowed) {
         reply.header('retry-after', String(decision.retryAfterSeconds));
+        const wait = humanWait(decision.retryAfterSeconds);
         return reply.status(429).send({
           error: decision.global ? 'busy' : 'rate_limited',
           // Written for the person, not the client library. Someone poking at
           // a live demo should understand what happened and that it will pass.
           message: decision.global
-            ? `We're getting a lot of checks right now. Please try again in about ${decision.retryAfterSeconds} seconds. Nothing is broken.`
-            : `That's a lot of checks in a short time. Please wait about ${decision.retryAfterSeconds} seconds and try again. Re-checking a message you've already checked is always free.`,
+            ? `We're getting a lot of checks right now. Please try again in about ${wait}. Nothing is broken.`
+            : `That's a lot of checks in a short time. Please wait about ${wait} and try again. Re-checking a message you've already checked is always free.`,
           retry_after_seconds: decision.retryAfterSeconds,
         });
       }

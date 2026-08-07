@@ -66,8 +66,48 @@ rateLimitReset();
 for (let i = 0; i < LIMIT; i++) consume('5.5.5.5', t0);
 ok('still blocked halfway through the window', !consume('5.5.5.5', t0 + WINDOW / 2).allowed);
 
+// ── Hourly ceiling ────────────────────────────────────────────────────────
+// The per-minute limit alone caps nothing daily: its window resets 1440 times
+// a day, so a loop that waits out each minute runs unbounded. These assert the
+// sustained tier that stops that.
+const HOUR_LIMIT = cfg.max_per_ip_hour;
+const HOUR = cfg.hour_ms;
+section(`Hourly ceiling (${HOUR_LIMIT} per ${HOUR / 60000}min per IP)`);
+
+rateLimitReset();
+// Drip-feed at the minute limit, spacing each burst a full minute apart so the
+// per-minute tier never fires. Only the hourly tier can stop this.
+let paid = 0;
+let hourBlocked: ReturnType<typeof consume> | null = null;
+for (let m = 0; m < 100 && !hourBlocked; m++) {
+  for (let i = 0; i < LIMIT; i++) {
+    const r = consume('7.7.7.7', t0 + m * (WINDOW + 1));
+    if (!r.allowed) { hourBlocked = r; break; }
+    paid++;
+  }
+}
+ok('a minute-spaced drip is eventually stopped', hourBlocked !== null);
+ok(`stops after exactly ${HOUR_LIMIT} paid checks`, paid === HOUR_LIMIT, `allowed ${paid}`);
+ok('reports the hourly limit, not the per-minute one', hourBlocked?.limit === HOUR_LIMIT);
+ok('is a per-IP block, not the global ceiling', hourBlocked?.global === false);
+ok(
+  'retry-after can exceed one minute',
+  (hourBlocked?.retryAfterSeconds ?? 0) > WINDOW / 1000,
+  `${hourBlocked?.retryAfterSeconds}s`
+);
+
+// Another IP is untouched by the first one's hourly exhaustion.
+ok('other IPs keep their own hourly budget', consume('8.8.8.8', t0).allowed);
+
+// Cache hits are free, so they must not consume the hourly paid budget.
+rateLimitReset();
+for (let i = 0; i < HOUR_LIMIT + 10; i++) {
+  consume('6.6.6.6', t0 + i * (WINDOW + 1), { limit: cfg.max_per_ip_cached, countGlobal: false });
+}
+ok('cache hits never spend the hourly paid budget', consume('6.6.6.6', t0).allowed);
+
 // ── Global ceiling ────────────────────────────────────────────────────────
-section('Global ceiling (cost circuit-breaker)');
+section('Per-instance burst guard');
 
 rateLimitReset();
 let globalTripped = false;

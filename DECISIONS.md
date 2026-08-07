@@ -4,6 +4,95 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 11 — costing a check, and limiting accordingly
+
+### First: what a check actually costs
+
+Every limit before this was set by feel. Measured properly, one check is
+**1,705 input tokens and 136 output**, against Flash-Lite's $0.25/1M input and
+$1.50/1M output. That is **$0.00063 per check**, and input is 68% of it,
+because the system prompt is 7,151 characters and dwarfs the message.
+
+With that number the old limits stop looking careful. The tightest genuinely
+shared control was 40/min/IP at the edge, which is 57,600 checks a day from a
+single scripted IP: **$36/day**, or roughly $100 across an unnoticed weekend.
+
+### The per-minute limit was capping nothing
+
+A 60-second window resets **1,440 times a day**. Any loop that waits out each
+window runs forever inside the rules. The limiter looked strict and bounded
+nothing over any period longer than a minute.
+
+So there are two tiers now, because they stop different things:
+
+| | Was | Now |
+| --- | --- | --- |
+| Paid checks per IP, per minute | 12 | **5** |
+| Paid checks per IP, per hour | none | **100** |
+| Cache hits per IP, per minute | 200 | 200 |
+
+Only paid work counts toward the hourly tier. Capping cache hits by the hour
+would punish the exact behaviour the interface promises is free, and the test
+suite now asserts that promise directly rather than trusting the copy.
+
+The regression test for this drip-feeds requests one minute apart so the
+per-minute tier can never fire, and asserts the run still stops at exactly 100.
+A test that just hammers the endpoint would pass against the old code too.
+
+### The "global cost ceiling" was not one
+
+`RATE_LIMIT_GLOBAL_MAX` is module scope. On serverless that means **every warm
+instance gets its own 240/min**, so the real ceiling was 240 × however many
+instances were running. The comment above it called it a cost circuit-breaker,
+which is the kind of thing that stops you looking any harder at spend.
+
+The logic is unchanged and still useful, since one instance cannot be driven
+flat out by a fan-out of many IPs. What changed is that it is now named a
+per-instance burst guard, and the code says plainly where the real ceiling is.
+
+### The edge limit cannot be changed on this plan
+
+This is the finding worth carrying forward. The Vercel edge rule is the only
+genuinely shared limit, and it is **locked at 40/min/IP**:
+
+- `vercel firewall rules edit --rate-limit-requests 5` reports success, stages
+  a draft, publishes cleanly, and **silently keeps 40**. Only the description
+  saved. Confirmed by inspecting the rule and then by firing 12 requests at
+  production, all of which returned 200.
+- Adding a second rate-limit rule for an hourly tier fails outright:
+  `Rate limiting is not available for this plan (401)`.
+
+So the hourly tier had to live in application code, where the numbers are ours
+to set. That is weaker (per-instance) but it is what is available, and for the
+realistic threat, a sequential script from one address, it is the tier that
+actually fires.
+
+### None of this is a spend wall, and the docs now say so
+
+Every limit here bounds request rate, not spend, and the app-side ones dilute
+across instances. The only ceiling that survives a mistake in this repository
+is a quota on the Gemini key itself. The limitations table says that in those
+words rather than implying the code has it covered.
+
+### A wait measured in seconds, when it might be an hour
+
+The hourly tier can return a retry-after near 3,600, and the 429 copy
+interpolated raw seconds: *"Please wait about 3540 seconds and try again."*
+That is not a sentence you give someone already anxious about a message on
+their phone. `humanWait()` switches to minutes above 90 seconds.
+
+### Verified
+
+- The per-minute tier fires on the sixth check, in the browser, and the UI
+  shows the **calm "Just a moment" panel** rather than an error: blue icon,
+  a readable explanation, a "Try again" button. A rate-limited judge sees a
+  pause, not a broken product.
+- While blocked, **re-checking an already-checked message still returns 200
+  from cache** and a brand new one is refused. The promise in the copy holds.
+- 38/38 limits (7 new hourly assertions), 91/91 edge.
+
+---
+
 ## Session 10 — the rename carried through to every system
 
 Session 8 renamed the product in the interface. This one carried it through
@@ -960,7 +1049,8 @@ Fixed by keeping an unfolded copy of the text: `detectHomoglyphDomains()` scans 
 
 **3. Email domains counted as links.** `danny@gmail.com` registered `gmail.com` as a link and credited it as a genuine Google domain, inflating legitimacy signals on any message that merely mentions an email address. Fixed by skipping matches preceded by `@`.
 
-All three now have regression tests. `npm run test:edge` is 85/85.
+All three now have regression tests. `npm run test:edge` was 85/85 when this
+was written; assertions added in later sessions bring it to **91/91** today.
 
 ---
 

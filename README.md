@@ -306,9 +306,10 @@ Verified by `npm run test:edge`, which asserts the response and the database nev
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | none | Both set → Supabase. Neither → SQLite locally, in-memory on serverless. |
 | `STORE` | auto | Set to `memory` to force the in-memory store. |
 | `TRUST_PROXY` | off | Set to `1` behind a proxy so the rate limiter reads the forwarded hop instead of the socket address. Vercel sets this implicitly. |
-| `RATE_LIMIT_MAX` | `12` | Uncached checks per IP per minute. |
-| `RATE_LIMIT_CACHED_MAX` | `200` | Cache hits per IP per minute. They cost nothing, so the ceiling is higher. |
-| `RATE_LIMIT_GLOBAL_MAX` | `240` | Total per minute, the cost guard. |
+| `RATE_LIMIT_MAX` | `5` | Paid checks per IP per minute. A real check session is about 6 requests in total, so this bounds a burst without blocking a person. |
+| `RATE_LIMIT_HOURLY_MAX` | `100` | Paid checks per IP per hour. The tier that actually caps spend: a minute window resets 1,440 times a day, so on its own it caps nothing daily. |
+| `RATE_LIMIT_CACHED_MAX` | `200` | Cache hits per IP per minute. They cost nothing, so the ceiling is higher and they never spend the paid budget. |
+| `RATE_LIMIT_GLOBAL_MAX` | `240` | Per-minute burst guard for one instance. Not a global cap: see the limitations table. |
 | `PORT` | `3600` | |
 | `CORS_ORIGIN` | `*` | |
 
@@ -371,7 +372,10 @@ Honest list. See [DECISIONS.md](DECISIONS.md) for reasoning.
 | **API credits** | The live demo degrades to rules-only if the Gemini key stops working. It says so in the UI rather than pretending. |
 | **Stats are per-instance on Vercel** | Serverless has no shared state, so the counter reflects one warm instance and resets on cold start. Fine for demo texture; the Supabase adapter is the real fix. |
 | **Cache is per-instance** | Same reason. In practice one demo session stays on one warm instance, so repeats are instant. |
-| **In-app rate limit is per-instance** | 12/min/IP (200/min for cache hits, which cost nothing) works for sequential requests. Concurrent requests spread across instances and slip past it, which is why there is also a **Vercel edge rule at 40/min/IP** that genuinely is shared. Verified both on the live URL. |
+| **In-app rate limit is per-instance** | 5/min and 100/hour per IP for paid checks, 200/min for cache hits. Correct for sequential requests, which is what a script or a person actually produces. Concurrent requests spread across instances and each instance keeps its own counters, so the in-app tiers are the typical-case defence rather than a hard wall. |
+| **The "global" ceiling is not global** | `RATE_LIMIT_GLOBAL_MAX` is module scope, so on serverless every warm instance gets its own 240/min. It stops one instance being driven flat out by a fan-out of many IPs, and that is all it does. Named a burst guard in the code for that reason. |
+| **The edge rule is the real ceiling, and it is plan-locked** | A **Vercel edge rule at 40/min/IP** is the only genuinely shared limit, verified live (request 40 returns 403). Its numbers cannot be changed on the current plan: `vercel firewall rules edit` accepts the request, saves the description, and silently ignores the new figures, and adding a second rate-limit rule returns "Rate limiting is not available for this plan". So 40/min/IP is the hard cap until the plan changes. |
+| **Nothing here is a true spend wall** | Every limit above bounds request *rate*, not total spend, and the app-side ones can be diluted across instances. The only ceiling that cannot be bypassed by a mistake in this repo is a quota set on the Gemini API key itself. Set one. |
 | **The edge rule lives outside this repo** | It's Vercel dashboard state, not `vercel.json`. A redeploy to a *new* Vercel project silently loses it. See "Deploying your own" below. |
 | **Self-hosting has no edge backstop** | On Railway/Render/Fly only the in-process limiter runs. Set `TRUST_PROXY=1` so it reads the right forwarded hop, and put a real limiter in front for anything beyond a demo. |
 | **~1.5s per check** | Comfortably inside the "instant" feel. Cold serverless starts add ~1s. |

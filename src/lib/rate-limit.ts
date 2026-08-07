@@ -9,16 +9,33 @@
  * a rejection one second into a fresh minute for requests they made in the
  * previous one.
  *
- * Limits are set so a judge cannot realistically hit them. Checking the three
- * examples plus a few of their own messages is ~6 requests. Cache hits are
- * metered separately and far more loosely (see CACHED_MAX_REQUESTS), so
- * re-running an example never eats into the allowance for real checks.
+ * Checking the three examples plus a few of their own messages is ~6 requests,
+ * so the per-minute allowance is set just above that. Cache hits are metered
+ * separately and far more loosely (see CACHED_MAX_REQUESTS), so re-running an
+ * example never eats into the allowance for real checks.
+ *
+ * Two tiers, because they stop different things. The per-minute limit stops a
+ * burst. The per-hour limit stops the slow grind that stays under it: a minute
+ * window resets 1,440 times a day, so on its own it caps nothing daily.
  */
 
 const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
-const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX || 12);
+const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX || 5);
 
-/** Hard ceiling across all callers — the cost circuit-breaker. */
+const HOUR_MS = Number(process.env.RATE_LIMIT_HOUR_MS || 3_600_000);
+/** Sustained ceiling per caller. Only paid work counts toward it. */
+const MAX_PER_HOUR = Number(process.env.RATE_LIMIT_HOURLY_MAX || 100);
+
+/**
+ * Burst guard across all callers on THIS instance.
+ *
+ * Deliberately not called a global cost ceiling any more, because on serverless
+ * it is not one: `globalHits` is module scope, so every warm instance gets its
+ * own 240 and the real ceiling is 240 × however many instances are running.
+ * It still does useful work (one instance cannot be driven flat out by a fan-out
+ * of many IPs), but the genuinely shared limit is the Vercel edge rule, and the
+ * only true spend ceiling is the quota set on the Gemini key itself.
+ */
 const GLOBAL_MAX_PER_WINDOW = Number(process.env.RATE_LIMIT_GLOBAL_MAX || 240);
 
 /**
@@ -51,12 +68,35 @@ export interface RateLimitResult {
   global: boolean;
 }
 
-function prune(times: number[], now: number): number[] {
-  const cutoff = now - WINDOW_MS;
+function prune(times: number[], now: number, windowMs = WINDOW_MS): number[] {
+  const cutoff = now - windowMs;
   // Timestamps are appended in order, so the first in-window index is the split.
   let i = 0;
   while (i < times.length && times[i]! <= cutoff) i++;
   return i === 0 ? times : times.slice(i);
+}
+
+/**
+ * Fetch a bucket, pruning it to `windowMs`, and refresh its position so the
+ * eviction below drops the least *recently seen* client.
+ */
+function takeBucket(key: string, now: number, windowMs: number): Bucket {
+  let bucket = buckets.get(key);
+  if (!bucket) {
+    if (buckets.size >= MAX_TRACKED_CLIENTS) {
+      const oldest = buckets.keys().next().value;
+      if (oldest !== undefined) buckets.delete(oldest);
+    }
+    bucket = { hits: [] };
+  } else {
+    // Map preserves insertion order, which is not the same as recency unless we
+    // refresh it here. Without this, an actively-limited client that was seen
+    // first is the first one evicted, releasing its limit.
+    buckets.delete(key);
+  }
+  buckets.set(key, bucket);
+  bucket.hits = prune(bucket.hits, now, windowMs);
+  return bucket;
 }
 
 export interface ConsumeOptions {
@@ -97,55 +137,62 @@ export function consume(
 
   // Each budget gets its OWN bucket, not just its own ceiling. Sharing one
   // array meant free cache hits spent the paid allowance: one billable check
-  // plus eleven re-checks of that same text filled the 12-slot bucket, and the
-  // next new message was refused — while the refusal text said re-checking is
-  // always free. The budget class has to be part of the key.
+  // plus re-checks of that same text filled the bucket, and the next new
+  // message was refused — while the refusal text said re-checking is always
+  // free. The budget class has to be part of the key.
   const key = countGlobal ? clientId : `cached:${clientId}`;
 
-  let bucket = buckets.get(key);
-  if (!bucket) {
-    if (buckets.size >= MAX_TRACKED_CLIENTS) {
-      const oldest = buckets.keys().next().value;
-      if (oldest !== undefined) buckets.delete(oldest);
-    }
-    bucket = { hits: [] };
-  } else {
-    // Re-insert so the eviction above drops the least *recently seen* client.
-    // Map preserves insertion order, which is not the same as recency unless
-    // we refresh it here — without this, an actively-limited client that was
-    // seen first is the first one evicted, releasing its limit.
-    buckets.delete(key);
-  }
-  buckets.set(key, bucket);
-
-  bucket.hits = prune(bucket.hits, now);
-
-  if (bucket.hits.length >= limit) {
+  const minute = takeBucket(key, now, WINDOW_MS);
+  if (minute.hits.length >= limit) {
     return {
       allowed: false,
       remaining: 0,
-      retryAfterSeconds: retryAfter(bucket.hits, now),
+      retryAfterSeconds: retryAfter(minute.hits, now, WINDOW_MS),
       limit,
       global: false,
     };
   }
 
-  bucket.hits.push(now);
+  // The sustained tier, checked only for work that costs money. Cache hits are
+  // free, so capping them by the hour would punish the one usage pattern we
+  // actively want (re-checking a message you already checked).
+  let hour: Bucket | null = null;
+  if (countGlobal) {
+    hour = takeBucket(`hour:${key}`, now, HOUR_MS);
+    if (hour.hits.length >= MAX_PER_HOUR) {
+      return {
+        allowed: false,
+        remaining: 0,
+        retryAfterSeconds: retryAfter(hour.hits, now, HOUR_MS),
+        limit: MAX_PER_HOUR,
+        global: false,
+      };
+    }
+  }
+
+  minute.hits.push(now);
+  if (hour) hour.hits.push(now);
   if (countGlobal) globalHits.push(now);
+
+  // Report whichever tier is closest to running out, so the header a caller
+  // sees is the one that will actually stop them.
+  const remaining = hour
+    ? Math.min(limit - minute.hits.length, MAX_PER_HOUR - hour.hits.length)
+    : limit - minute.hits.length;
 
   return {
     allowed: true,
-    remaining: limit - bucket.hits.length,
+    remaining,
     retryAfterSeconds: 0,
     limit,
     global: false,
   };
 }
 
-function retryAfter(times: number[], now: number): number {
+function retryAfter(times: number[], now: number, windowMs = WINDOW_MS): number {
   const oldest = times[0];
   if (oldest === undefined) return 1;
-  return Math.max(1, Math.ceil((oldest + WINDOW_MS - now) / 1000));
+  return Math.max(1, Math.ceil((oldest + windowMs - now) / 1000));
 }
 
 /** True when a trusted reverse proxy sits in front of us. */
@@ -199,6 +246,8 @@ export function rateLimitConfig() {
     window_ms: WINDOW_MS,
     max_per_ip: MAX_REQUESTS,
     max_per_ip_cached: CACHED_MAX_REQUESTS,
+    hour_ms: HOUR_MS,
+    max_per_ip_hour: MAX_PER_HOUR,
     global_max: GLOBAL_MAX_PER_WINDOW,
   };
 }
