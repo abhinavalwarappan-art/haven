@@ -70,8 +70,15 @@
   display: flex;
   align-items: flex-end;
   min-height: min(92svh, 46rem);
-  padding-block: 6rem clamp(2.5rem, 1.5rem + 4vw, 5rem);
+  /* Roomier top on a phone so the photograph gets a band of its own rather
+     than a 96px sliver, which is all that was left once the nav and the panel
+     had taken their share. */
+  padding-block: clamp(6rem, 4rem + 12vw, 9.5rem) clamp(2.5rem, 1.5rem + 4vw, 5rem);
   overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .hero { padding-block: 6rem clamp(2.5rem, 1.5rem + 4vw, 5rem); }
 }
 
 .hero__bg { position: absolute; inset: 0; z-index: 0; }
@@ -82,6 +89,55 @@
   object-fit: cover;
   /* Favour the lower-left of the frame, which is where the open floor is. */
   object-position: 42% 55%;
+}
+
+/* ── Phone hero ──────────────────────────────────────────────────────────
+   The full-bleed-photo-behind-a-panel arrangement does not survive phone
+   proportions. The panel takes about 80% of the height, so only the top
+   sliver of the image is ever visible, and because the crop is horizontal at
+   that aspect (the container is far taller than the picture) `object-position`
+   on the Y axis cannot pull anything better into view. The result was a strip
+   of blank wall where the photograph should be.
+
+   So on a phone the image gets a band of its own and the panel sits under it,
+   overlapping just enough to keep the layering. At roughly 44svh the band's
+   aspect is close to the image's own, so almost the whole picture is visible:
+   both arches, the clouds and the neon edge. */
+@media (max-width: 899px) {
+  .hero {
+    display: block;
+    min-height: 0;
+    padding-block: 0 clamp(2.5rem, 1.5rem + 4vw, 4rem);
+  }
+
+  .hero__bg {
+    position: relative;
+    height: 44svh;
+    min-height: 15rem;
+    max-height: 24rem;
+  }
+  .hero__bg img { object-position: 50% 45%; }
+
+  /* Fades the band's lower edge into the page so the panel appears to rise out
+     of the photograph rather than being pasted onto it. */
+  .hero__scrim {
+    background: linear-gradient(
+      to top,
+      var(--background) 0%,
+      rgba(250, 249, 246, 0.35) 42%,
+      transparent 78%
+    );
+  }
+
+  .hero__inner { margin-top: -3rem; }
+
+  /* The specimen costs about 330px, which on a phone is most of a screen, and
+     it is the one thing here the page says twice: the live demo further down
+     renders the real VerdictCard on the same message. With the photograph now
+     carrying the atmosphere in its own band, this earns its space on a wide
+     screen and not on a narrow one. It is `aria-hidden` decoration either way,
+     so nothing is lost to a screen reader. */
+  .hero__specimen { display: none; }
 }
 
 /* Lifts the bottom of the frame toward the page background so the hero melts
@@ -232,8 +288,8 @@
 }
 .specimen__reason {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.9375rem;
+  line-height: 1.55;
   color: var(--on-surface-variant);
   overflow-wrap: anywhere;
 }
@@ -297,13 +353,18 @@
   align-items: stretch;
 }
 
+/* Left-aligned by default, centred only once the cards become narrow columns.
+   Centring is survivable on a 3-column desktop grid where a line is a handful
+   of words. On a single 342px column the same rule turns a 160-character
+   paragraph into six lines that each start in a different place, which is the
+   worst thing you can do to someone who is already struggling to read. */
 .step {
   border-radius: var(--radius-lg);
   padding: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
-  text-align: center;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .step__icon {
@@ -354,6 +415,9 @@
   .steps__wire { flex-direction: row; padding-inline: 0.5rem; }
   .steps__wire span:first-child,
   .steps__wire span:last-child { width: 2.25rem; height: 2px; background: linear-gradient(to right, var(--primary-container), var(--secondary-container)); }
+  /* Three narrow columns: lines are short enough that centring reads as
+     composition rather than as an obstacle. */
+  .step { text-align: center; align-items: center; }
 }
 
 /* The zero-red-flags callout — the single best argument for the second pass. */
@@ -419,7 +483,21 @@
 
 .finale__headline { margin: 0 0 1rem; }
 .finale__sub { margin: 0 auto 2rem; max-width: 40ch; font-size: var(--text-body-lg); color: var(--on-surface-variant); }
-.finale__fine { margin: 1.75rem auto 0; max-width: 52ch; font-size: var(--text-label); line-height: 1.6; color: var(--on-surface-variant); }
+/* Left-aligned and a size up on narrow screens, where this is four centred
+   lines of the most important caveat on the site. It re-centres once the card
+   is wide enough for it to be one or two lines. */
+.finale__fine {
+  margin: 1.75rem auto 0;
+  max-width: 52ch;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--on-surface-variant);
+  text-align: left;
+  text-wrap: pretty;
+}
+@media (min-width: 700px) {
+  .finale__fine { text-align: center; font-size: var(--text-label); }
+}
 
 /* ── See it in action ───────────────────────────────────────────────────
    Renders the real VerdictCard, not a screenshot — see the note in

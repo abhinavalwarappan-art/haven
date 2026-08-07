@@ -287,15 +287,17 @@ body {
   margin-top: auto;
 }
 
+/* Grid rather than a flex row. The footer now carries the site's only
+   navigation on small screens, so it needs to reflow to a real stack instead
+   of squeezing four links into a space-between row. */
 .footer__inner {
   width: min(100% - (var(--bleed) * 2), var(--measure));
   margin-inline: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gutter);
-  text-align: center;
+  display: grid;
+  gap: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
 }
+
+.footer__brand { display: grid; gap: 0.4rem; }
 
 .footer__mark {
   font-family: var(--font-display);
@@ -306,19 +308,46 @@ body {
   margin: 0;
 }
 
+/* Left-aligned, not centred. A 132-character sentence centred on a 342px
+   column gives every line a different starting point, which is exactly the
+   thing that makes small print hard for the reader this is built for. */
 .footer__note {
   margin: 0;
-  font-size: var(--text-label);
-  line-height: 1.6;
+  font-size: 0.9375rem;
+  line-height: 1.65;
   color: var(--on-surface-variant);
   max-width: 62ch;
+  text-wrap: pretty;
 }
 
 .footer__stats { margin: 0; font-size: var(--text-label); color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
 .footer__stats b { color: var(--on-surface); font-weight: 700; }
 
+/* Wrapping row of real tap targets. 44px min-height with the padding, and a
+   generous column gap so two links never sit close enough to mis-tap. */
+.footer__nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1.75rem; }
+
+.footer__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-body-md);
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.footer__link:hover { color: var(--primary); border-bottom-color: var(--outline-variant); }
+
 @media (min-width: 768px) {
-  .footer__inner { flex-direction: row; justify-content: space-between; text-align: left; }
+  .footer__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+  .footer__nav { justify-content: flex-end; gap: 0.25rem 2rem; }
+  /* The disclaimer spans the full width under both, where it reads as a note
+     on the whole site rather than as part of the brand column. */
+  .footer__note { grid-column: 1 / -1; }
 }
 
 /* ── Details that would otherwise be browser defaults ───────────────────── */

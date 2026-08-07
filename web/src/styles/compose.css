@@ -56,6 +56,16 @@
   overflow-y: auto;
   scrollbar-width: thin;
 }
+
+/* Short viewports, which in practice means a small phone. `rows={7}` gives the
+   box about 200px, and on a 667px screen that pushed "Check it" off the bottom:
+   you paste a message and then have to go looking for the button. Capping the
+   box keeps the whole action visible at once. It still scrolls, and this is a
+   field people paste into rather than type in. */
+@media (max-height: 720px) {
+  .well textarea { max-height: 20vh; }
+  .compose__sub { margin-bottom: 1.25rem; }
+}
 .well textarea:focus { outline: none; }
 .well textarea::placeholder { color: var(--on-surface-variant); opacity: 0.7; }
 

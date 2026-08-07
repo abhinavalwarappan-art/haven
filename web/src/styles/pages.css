@@ -223,10 +223,13 @@
   font-weight: 600;
   color: var(--on-surface);
 }
+/* Was 0.925rem, which rendered at 14.8px. This is explanatory copy on a page
+   built for people with imperfect eyesight, so it does not get to be the
+   smallest text on the site. */
 .signal__note {
   margin: 0;
-  font-size: 0.925rem;
-  line-height: 1.6;
+  font-size: 0.9375rem;
+  line-height: 1.65;
   color: var(--on-surface-variant);
   text-wrap: pretty;
 }
