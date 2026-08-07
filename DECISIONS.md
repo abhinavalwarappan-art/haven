@@ -27,9 +27,15 @@ So there are two tiers now, because they stop different things:
 
 | | Was | Now |
 | --- | --- | --- |
-| Paid checks per IP, per minute | 12 | **5** |
+| Paid checks per IP, per minute | 12 | **8** |
 | Paid checks per IP, per hour | none | **100** |
 | Cache hits per IP, per minute | 200 | 200 |
+
+The per-minute figure landed at 8 rather than 5 once it was clear which tier
+actually bounds spend. The hourly ceiling is the binding one, so the minute
+limit only governs how fast someone may spend the same hourly budget, not how
+much they can spend in a day. 5 would have meant a presenter running the demo
+script twice in a row hitting a pause on stage, and buying nothing for it.
 
 Only paid work counts toward the hourly tier. Capping cache hits by the hour
 would punish the exact behaviour the interface promises is free, and the test

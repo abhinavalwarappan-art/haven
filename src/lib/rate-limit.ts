@@ -10,17 +10,22 @@
  * previous one.
  *
  * Checking the three examples plus a few of their own messages is ~6 requests,
- * so the per-minute allowance is set just above that. Cache hits are metered
- * separately and far more loosely (see CACHED_MAX_REQUESTS), so re-running an
- * example never eats into the allowance for real checks.
+ * and a presenter running the demo script twice is more. The per-minute
+ * allowance leaves room for that. Cache hits are metered separately and far
+ * more loosely (see CACHED_MAX_REQUESTS), so re-running an example never eats
+ * into the allowance for real checks.
  *
  * Two tiers, because they stop different things. The per-minute limit stops a
  * burst. The per-hour limit stops the slow grind that stays under it: a minute
  * window resets 1,440 times a day, so on its own it caps nothing daily.
+ *
+ * Note which tier actually bounds spend. The hourly ceiling is the binding one,
+ * so loosening the per-minute limit costs nothing in daily exposure: it only
+ * changes how fast a caller may spend the same hourly budget.
  */
 
 const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
-const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX || 5);
+const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX || 8);
 
 const HOUR_MS = Number(process.env.RATE_LIMIT_HOUR_MS || 3_600_000);
 /** Sustained ceiling per caller. Only paid work counts toward it. */
