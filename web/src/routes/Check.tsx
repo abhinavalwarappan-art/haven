@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
-import { Footer, Masthead } from '../components/Chrome';
+import { Footer, Nav } from '../components/Chrome';
 import { ComposeStage } from '../components/ComposeStage';
 import { ErrorNotice } from '../components/ErrorNotice';
 import { ThinkingStage } from '../components/ThinkingStage';
-import { VerdictLetter } from '../components/VerdictLetter';
+import { VerdictCard } from '../components/VerdictCard';
 import { check, fetchStats } from '../lib/api';
 import { stageVariants } from '../lib/motion';
 import type { CheckResponse, Stats } from '../lib/types';
@@ -14,7 +14,7 @@ type Stage =
   | { name: 'compose' }
   | { name: 'thinking' }
   | { name: 'result'; result: CheckResponse }
-  | { name: 'error'; headline: string; body: string };
+  | { name: 'error'; kind: 'paused' | 'failed'; headline: string; body: string };
 
 export function Check() {
   const [stage, setStage] = useState<Stage>({ name: 'compose' });
@@ -29,10 +29,8 @@ export function Check() {
   }, []);
 
   /**
-   * Move focus for screen readers without letting the browser scroll the
-   * masthead off the top — the verdict should arrive in place, not yank the
-   * page. `preventScroll` plus an explicit scroll-to-top keeps the whole letter
-   * visible from its first line.
+   * Move focus for screen readers without letting the browser scroll the nav
+   * off the top — the verdict should arrive in place, not yank the page.
    */
   useEffect(() => {
     if (stage.name !== 'result' && stage.name !== 'error') return;
@@ -47,85 +45,86 @@ export function Check() {
       setStage({ name: 'result', result: outcome.data });
       void fetchStats().then(setStats);
     } else {
-      setStage({ name: 'error', headline: outcome.headline, body: outcome.body });
+      setStage({
+        name: 'error',
+        kind: outcome.kind,
+        headline: outcome.headline,
+        body: outcome.body,
+      });
     }
   }, []);
 
   const variants = stageVariants(reduced);
 
   return (
-    <>
-      <a className="skip" href="#main">Skip to the message box</a>
-      <div className="grain" aria-hidden="true" />
+    <div className="landing">
+      <a className="skip" href="#main">
+        Skip to the message box
+      </a>
 
-      <div className="shell">
-        <Masthead />
+      <Nav showChecker={false} />
 
-        <main id="main">
-          {/* One presence boundary for the whole flow. `mode="wait"` is what
-              makes compose → thinking → result read as a single reveal: the
-              outgoing stage finishes clearing before the next one arrives, so
-              the two never overlap and fight for the same space. */}
-          <AnimatePresence mode="wait" initial={false}>
-            {stage.name === 'compose' && (
-              <motion.div key="compose" variants={variants} initial="initial" animate="animate" exit="exit">
-                <ComposeStage value={text} onChange={setText} onSubmit={run} reduced={reduced} />
-              </motion.div>
-            )}
+      <main id="main" className="check__main">
+        {/* One presence boundary for the whole flow. `mode="wait"` is what
+            makes compose → thinking → result read as a single reveal. */}
+        <AnimatePresence mode="wait" initial={false}>
+          {stage.name === 'compose' && (
+            <motion.div key="compose" variants={variants} initial="initial" animate="animate" exit="exit">
+              <ComposeStage value={text} onChange={setText} onSubmit={run} reduced={reduced} />
+            </motion.div>
+          )}
 
-            {stage.name === 'thinking' && (
-              <motion.div key="thinking" variants={variants} initial="initial" animate="animate" exit="exit">
-                <ThinkingStage reduced={reduced} />
-              </motion.div>
-            )}
+          {stage.name === 'thinking' && (
+            <motion.div key="thinking" variants={variants} initial="initial" animate="animate" exit="exit">
+              <ThinkingStage reduced={reduced} />
+            </motion.div>
+          )}
 
-            {stage.name === 'result' && (
-              <motion.div
-                key="result"
-                ref={landing}
-                tabIndex={-1}
-                className="stage stage--result"
-                aria-labelledby="verdict-heading"
-                variants={variants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                style={{ outline: 'none' }}
-              >
-                <VerdictLetter
-                  result={stage.result}
-                  reduced={reduced}
-                  onAgain={() => setStage({ name: 'compose' })}
-                />
-              </motion.div>
-            )}
+          {stage.name === 'result' && (
+            <motion.div
+              key="result"
+              ref={landing}
+              tabIndex={-1}
+              className="checker"
+              aria-labelledby="verdict-heading"
+              variants={variants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              style={{ outline: 'none' }}
+            >
+              <VerdictCard
+                result={stage.result}
+                reduced={reduced}
+                onAgain={() => setStage({ name: 'compose' })}
+              />
+            </motion.div>
+          )}
 
-            {stage.name === 'error' && (
-              <motion.div
-                key="error"
-                ref={landing}
-                tabIndex={-1}
-                className="stage stage--error"
-                role="alert"
-                variants={variants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                style={{ outline: 'none' }}
-              >
-                <ErrorNotice
-                  headline={stage.headline}
-                  body={stage.body}
-                  reduced={reduced}
-                  onRetry={() => setStage({ name: 'compose' })}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
+          {stage.name === 'error' && (
+            <motion.div
+              key="error"
+              ref={landing}
+              tabIndex={-1}
+              variants={variants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              style={{ outline: 'none' }}
+            >
+              <ErrorNotice
+                kind={stage.kind}
+                headline={stage.headline}
+                body={stage.body}
+                reduced={reduced}
+                onRetry={() => setStage({ name: 'compose' })}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
-        <Footer stats={stats} />
-      </div>
-    </>
+      <Footer stats={stats} />
+    </div>
   );
 }

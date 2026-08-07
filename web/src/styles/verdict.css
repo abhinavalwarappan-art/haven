@@ -1,0 +1,207 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   The verdict — a glass card floating in the dreamscape
+   ───────────────────────────────────────────────────────────────────────────
+   This is the moment the whole product exists for. The card stays the same
+   calm glass as every other surface; the verdict colour arrives in the ink —
+   the icon, the headline, the reason markers — so the answer breaks through
+   like a patch of clear sky rather than turning the screen into an alarm.
+
+   All three states set the same three custom properties, so every rule below
+   is written once against `--hue` and the variants only re-point it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.verdict {
+  --hue:            var(--tertiary);
+  --hue-container:  var(--tertiary-container);
+  --on-hue:         var(--on-tertiary-container);
+
+  border-radius: var(--radius-lg);
+  padding: clamp(1.75rem, 1.4rem + 1.8vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.verdict[data-verdict='scam'] {
+  --hue: var(--scam);
+  --hue-container: var(--scam-container);
+  --on-hue: var(--on-scam-container);
+}
+
+/* Green, and never the near-black the design pass left it as. All three
+   verdicts have to be tellable apart from across a room, and "safe" was the
+   one state where the headline carried no colour at all. */
+.verdict[data-verdict='likely_safe'] {
+  --hue: var(--safe);
+  --hue-container: var(--safe-container);
+  --on-hue: var(--on-safe-container);
+}
+
+.verdict[data-verdict='uncertain_be_careful'] {
+  --hue: var(--caution);
+  --hue-container: var(--caution-container);
+  --on-hue: var(--on-caution-container);
+}
+
+.verdict__icon {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  border-radius: var(--radius-full);
+  background: var(--hue-container);
+  color: var(--on-hue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.verdict__icon svg { width: 2.1rem; height: 2.1rem; position: relative; z-index: 1; }
+
+/* A soft bloom of the verdict's own colour, so the icon reads as lit rather
+   than filled. */
+.verdict__icon::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--hue-container);
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.verdict__headline {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-display-md);
+  line-height: 1.1;
+  letter-spacing: var(--track-display);
+  color: var(--hue);
+  margin: 0 0 0.85rem;
+  text-wrap: balance;
+}
+
+.verdict__confidence {
+  margin: 0 0 2rem;
+  font-size: var(--text-body-lg);
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+/* ── Reasons ────────────────────────────────────────────────────────────
+   Bento grid, matching the design pass. An odd final reason spans the full
+   width rather than leaving a hole in the layout. */
+
+.verdict__section { width: 100%; text-align: left; margin-bottom: 1.75rem; }
+.verdict__label { margin: 0 0 0.9rem; }
+
+.reasons { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+
+.reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: var(--radius);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  padding: 1.1rem 1.25rem;
+}
+
+/* A drawn dash in the verdict's colour. Quieter than an icon, and it cannot
+   accidentally imply approval the way a tick does. */
+.reason__mark {
+  flex: none;
+  width: 0.85rem;
+  height: 2px;
+  margin-top: 0.72em;
+  border-radius: 2px;
+  background: var(--hue);
+  opacity: 0.75;
+}
+
+.reason p {
+  margin: 0;
+  font-size: var(--text-body-md);
+  line-height: 1.55;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 760px) {
+  .reasons { grid-template-columns: 1fr 1fr; }
+  .reasons > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+/* ── Advice ─────────────────────────────────────────────────────────────
+   The closing line of the answer. Tinted with the verdict's own colour so it
+   reads as part of the same judgement rather than a generic disclaimer. */
+
+.verdict__advice {
+  width: 100%;
+  text-align: left;
+  border-radius: var(--radius);
+  border: 1px solid var(--hue-container);
+  background: color-mix(in oklch, var(--hue-container) 32%, transparent);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 2rem;
+}
+.verdict__advice .verdict__label { color: var(--on-hue); }
+.verdict__advice p {
+  margin: 0;
+  font-size: var(--text-body-md);
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+
+/* Non-null only when the AI layer did not run. Never dressed up as a normal
+   part of the answer — a rules-only verdict can be confidently wrong. */
+.verdict__notice {
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px dashed var(--outline);
+  padding: 0.9rem 1.15rem;
+  margin-bottom: 1.5rem;
+  font-size: var(--text-label);
+  line-height: 1.55;
+  color: var(--on-surface-variant);
+  text-align: left;
+}
+
+.verdict__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+
+/* ── Recording frame ────────────────────────────────────────────────────
+   Sessions 6-7 sized this for a 1280×720 capture, where the browser leaves
+   roughly 670px of viewport. Three reasons plus the advice panel is the
+   worst case the API produces on the demo messages, and it overruns that.
+
+   Two tiers, because "short viewport" is two different situations. A 13"
+   laptop windowed sits around 700-780px and is a person actually reading;
+   a screen capture sits near 670px and is a still frame nobody scrolls.
+   The first tier only tightens. The second gives up the icon, which is the
+   one element here that adds no information — the colour is already on the
+   headline, the reason dashes and the advice panel. */
+
+@media (min-width: 900px) and (max-height: 780px) {
+  .verdict { padding: 1.15rem 1.85rem; }
+  .verdict__icon { width: 3rem; height: 3rem; margin-bottom: 0.6rem; }
+  .verdict__icon svg { width: 1.4rem; height: 1.4rem; }
+  .verdict__icon::after { inset: -0.35rem; }
+  .verdict__headline { font-size: clamp(1.9rem, 1.4rem + 1.8vw, 2.5rem); margin-bottom: 0.5rem; }
+  .verdict__confidence { margin-bottom: 0.9rem; font-size: var(--text-body-md); }
+  .verdict__section { margin-bottom: 0.8rem; }
+  .verdict__label { margin-bottom: 0.5rem; }
+  .reasons { gap: 0.5rem; }
+  .reason { padding: 0.7rem 0.9rem; }
+  .reason p { font-size: 0.95rem; line-height: 1.45; }
+  .verdict__advice { padding: 0.8rem 1.1rem; margin-bottom: 0.9rem; }
+  .verdict__advice p { font-size: 0.95rem; line-height: 1.5; }
+  .verdict__notice { margin-bottom: 0.8rem; }
+}
+
+@media (min-width: 900px) and (max-height: 700px) {
+  .verdict__icon { display: none; }
+}

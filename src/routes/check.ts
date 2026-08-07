@@ -78,8 +78,8 @@ export function registerCheckRoute(app: FastifyInstance): void {
           // Written for the person, not the client library. Someone poking at
           // a live demo should understand what happened and that it will pass.
           message: decision.global
-            ? `We're getting a lot of checks right now. Please try again in about ${decision.retryAfterSeconds} seconds — nothing is broken.`
-            : `That's a lot of checks in a short time. Please wait about ${decision.retryAfterSeconds} seconds and try again — re-checking a message you've already checked is always free.`,
+            ? `We're getting a lot of checks right now. Please try again in about ${decision.retryAfterSeconds} seconds. Nothing is broken.`
+            : `That's a lot of checks in a short time. Please wait about ${decision.retryAfterSeconds} seconds and try again. Re-checking a message you've already checked is always free.`,
           retry_after_seconds: decision.retryAfterSeconds,
         });
       }

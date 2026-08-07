@@ -1,37 +1,41 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Compose — the input well, the counter, and the example slips.
-   The state should feel inviting rather than clinical: a sheet to write on,
-   not a form to fill in.
+   Compose — the input panel, the example slips, and the notice state
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.well {
-  position: relative;
-  background: var(--paper-deep);
-  border: 1px solid var(--paper-edge);
-  border-radius: var(--radius);
-  padding: 1rem 1.05rem 0.7rem;
-  transition:
-    border-color var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease),
-    background-color var(--dur) var(--ease);
+.checker {
+  width: min(100% - (var(--bleed) * 2), 56rem);
+  margin-inline: auto;
 }
 
-/* Focus lifts the well toward the light rather than outlining it — the field
-   becomes the brightest thing on the page, which is where the eye should be. */
+.compose__panel {
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 1.2rem + 1.8vw, 2.5rem);
+}
+
+.compose__title { margin: 0 0 0.5rem; color: var(--primary); }
+.compose__sub { margin: 0 0 1.75rem; font-size: var(--text-body-md); color: var(--on-surface-variant); max-width: 52ch; }
+
+.well {
+  border-radius: var(--radius);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  padding: 1rem 1.1rem 0.75rem;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
 .well:focus-within {
-  background: var(--paper-lift);
-  border-color: oklch(70% 0.055 254);
-  box-shadow: 0 0 0 4px oklch(60% 0.09 254 / 0.13);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(123, 84, 85, 0.14);
 }
 
 .well__label {
   display: block;
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
-  letter-spacing: var(--label-track);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: 0.55rem;
+  color: var(--on-surface-variant);
+  margin-bottom: 0.6rem;
 }
 
 .well textarea {
@@ -40,77 +44,50 @@
   border: 0;
   padding: 0;
   background: transparent;
-  color: var(--ink);
+  color: var(--on-surface);
   font-family: var(--font-ui);
-  font-size: var(--text-base);
+  /* 17px+ so iOS never zooms the viewport on focus, and because this audience
+     needs to actually read what they pasted. */
+  font-size: var(--text-body-lg);
   line-height: 1.6;
-  /* No resize grip: an unstyled artefact in the corner of an otherwise
-     deliberate surface, and the field already fits a long paste by scrolling. */
   resize: none;
-  min-height: 7rem;
+  min-height: 8rem;
   max-height: 34vh;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--paper-edge) transparent;
 }
-
 .well textarea:focus { outline: none; }
-.well textarea::placeholder { color: var(--ink-faint); }
+.well textarea::placeholder { color: var(--on-surface-variant); opacity: 0.7; }
 
 .well__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 1.6rem;
-  margin-top: 0.35rem;
+  min-height: 1.75rem;
+  margin-top: 0.5rem;
 }
 
-.counter {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
+.counter { margin: 0; font-size: var(--text-label); color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
+.counter[data-state='warn'] { color: var(--caution); font-weight: 600; }
+.counter[data-state='over'] { color: var(--scam); font-weight: 700; }
+
+.field-error { margin: 0.85rem 0 0; color: var(--scam); font-size: var(--text-body-md); font-weight: 500; }
+
+/* Below the textarea, never over it. The design pass had this absolutely
+   positioned inside the field's bottom-right corner, where a long pasted
+   message runs underneath the button. */
+.compose__submit { width: 100%; margin-top: 1.25rem; }
+
+@media (min-width: 600px) {
+  .compose__submit { width: auto; min-width: 14rem; }
 }
-.counter[data-state='warn'] { color: var(--caution); }
-.counter[data-state='over'] { color: var(--danger); font-weight: 600; }
 
-.field-error {
-  margin: 0.7rem 0 0;
-  color: var(--danger);
-  font-size: var(--text-sm);
-  font-weight: 500;
-}
-
-.compose__cta { margin-top: 1.1rem; }
-
-/* The CTA borrows the slips' arrow, so the two ways into a check share one
-   gesture instead of looking like unrelated controls. */
-.compose__cta .chip__arrow {
-  width: 1rem;
-  height: 1rem;
-  color: currentColor;
-  opacity: 0.6;
-}
-.compose__cta:hover .chip__arrow { transform: translateX(3px); opacity: 1; }
-
-/* ── Example slips ──────────────────────────────────────────────────────
-   Not chips. Each one is a slip of paper clipped to the page — a shortcut a
-   person would actually reach for, with the same letterhead vocabulary as the
-   verdict card. */
+/* ── Example slips ──────────────────────────────────────────────────────── */
 
 .examples { margin-top: 2rem; }
-
-.examples__heading {
-  margin: 0 0 0.75rem;
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
-  letter-spacing: var(--label-track);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.examples__row { display: grid; gap: 0.55rem; }
+.examples__heading { margin: 0 0 0.9rem; }
+.examples__row { display: grid; gap: 0.65rem; }
 
 .chip {
   position: relative;
@@ -119,15 +96,16 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.1rem;
   text-align: left;
-  /* ≥44px tall on touch, comfortably. */
-  padding: 0.8rem 0.95rem;
-  min-height: 3rem;
-  border: 1px solid var(--paper-edge);
-  border-radius: var(--radius-sm);
-  background: transparent;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  background: var(--glass-soft);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   font: inherit;
-  color: var(--ink);
+  color: var(--on-surface);
   cursor: pointer;
   overflow: hidden;
   transition:
@@ -136,139 +114,91 @@
     transform var(--dur-fast) var(--ease);
 }
 
-/* A pen stroke down the leading edge, drawn on hover. This is the one place
-   the accent appears outside the wordmark and the focus ring, and it is what
+/* A stroke of the brand hue down the leading edge, drawn on hover — what
    makes the slips feel handled rather than listed. */
 .chip::before {
   content: '';
   position: absolute;
   inset: 0 auto 0 0;
   width: 2px;
-  background: var(--pen);
+  background: var(--primary);
   transform: scaleY(0);
   transform-origin: 50% 0;
   transition: transform 220ms var(--ease);
 }
 
-.chip:hover,
-.chip:focus-visible {
-  background: var(--paper-deep);
-  border-color: oklch(79% 0.024 80);
+.chip:hover, .chip:focus-visible {
+  background: var(--surface-container-lowest);
+  border-color: var(--primary-fixed-dim);
   transform: translateX(3px);
 }
-.chip:hover::before,
-.chip:focus-visible::before { transform: scaleY(1); }
+.chip:hover::before, .chip:focus-visible::before { transform: scaleY(1); }
 .chip:active { transform: translateX(3px) scale(0.995); transition-duration: 60ms; }
 
-.chip__text {
-  display: flex;
-  align-items: baseline;
-  gap: 0.55rem;
-  min-width: 0;
-}
-.chip__label { font-weight: 600; font-size: var(--text-sm); }
-.chip__hint {
-  font-size: var(--text-xs);
-  color: var(--ink-faint);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.chip__label { display: block; font-weight: 600; font-size: var(--text-body-md); }
+.chip__hint { display: block; margin-top: 0.15rem; font-size: var(--text-label); color: var(--on-surface-variant); }
 
-/* Drawn arrow rather than a glyph — it inherits colour, scales with the type,
-   and does not depend on an emoji or icon font rendering the same everywhere. */
 .chip__arrow {
-  flex: none;
-  width: 0.85rem;
-  height: 0.85rem;
-  color: var(--ink-faint);
+  width: 1rem; height: 1rem; flex: none;
+  color: var(--on-surface-variant);
   opacity: 0.55;
-  transition:
-    transform 220ms var(--ease),
-    opacity 220ms var(--ease),
-    color 220ms var(--ease);
+  transition: transform 220ms var(--ease), opacity 220ms var(--ease), color 220ms var(--ease);
 }
-.chip:hover .chip__arrow,
-.chip:focus-visible .chip__arrow {
-  transform: translateX(3px);
-  opacity: 1;
-  color: var(--pen);
+.chip:hover .chip__arrow, .chip:focus-visible .chip__arrow { transform: translateX(3px); opacity: 1; color: var(--primary); }
+
+@media (min-width: 700px) {
+  .examples__row { grid-template-columns: repeat(3, 1fr); }
+  .chip { grid-template-columns: 1fr; }
+  .chip__arrow { display: none; }
 }
 
-/* ── Error notice ───────────────────────────────────────────────────────
-   Stays on brand: same paper, same letterhead rhythm. A generic red box would
-   read as "the product is broken", and most of what lands here — a rate-limit
-   pause — is not a failure at all. */
+/* ── Notice (error / rate limit) ────────────────────────────────────────
+   Deliberately not a red error box. Most of what lands here is a rate-limit
+   pause, which is not a failure at all — and to a frightened reader, an
+   alarming error screen on a scam checker looks like the checker itself is
+   compromised. */
 
 .notice {
-  border: 1px solid var(--paper-edge);
-  background: var(--paper-deep);
-  border-radius: var(--radius);
-  padding: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.75rem, 1.4rem + 1.8vw, 2.75rem);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.notice__eyebrow {
-  margin: 0 0 0.7rem;
-  font-size: var(--label-size);
-  font-weight: var(--label-weight);
-  letter-spacing: var(--label-track);
-  text-transform: uppercase;
-  color: var(--ink-faint);
+.notice__icon {
+  width: 4.5rem; height: 4.5rem;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.5rem;
+  background: var(--tertiary-container);
+  color: var(--on-tertiary-container);
+}
+.notice__icon svg { width: 1.85rem; height: 1.85rem; }
+
+/* A rate-limit pause is a "wait", not a "broken" — it gets the calm hue. */
+.notice[data-kind='paused'] .notice__icon { background: var(--secondary-container); color: var(--on-secondary-container); }
+
+.notice__headline { margin: 0 0 0.85rem; color: var(--on-surface); }
+.notice__body { margin: 0 0 2rem; font-size: var(--text-body-lg); line-height: 1.6; color: var(--on-surface-variant); max-width: 46ch; text-wrap: pretty; }
+
+/* ── The /check page shell ──────────────────────────────────────────────── */
+
+/* Grid, not flex. As a flex container the animated stage wrapper became a
+   flex item that shrank to its content, so `.checker`'s own max-width and
+   auto margins had nothing to centre against and the panel sat hard left.
+   Grid children stretch by default, which is what this needs. */
+.check__main {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  padding-block: clamp(2.5rem, 2rem + 3vw, 5rem);
 }
 
-.notice__headline {
-  margin: 0 0 0.6rem;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--text-xl);
-  letter-spacing: -0.018em;
-  line-height: 1.15;
-}
-
-.notice__body { margin: 0 0 1.35rem; color: var(--ink-soft); }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Desktop composition
-   ───────────────────────────────────────────────────────────────────────────
-   From 900px the compose state sets in two columns — the sheet you write on,
-   and the slips you can reach for — rather than stacking into one tall ribbon
-   down the middle of a 16:9 frame.
-
-   Two reasons, and the second is the load-bearing one. It matches the letter's
-   own composition, so compose → result reads as one document changing rather
-   than two different layouts; and it takes the compose state from 866px tall to
-   comfortably inside a 720p recording frame without shrinking a single thing.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-@media (min-width: 900px) {
-  .compose__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-    column-gap: clamp(2rem, 1rem + 3vw, 3.25rem);
-    align-items: start;
-  }
-
-  .examples {
-    margin-top: 0;
-    border-left: 1px solid var(--paper-edge);
-    padding-left: clamp(2rem, 1rem + 3vw, 3.25rem);
-  }
-
-  /* The slips read as a stack of cards rather than a list of rows, so the hint
-     gets its own line instead of being clipped beside the label. */
-  .chip__text { display: block; }
-  .chip__hint { display: block; margin-top: 0.15rem; }
-
-  .notice { max-width: 42rem; }
-  /* A full-width ghost button across 42rem is a large empty rectangle — the
-     loudest thing on a screen whose whole job is to be reassuring. */
-  .notice .cta { max-width: 20rem; }
-}
-
-/* Short-and-wide viewports. The two-column grid already clears a 720p frame;
-   this is headroom for anything shorter — a 1366×600 laptop, or a browser with
-   a bookmarks bar and a downloads shelf open. */
-@media (min-width: 900px) and (max-height: 720px) {
-  .well textarea { height: 6rem; min-height: 0; }
-  .chip { min-height: 2.75rem; padding-block: 0.65rem; }
+/* In a short landscape viewport the card is what has to fit, not the page.
+   The generous vertical rhythm above costs 140px there, which is most of
+   the gap between "the whole verdict is in frame" and "it isn't". */
+@media (min-width: 900px) and (max-height: 780px) {
+  .check__main { padding-block: 1.25rem; }
 }

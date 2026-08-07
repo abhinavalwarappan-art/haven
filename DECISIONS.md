@@ -4,6 +4,343 @@ Judgment calls and why. Newest first.
 
 ---
 
+## Session 10 — the rename carried through to every system
+
+Session 8 renamed the product in the interface. This one carried it through
+everything the interface sits on, so the name is not just what the site says
+but what the project is called wherever it exists.
+
+| | Before | After |
+| --- | --- | --- |
+| Vercel project | `is-this-real` | `haven` |
+| Live URL | `is-this-real-app.vercel.app` | `haven-safe.vercel.app` |
+| GitHub | `abhinavalwarappan-art/is-this-real` | `abhinavalwarappan-art/haven` |
+| Local directory | `~/Downloads/is-this-real` | `~/Downloads/haven` |
+| Package name | `is-this-real` | `haven` |
+
+### The good domains were gone
+
+`haven.vercel.app`, `haven-app`, `haven-check`, `usehaven`, `gethaven` and
+`havenapp` are all taken by other people. Rather than guess, three that were
+still free got claimed up front (`haven-safe`, `tryhaven`,
+`haven-scam-check`) so the choice could be made from real options instead of
+from what happened to be available at the moment of deciding. `haven-safe`
+is the primary; the other two are held and point at the same deployment.
+
+### The old URL still works, deliberately
+
+`is-this-real-app.vercel.app` is still aliased to the current production
+deployment. It costs nothing to keep and the downside of dropping it is
+asymmetric: if that link has already gone out with a hackathon submission,
+retiring it turns a judge's click into a 404 at exactly the wrong moment.
+Nothing on the site references the old name, so it is a safety net rather
+than a second identity. One `vercel alias rm` retires it once the submission
+is confirmed updated.
+
+### What was deliberately not rewritten
+
+`~/.claude` holds session transcripts, task records and an old plan file that
+mention the previous name. Those are append-only history of work that actually
+happened under that name. Editing them would be falsifying a log to make the
+past match the present, which is a strange thing to do in a project whose
+whole subject is telling the real thing from the convincing-looking one.
+
+### Verification
+
+Every one of the six routes checked on **all four hostnames**, not just the
+new primary: `/`, `/check`, `/how-it-works`, `/privacy`, `/privacy-policy`
+and `/terms` return 200 on each. Build, 31/31 limits and 91/91 edge all
+re-run from the renamed directory, since a path move is exactly the kind of
+change that breaks quietly and only shows up later.
+
+---
+
+## Session 9 — four pages, a fuller hero, and plain punctuation
+
+### The landing page was answering questions nobody had asked yet
+
+How-it-works and privacy were both full sections on `/`, which made the front
+page a very long scroll and gave each argument less room than it needed. Both
+are also things a cautious person goes looking for *deliberately*, usually
+before pasting anything, so burying them mid-scroll was the wrong shape twice
+over.
+
+They are routes now: `/how-it-works` and `/privacy`. The landing page keeps a
+teaser of each that hands off with a link.
+
+The rule applied to the teasers: each has to be true and complete as far as it
+goes. Cutting to a cliffhanger to force the click is the exact pattern this
+product exists to argue against, so the teaser says the real thing and the
+page adds depth rather than the payoff.
+
+### How it works walks one message instead of describing a system
+
+An architecture diagram tells you the shape of a system. It does not tell you
+why the system had to be that shape. So the page takes one real scam text and
+follows it the whole way down a vertical timeline: what arrives, what pass one
+can prove about it on its own, what it hands over, what the model makes of
+that, and the answer that comes out.
+
+The four signals quote the actual fragments they matched (`.icu`,
+`within 24 hours`, `A $2.99 redelivery fee`) rather than naming rule
+identifiers, because the claim of that section is that pass one points at real
+text rather than producing a score. The verdict at the end is the real
+`VerdictCard`, not a screenshot, so the page cannot drift from the product.
+
+### The privacy page names a bug we shipped
+
+Three pillars, then a two-column ledger of what is and is not kept, then what
+a salted one-way hash actually buys, and then the PII leak from session 2:
+model answers were quoting card numbers and Social Security numbers back out
+of the pasted message, and the privacy tests passed for as long as there was
+no API key because the rules layer never echoes its input.
+
+That last section is the only part of a privacy page that is hard to fake, and
+it is the reason the rest is worth reading.
+
+### The policy says the thing most policies of its kind leave out
+
+`/privacy-policy` and `/terms` are linked from the bottom of `/privacy`, as
+asked, rather than from the footer.
+
+Two clauses are there because leaving them out would have been the easy
+choice. **The message text is sent to Google.** Reading it in context means
+calling the Gemini API, so what you paste leaves this site, and a privacy page
+that talks about hashes without saying that is misleading by omission. And
+**the stored fingerprints do not survive a redeploy**, because production runs
+the in-memory store, so "how long we keep it" is honestly hours rather than a
+retention period invented to sound rigorous.
+
+The policy also states that Haven is a student project rather than a company.
+Inventing a data protection officer would have been the first false statement
+on a site whose entire subject is telling truth from performance.
+
+### Em dashes, including the ones the model writes
+
+Removed from every piece of user-visible copy: the frontend strings, the
+verdict advice, the rate-limit message the backend sends, and the compose
+hints.
+
+The harder half is model output, which no amount of frontend editing reaches.
+The prompt now asks for plain punctuation, but the prompt is itself full of em
+dashes and models mirror the style they are shown, so asking was not going to
+be enough. Rewriting a tuned prompt to fix that would have risked the
+classification behaviour it was tuned for.
+
+So the guarantee is deterministic instead, in `plainPunctuation()` next to the
+existing redaction step:
+
+- A dash between digits becomes a hyphen, spaced or not. `2 — 4 hours` stays a
+  range rather than turning into `2, 4 hours`.
+- A tight dash between word characters becomes a hyphen. `Monday–Friday` keeps
+  its meaning.
+- Anything left is a clause break and becomes a comma.
+
+Seven cases checked against expected output, then confirmed end to end: a
+freshly generated fixture run produced **zero dashes across all 16 reasons**,
+and a novel gift-card scam pasted into production came back clean.
+
+### The hero holds the product now, not a description of it
+
+The scroll-cue arrow is gone. In its place the panel gained a second column
+showing a real scam text and the sentence Haven gives back for it, so the
+shape of an answer is visible before anyone clicks anything.
+
+Deliberately *not* the real `VerdictCard` at that size. Shrunk to fit a hero
+column it reads as a screenshot of something else, so this is a purpose-built
+reduction carrying only the two things worth seeing first. It is `aria-hidden`
+as well: a screen reader announcing a scam verdict there would reasonably
+suggest something had been checked.
+
+Sizing note worth keeping: the panel is 61rem rather than 58rem because at
+1.05fr the copy column came out 413px against the 447px the two hero buttons
+need, and the secondary dropped underneath the primary.
+
+### Verification
+
+- **Zero em dashes and zero emoji** in rendered text across all six routes,
+  measured from `innerText` rather than from the source.
+- **106 text elements audited for contrast** across the five content routes
+  with the OKLCH-aware converter from last session. Zero failures, tightest
+  6.14:1 against a 4.5 requirement.
+- **Every navigation path clicked in production**, not just fetched: privacy
+  to policy, policy to terms, terms to how-it-works. All land at scroll
+  position 0, which matters because React Router preserves scroll and
+  following a link from the bottom of one page would otherwise drop you two
+  thirds of the way down the next one.
+- All six routes return 200 on a **direct hit**, not only via in-app links.
+- No horizontal overflow at 390×844 on any route; no element left stuck at
+  opacity 0 after the reveals settle.
+- Backend untouched apart from copy and the sanitizer, and re-verified:
+  **31/31** limits, **91/91** edge, **16/16** fixtures with 0 cried wolf and
+  0 missed.
+
+### Two things left deliberately
+
+**Inline links inside legal prose are under 44px tall.** They are ordinary
+sentence links, and WCAG 2.2's target-size rule exempts targets whose size is
+constrained by the line-height of surrounding text. Making them 44px would
+mean breaking sentences apart. Every standalone control is still ≥44px.
+
+**The policy and terms are not linked from the footer.** They were asked for at
+the bottom of the privacy page and that is where they are. A footer link on
+every page is the more conventional placement and is a one-line change if
+wanted.
+
+---
+
+## Session 8 — renamed to Haven, and a new visual language
+
+### "Is This Real?" was a question, not a name
+
+A product name has to survive being said out loud once and remembered an hour
+later. "Is This Real?" is a sentence with punctuation in it, and it describes
+the user's panic rather than what we do about it. **Haven**, and the line under
+it is "Your safe place to check anything."
+
+The name change is presentation only. The API, the routes, the response shape
+and the deployment host were all unchanged at the time, so nothing that was
+working had to be re-verified from scratch. (The host moved later, in session
+10, when the rename was carried through to Vercel and GitHub.)
+
+### The aesthetic is soft dreamcore, and that is a deliberate risk
+
+Every other entrant in a cybersecurity bracket will ship dark mode, monospace
+and a neon padlock. That look is designed to make the *builder* feel serious.
+The person who actually needs this is frightened and possibly 75, and a black
+terminal screen reads to them as "you are now in the dangerous part of the
+computer."
+
+So: pastel sky, glossy reflective surfaces, glass panels, soft light. The site
+should feel like a window opening, not an alarm going off. The palette is a
+real Material 3 tonal set taken verbatim from the design pass rather than
+eyeballed, so the built site and the reference cannot drift apart.
+
+Colour discipline holds the whole thing together: the page is quiet pastel
+everywhere except the verdict card, so when a saturated colour finally appears
+it means something.
+
+### M3 gave one alarm colour, and a scam checker needs three answers
+
+The generated tonal palette ships `error` and nothing else with any weight.
+Three verdicts have to be tellable apart from across a room, so `--safe`
+(green) and `--caution` (amber) were added in the same tonal style and checked
+for contrast against the glass they actually sit on, not against white.
+
+Green rather than the palette's blue for "safe", because blue is already doing
+work as `secondary`. Two meanings sharing one colour is how people misread a
+screen.
+
+The design pass left the safe headline near-black. That is the one verdict
+where the colour carried no information at all, so it is green here.
+
+### A checkmark next to "the link is fake" reads as *verified*
+
+The reasons list used tick marks. On a scam verdict that is actively
+misleading: a ✓ beside "this link is fake" says the opposite of what it means.
+Replaced with a neutral dash in the verdict's colour. The hue already carries
+the judgement; the marker just needs to not argue with it.
+
+### The hero photograph, and the four that failed
+
+Five background images were generated. Four came back as a coffee mug, a
+black-and-white staircase, books on a floor and dark navy waves. One — a
+glossy arched interior with a pink cloud sky — was exactly right. Rather than
+burn the remaining credits chasing the other four, the good one carries the
+hero and CSS gradients do the rest of the atmosphere.
+
+The source PNG was 6.5MB. WebP at q90, resized to 2200px wide: **226kB**, a
+96.5% cut, and the hero is the only image on the site.
+
+### Three.js is gone
+
+Last session's WebGL message-stack was an 883kB lazy chunk. The photograph
+does the job it was doing, so `three`, `@react-three/fiber` and `@types/three`
+came out of the dependency list entirely. The whole app is now 121kB gzipped
+with no second chunk behind it.
+
+### Dead fonts, found by asking the browser rather than guessing
+
+Shipping a bold Caslon face felt obviously right and was wrong: every display
+moment on the site is weight 400, and the only bold text (`<b>` in the stats
+line and the how-it-works copy) resolves to Plus Jakarta Sans. Confirmed by
+walking every `<b>`, `<strong>` and `<em>` on the page and reading the
+computed family off each one, rather than by reading the stylesheets and
+concluding. Three leftover Instrument faces from the session 6–7 design were
+dead the same way.
+
+Font payload: 121kB → **44kB**, two files.
+
+Chrome then warned that both remaining fonts were "preloaded but not used".
+That warning is what a mismatched `crossorigin` looks like, which would mean
+downloading every font twice, so it was worth chasing: counting actual
+`performance` resource entries on a cold load shows exactly one request per
+font and both applied. The warning is Chrome's heuristic misfiring, not a
+double fetch.
+
+### The 720p frame needed the page compressed, not just the card
+
+Sessions 6–7 sized the verdict card for a 1280×720 capture. That work was
+still correct and still not enough: at a 670px viewport the card compressed to
+664px but the nav, the 140px of vertical rhythm around it and the footer
+pushed it 356px past the fold. The card was fitting a frame the page was not.
+
+Two tiers now, because a short viewport is two different situations:
+
+- **`max-height: 780px`** tightens spacing and shrinks the icon. A 13" laptop
+  windowed lands here, and it is a person reading.
+- **`max-height: 700px`** also drops the verdict icon. A screen capture lands
+  here, and it is a still frame nobody scrolls. The icon is the one element on
+  that card carrying no information the colour is not already carrying.
+
+Worst case measured live (uncertain verdict, three reasons, advice panel):
+**530px tall, fits 1280×670 with 47px to spare**, CTA included.
+
+### Verification
+
+Everything below was measured, not assumed.
+
+- **All three verdicts driven through the real classifier**, not fixtures.
+  Scam and safe came from the demo chips. The wrong-number chip returns `scam`
+  — the AI layer catching a zero-red-flags case, which is the behaviour we
+  want but meant the third state was still unproven, so the borderline
+  contractor-Zelle fixture was used to produce a genuine
+  `uncertain_be_careful`. All three render with the right hue end to end.
+- **Both failure states**, forced with a stubbed 429 and 500 rather than by
+  hammering the live limiter. The 429 gets the calm blue "Just a moment"; the
+  500 gets neutral. Both offer a retry.
+- **Contrast, with a hand-written OKLCH→sRGB conversion.** The advice panel
+  computes to `oklch(0.927 0.0507 75.75 / 0.32)`, and neither a regex nor a
+  canvas `fillStyle` resolves that — session 7 got a fabricated ~1.05:1 on
+  every element that way. Backgrounds are composited up the tree over the
+  *darkest* of the three body gradient washes, so the number is the worst case
+  rather than a flattering one. 46 text elements, **zero failures**, tightest
+  5.74:1 against a 3.0 requirement.
+- **Reduced motion, verified twice over.** The first attempt proved nothing:
+  Motion queries the boolean `(prefers-reduced-motion)` form, not
+  `(… : reduce)`, and it initialises a module-level listener on first hook
+  use, so a `matchMedia` stub installed after mount never reaches it. Stubbing
+  before the bundle runs flips `scrollTo` from `smooth` to `auto` and the
+  verdict card paints already settled instead of animating in. Scrolling the
+  full 6000px landing page then found **zero elements stuck at opacity 0**,
+  which is the failure mode that actually matters.
+- Backend untouched and confirmed so: **31/31** limits, **91/91** edge cases.
+- No console errors, no third-party requests, no horizontal overflow at
+  390×844, all touch targets ≥44px.
+- Live: `/` and `/check` both 200 on a direct hit, demo chip round-trips the
+  production API in 1.9s.
+
+### A layout bug worth recording
+
+The compose panel sat hard left. `.check__main` was `display: flex` with
+`align-items: center`, which made the animated stage wrapper a flex item that
+shrank to its content — so `.checker`'s own `max-width` and auto margins had
+nothing to centre against. Grid children stretch by default, so
+`display: grid; align-content: center` fixes it. Flex `align-items: center` on
+a *column* of full-width content is almost always this bug.
+
+---
+
 ## Session 7 — a landing page, and the tool moved to /check
 
 ### The site was the tool, with nothing in front of it

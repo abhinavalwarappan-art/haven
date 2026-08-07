@@ -1,0 +1,442 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Haven — the content pages
+   ───────────────────────────────────────────────────────────────────────────
+   /how-it-works, /privacy, /privacy-policy, /terms.
+
+   These are reading pages, not selling pages, so the rules are different from
+   landing.css: a hard measure cap on every block of prose, more air between
+   ideas, and no full-bleed imagery competing with the words.
+
+   Class-name discipline: everything here is prefixed (`masthead__`, `walk__`,
+   `ledger__`, `legal__`, `docs__`). Session 7 lost an afternoon to a landing
+   rule named `.stats` silently restyling the tool's footer counter, and the
+   fix is to never introduce a bare generic name into a shared stylesheet.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.page { display: flex; flex-direction: column; min-height: 100dvh; overflow-x: clip; }
+
+/* ── Masthead ───────────────────────────────────────────────────────────
+   Every content page opens the same way, so moving between them feels like
+   turning a page rather than arriving somewhere else. */
+
+.masthead {
+  padding-block: clamp(3.5rem, 2.5rem + 5vw, 7rem) 0;
+}
+
+/* Shares the exact container of `.section__inner` so the masthead and every
+   section below it sit on the same left edge. Capping the width here instead
+   would centre the block against the sections, which reads as a misalignment
+   rather than as a choice. */
+.masthead__inner {
+  width: min(100% - (var(--bleed) * 2), var(--measure));
+  margin-inline: auto;
+}
+
+.masthead__eyebrow { color: var(--primary); margin-bottom: 1rem; }
+.masthead__title { margin: 0 0 1.5rem; max-width: 20ch; }
+
+.masthead__lede {
+  margin: 0;
+  font-size: var(--text-body-lg);
+  line-height: 1.65;
+  color: var(--on-surface-variant);
+  max-width: 58ch;
+  text-wrap: pretty;
+}
+
+/* The masthead already carries the opening space, so the section that follows
+   it should not open with a second full helping of it. */
+.masthead + .section { padding-top: clamp(2.5rem, 1.8rem + 3vw, 4.5rem); }
+
+/* ── Prose ──────────────────────────────────────────────────────────────
+   One measure for every run of body copy on these pages. 68ch is a little
+   wider than the classic 66 because the type is set fairly small here. */
+
+.prose { max-width: 68ch; }
+.prose p {
+  margin: 0 0 1.15rem;
+  font-size: var(--text-body-md);
+  line-height: 1.7;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+.prose p:last-child { margin-bottom: 0; }
+.prose ul { margin: 0 0 1.15rem; padding-left: 1.15rem; }
+.prose li {
+  margin-bottom: 0.6rem;
+  font-size: var(--text-body-md);
+  line-height: 1.7;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+.prose a { color: var(--primary); text-underline-offset: 3px; }
+.prose a:hover { text-decoration-thickness: 2px; }
+.prose b { color: var(--on-surface); font-weight: 700; }
+
+/* ═══ /how-it-works ═════════════════════════════════════════════════════ */
+
+/* ── The walkthrough ────────────────────────────────────────────────────
+   A single vertical line down the page with the stages hung off it, so the
+   message visibly travels somewhere rather than sitting in four unrelated
+   cards. The line is drawn on the list, not between items, so it cannot
+   develop gaps when a stage grows. */
+
+.walk__stages {
+  list-style: none;
+  margin: clamp(2.5rem, 2rem + 2.4vw, 4rem) 0 0;
+  padding: 0;
+  position: relative;
+}
+
+.walk__stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: 0 1.25rem;
+  padding-bottom: clamp(2.5rem, 2rem + 2.4vw, 4rem);
+}
+.walk__stage:last-child { padding-bottom: 0; }
+
+/* The connector. Drawn per-stage from the dot downward so the last stage
+   does not trail a line into nothing. */
+.walk__stage:not(:last-child) .walk__marker::after {
+  content: '';
+  position: absolute;
+  top: 2.75rem;
+  bottom: -0.5rem;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, var(--outline-variant), rgba(212, 194, 194, 0.25));
+}
+
+.walk__marker { position: relative; display: flex; justify-content: center; }
+
+.walk__dot {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-items: center;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  color: var(--tertiary);
+  box-shadow: var(--shadow-soft);
+}
+.walk__dot svg { width: 1.3rem; height: 1.3rem; }
+
+.walk__dot--rules {
+  background: var(--primary-container);
+  border-color: transparent;
+  color: var(--on-primary-container);
+  box-shadow: 0 0 24px rgba(244, 194, 194, 0.5);
+}
+.walk__dot--context {
+  background: var(--secondary-container);
+  border-color: transparent;
+  color: var(--on-secondary-container);
+  box-shadow: 0 0 24px rgba(205, 225, 252, 0.55);
+}
+.walk__dot--hollow { background: transparent; box-shadow: none; }
+.walk__dot--end {
+  background: var(--scam-container);
+  border-color: transparent;
+  color: var(--on-scam-container);
+}
+
+.walk__body { min-width: 0; padding-top: 0.35rem; }
+
+.walk__step {
+  margin: 0 0 0.35rem;
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--tertiary);
+}
+
+.walk__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 1.25rem + 0.7vw, 1.85rem);
+  line-height: 1.25;
+  color: var(--on-surface);
+  margin: 0 0 1rem;
+}
+
+.walk__note {
+  margin: 1.15rem 0 0;
+  max-width: 62ch;
+  font-size: var(--text-body-md);
+  line-height: 1.7;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+.walk__note:first-of-type { margin-top: 0; }
+
+.walk__message {
+  margin: 0;
+  border-radius: var(--radius);
+  padding: clamp(1.1rem, 0.95rem + 0.8vw, 1.5rem);
+  max-width: 44rem;
+}
+
+.walk__text {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-body-md);
+  line-height: 1.65;
+  color: var(--on-surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.walk__verdict { margin-top: 1.5rem; max-width: 46rem; }
+
+/* ── Signals ────────────────────────────────────────────────────────────
+   The quoted fragment leads, because the whole claim of this section is that
+   pass one points at real text rather than producing a score. */
+
+.signals { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 0.75rem; max-width: 44rem; }
+
+.signal {
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.signal__quote {
+  justify-self: start;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--on-scam-container);
+  background: var(--scam-container);
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.signal__flag {
+  margin: 0 0 0.2rem;
+  font-size: var(--text-body-md);
+  font-weight: 600;
+  color: var(--on-surface);
+}
+.signal__note {
+  margin: 0;
+  font-size: 0.925rem;
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+
+@media (min-width: 720px) {
+  .signal { grid-template-columns: 12rem minmax(0, 1fr); align-items: baseline; gap: 1.25rem; }
+}
+
+/* ── The counterexample ─────────────────────────────────────────────────── */
+
+.counter { margin-top: clamp(2rem, 1.6rem + 1.6vw, 3rem); display: grid; gap: var(--gutter); align-items: start; }
+
+.counter__message {
+  margin: 0;
+  border-radius: var(--radius);
+  padding: clamp(1.1rem, 0.95rem + 0.8vw, 1.5rem);
+}
+
+.counter__body { max-width: 62ch; }
+.counter__body p {
+  margin: 0 0 1.15rem;
+  font-size: var(--text-body-md);
+  line-height: 1.7;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+.counter__body p:last-child { margin-bottom: 0; }
+.counter__body b { color: var(--on-surface); font-weight: 700; }
+
+@media (min-width: 900px) {
+  .counter { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); gap: clamp(2rem, 1.5rem + 2vw, 3.5rem); }
+  .counter__message { position: sticky; top: 6rem; }
+}
+
+/* ── Offline callout ────────────────────────────────────────────────────── */
+
+.callout--offline { display: grid; gap: 1.25rem; }
+.callout__icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-items: center;
+  background: var(--tertiary-container);
+  color: var(--on-tertiary-container);
+}
+.callout__icon svg { width: 1.4rem; height: 1.4rem; }
+
+@media (min-width: 720px) {
+  .callout--offline { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 1.5rem; }
+}
+
+/* ── Page-level CTA ─────────────────────────────────────────────────────── */
+
+.pagecta {
+  margin-top: clamp(2.5rem, 2rem + 2vw, 4rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* ═══ /privacy ══════════════════════════════════════════════════════════ */
+
+/* ── The ledger ─────────────────────────────────────────────────────────
+   Two columns, deliberately equal weight. Making "what is not kept" the
+   larger or louder side would turn a factual list into a boast. */
+
+.ledger { margin-top: clamp(2rem, 1.6rem + 1.6vw, 3rem); display: grid; gap: var(--gutter); }
+
+.ledger__col { border-radius: var(--radius-lg); padding: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem); }
+.ledger__title { margin: 0 0 1.15rem; }
+.ledger__col--kept .ledger__title { color: var(--secondary); }
+.ledger__col--not .ledger__title { color: var(--primary); }
+
+.ledger__list { margin: 0; padding: 0; list-style: none; }
+.ledger__list li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.85rem;
+  font-size: var(--text-body-md);
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+  text-wrap: pretty;
+}
+.ledger__list li:last-child { margin-bottom: 0; }
+
+/* A dash, matching the verdict card's reason markers. A tick and a cross here
+   would read as good and bad, and neither column is either. */
+.ledger__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 0.85rem;
+  height: 2px;
+  border-radius: 2px;
+  opacity: 0.75;
+}
+.ledger__col--kept .ledger__list li::before { background: var(--secondary); }
+.ledger__col--not .ledger__list li::before { background: var(--primary); }
+
+@media (min-width: 768px) { .ledger { grid-template-columns: 1fr 1fr; } }
+
+/* ── Document links ─────────────────────────────────────────────────────── */
+
+/* The `.docs` rule below draws its own top border and padding, so the section
+   does not need a second full helping of vertical space above it. */
+.section--docs {
+  padding-top: clamp(1.5rem, 1.2rem + 1.2vw, 2.5rem);
+  padding-bottom: clamp(4rem, 3rem + 4vw, 7rem);
+}
+
+.docs {
+  border-top: 1px solid var(--outline-variant);
+  padding-top: clamp(2rem, 1.6rem + 1.6vw, 3rem);
+}
+
+.docs__head { max-width: 46ch; margin-bottom: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem); }
+.docs__head h2 { margin: 0 0 0.6rem; }
+.docs__note { margin: 0; font-size: var(--text-body-md); line-height: 1.6; color: var(--on-surface-variant); }
+
+.docs__links { display: grid; gap: var(--gutter); }
+
+.doclink {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: clamp(1.35rem, 1.15rem + 1vw, 1.85rem);
+  /* Room on the right for the arrow, which is pinned rather than stacked:
+     as a third grid row it sat orphaned under the description with nothing
+     beside it, reading as a stray glyph rather than as direction. */
+  padding-right: clamp(3.25rem, 3rem + 1vw, 3.75rem);
+  display: grid;
+  gap: 0.45rem;
+  text-decoration: none;
+  /* ≥44px by construction, but stated so a future padding change cannot
+     quietly take it below the touch minimum. */
+  min-height: 44px;
+  transition: transform 200ms var(--ease), box-shadow 240ms var(--ease);
+}
+.doclink:hover { transform: translateY(-2px); box-shadow: var(--shadow-deep); }
+
+.doclink__label {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  color: var(--primary);
+}
+.doclink__sub {
+  font-size: var(--text-body-md);
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+  max-width: 44ch;
+  text-wrap: pretty;
+}
+.doclink svg {
+  position: absolute;
+  top: clamp(1.35rem, 1.15rem + 1vw, 1.85rem);
+  right: clamp(1.35rem, 1.15rem + 1vw, 1.85rem);
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--primary);
+  transition: transform 200ms var(--ease);
+}
+.doclink:hover svg { transform: translateX(4px); }
+
+@media (min-width: 768px) { .docs__links { grid-template-columns: 1fr 1fr; } }
+
+/* ═══ /privacy-policy and /terms ════════════════════════════════════════ */
+
+.legal { padding-top: clamp(1.5rem, 1.2rem + 1.2vw, 2.5rem); }
+
+.legal__updated {
+  margin: 0 0 clamp(2rem, 1.6rem + 1.6vw, 3rem);
+  font-size: var(--text-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--tertiary);
+}
+
+/* Numbered by CSS rather than by markup, so a clause can be added or moved
+   without renumbering anything by hand. */
+.legal__clauses { list-style: none; margin: 0; padding: 0; counter-reset: clause; max-width: 46rem; }
+
+.legal__clause {
+  counter-increment: clause;
+  padding-bottom: clamp(2rem, 1.6rem + 1.6vw, 3rem);
+  margin-bottom: clamp(2rem, 1.6rem + 1.6vw, 3rem);
+  border-bottom: 1px solid var(--outline-variant);
+}
+.legal__clause:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+
+.legal__heading {
+  display: flex;
+  gap: 0.85rem;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 1.2rem + 0.7vw, 1.75rem);
+  line-height: 1.25;
+  color: var(--on-surface);
+  margin: 0 0 1rem;
+  text-wrap: balance;
+}
+.legal__heading::before {
+  content: counter(clause);
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}

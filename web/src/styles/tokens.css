@@ -1,102 +1,149 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   "Is This Real?" — design tokens
+   Haven — design tokens
    ───────────────────────────────────────────────────────────────────────────
-   Direction: warm paper, editorial serif, calm authority. Deliberately NOT the
-   dark-terminal security aesthetic — the person using this is worried, possibly
-   75, and a black screen full of red alerts would frighten them. Panic makes
-   people act, and acting is the danger.
+   Direction: soft dreamcore. Pastel sky, glossy reflective surfaces, gentle
+   light. Deliberately NOT the dark-terminal security aesthetic and no longer
+   the warm-paper editorial look of sessions 6-7 — the person using this is
+   frightened, possibly 75, and Haven should feel like a window opening onto
+   clear sky rather than an alarm going off.
 
-   Colour discipline: the page is warm paper and ink, with exactly one brand
-   accent (blue, like a pen). The three verdict hues are the *only* other colour
-   on the page and they appear on the verdict card alone, so when one shows up
-   it reads instantly instead of competing with decoration.
+   The palette is a genuine Material Design 3 tonal set, taken verbatim from
+   the Stitch design pass (docs/HAVEN_STITCH_EXPORT.html) rather than
+   approximated, so the built site and the design reference cannot drift.
+
+   Colour discipline: the page is pastel and quiet almost everywhere. The
+   three verdict hues are the only saturated colour on the site and they
+   appear on the verdict card alone, so when one shows up it reads instantly.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Paper ─────────────────────────────────────────────────────────────
-     Never pure white. Warmed at the chroma rather than the lightness — cream
-     instead of grey — so the contrast ratios verified for the ink tiers hold. */
-  --paper:        oklch(97% 0.016 88);
-  --paper-deep:   oklch(94.2% 0.020 86);
-  --paper-edge:   oklch(88.5% 0.022 84);
-  --paper-lift:   oklch(98.6% 0.012 90);
+  /* ── M3 core roles ─────────────────────────────────────────────────────
+     Verbatim from the design pass. Do not "tidy" these values — they are a
+     generated tonal palette and the relationships between them are what make
+     the surfaces sit together. */
+  --primary:                    #7b5455;
+  --on-primary:                 #ffffff;
+  --primary-container:          #f4c2c2;
+  --on-primary-container:       #734e4e;
+  --primary-fixed:              #ffdad9;
+  --primary-fixed-dim:          #ecbaba;
 
-  --ink:          oklch(23% 0.020 60);
-  --ink-soft:     oklch(44% 0.018 66);
-  /* The quiet tier still has to be genuinely readable — this audience skews
-     older. Measured against --paper for WCAG AA at small sizes; do not lighten
-     without re-measuring. */
-  --ink-faint:    oklch(51% 0.017 70);
+  --secondary:                  #4d6077;
+  --on-secondary:               #ffffff;
+  --secondary-container:        #cde1fc;
+  --on-secondary-container:     #51647b;
+  --secondary-fixed:            #d0e4ff;
 
-  /* ── Pen ───────────────────────────────────────────────────────────────
-     The single brand accent: blue ink on cream paper. Carries the wordmark's
-     question mark, focus rings, the progress bar and nothing else. */
-  --pen:          oklch(40% 0.115 254);
-  --pen-soft:     oklch(56% 0.100 256);
+  --tertiary:                   #5c5d6e;
+  --on-tertiary:                #ffffff;
+  --tertiary-container:         #cdcde0;
+  --on-tertiary-container:      #555767;
+  --tertiary-fixed:             #e1e1f5;
+
+  --background:                 #faf9f6;
+  --on-background:              #1a1c1a;
+  --surface:                    #faf9f6;
+  --on-surface:                 #1a1c1a;
+  --on-surface-variant:         #504444;
+  --surface-container-lowest:   #ffffff;
+  --surface-container-low:      #f4f3f1;
+  --surface-container:          #efeeeb;
+  --surface-container-high:     #e9e8e5;
+  --surface-container-highest:  #e3e2e0;
+
+  --outline:                    #827473;
+  --outline-variant:            #d4c2c2;
 
   /* ── Verdict palette ───────────────────────────────────────────────────
-     Earthy and considered, not neon. A scam verdict should land as serious,
-     not as a klaxon. Each hue ships as a triad: the ink, a paper tint it can
-     sit on, and an edge.
+     The one place saturated colour is allowed.
 
-     The tints are deliberately barely there — a blush on the same warm stock,
-     not a coloured panel. A fully pink card reads as an alarm, and alarm is the
-     state that makes people act on a scam instead of pausing. The signal is
-     carried by the ink: the headline, the rule, the eyebrow and the dashes all
-     take the hue at full strength, which is unmissable at a glance while the
-     surface stays the same calm paper as every other screen. */
-  --danger:       oklch(46% 0.175 27);
-  --danger-tint:  oklch(97% 0.010 42);
-  --danger-edge:  oklch(82% 0.080 32);
+     `error` and its container come from the M3 set. Green and amber do not
+     exist in that palette — a scam checker needs three clearly separable
+     answers and the generated palette only supplies one alarm colour, so
+     these two were added in the same tonal style and checked for AA against
+     the glass surfaces they actually sit on.
 
-  --caution:      oklch(48% 0.130 68);
-  --caution-tint: oklch(97.2% 0.015 86);
-  --caution-edge: oklch(84% 0.075 78);
+     Green, not the palette's blue, carries "safe": blue is already doing
+     work as `secondary` (the context-pass accent, the safe-verdict icon
+     bloom), and reusing it for the verdict would make two different meanings
+     share one colour. */
+  --scam:                       #ba1a1a;
+  --scam-container:             #ffdad6;
+  --on-scam-container:          #93000a;
 
-  --safe:         oklch(45% 0.110 152);
-  --safe-tint:    oklch(97% 0.011 158);
-  --safe-edge:    oklch(82% 0.062 152);
+  --safe:                       #2f6a4d;
+  --safe-container:             #cfe9dc;
+  --on-safe-container:          #1b5138;
 
-  /* ── Type ──────────────────────────────────────────────────────────────── */
-  --font-display: 'Instrument Serif', 'Iowan Old Style', Charter, Georgia, serif;
-  --font-ui:      'Instrument Sans', 'Avenir Next', system-ui, sans-serif;
+  --caution:                    #96540a;
+  --caution-container:          #fbe3c2;
+  --on-caution-container:       #6b3b06;
 
-  --text-xs:   0.8125rem;
-  --text-sm:   0.9375rem;
-  --text-base: clamp(1.0625rem, 1.01rem + 0.28vw, 1.1875rem);
-  --text-lg:   clamp(1.1875rem, 1.10rem + 0.42vw, 1.375rem);
-  --text-xl:   clamp(1.6rem, 1.40rem + 0.95vw, 2.1rem);
-  /* The verdict owns the screen. Instrument Serif is high-contrast and tightly
-     apertured, so it wants negative tracking and a line-height under 1. */
-  --verdict:   clamp(2.6rem, 1.85rem + 3.6vw, 4.4rem);
+  /* ── Type ──────────────────────────────────────────────────────────────
+     Libre Caslon Text carries every display moment; Plus Jakarta Sans does
+     all the reading. Both self-hosted (see fonts.css) — no CDN request on a
+     page about not trusting things, and nothing to fail on venue wi-fi. */
+  --font-display: 'Libre Caslon Text', 'Iowan Old Style', Charter, Georgia, serif;
+  --font-ui:      'Plus Jakarta Sans', 'Avenir Next', system-ui, sans-serif;
 
-  /* Small letterspaced label used for every section heading. Defined once so
-     the eyebrow, "why we think so" and "what to do" are unmistakably a set. */
-  --label-size:    var(--text-xs);
-  --label-track:   0.085em;
-  --label-weight:  600;
+  /* Scale from the design pass. Display sizes are fluid so the 64px desktop
+     figure degrades sensibly rather than snapping at a breakpoint. */
+  --text-display-lg: clamp(2.75rem, 1.9rem + 3.6vw, 4rem);
+  --text-display-md: clamp(2.1rem, 1.6rem + 2.1vw, 3rem);
+  --text-headline:   clamp(1.6rem, 1.35rem + 1.05vw, 2rem);
+  --text-body-lg:    1.125rem;
+  --text-body-md:    1rem;
+  --text-label:      0.875rem;
+
+  --leading-display-lg: 1.06;
+  --leading-display-md: 1.14;
+  --leading-headline:   1.22;
+  --leading-body:       1.55;
+
+  --track-display: -0.02em;
+  --track-label:    0.05em;
+
+  /* ── Shape ─────────────────────────────────────────────────────────────── */
+  --radius:      1rem;
+  --radius-lg:   2rem;
+  --radius-xl:   3rem;
+  --radius-full: 9999px;
 
   /* ── Space ─────────────────────────────────────────────────────────────── */
-  --gap:        clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
-  --radius:     18px;
-  --radius-sm:  12px;
+  --bleed:     clamp(1.25rem, 0.7rem + 2.6vw, 2rem);
+  --gutter:    1.5rem;
+  --measure:   80rem;
+  --section-y: clamp(4rem, 2.6rem + 6.5vw, 8rem);
+
+  /* ── Glass ─────────────────────────────────────────────────────────────
+     One panel treatment, three weights. `strong` is for panels that sit over
+     the hero photograph, where the export's 0.4 alpha left body text fighting
+     the image behind it. */
+  --glass:        rgba(255, 255, 255, 0.52);
+  --glass-strong: rgba(255, 255, 255, 0.88);
+  --glass-soft:   rgba(255, 255, 255, 0.38);
+  --glass-edge:   rgba(255, 255, 255, 0.55);
+  --glass-blur:   blur(22px) saturate(1.05);
+
+  /* Shadows tinted toward the primary hue rather than neutral grey, so they
+     read as coloured light rather than dirt on the surface. */
+  --shadow-soft: 0 4px 24px rgba(123, 84, 85, 0.06);
+  --shadow-lift: 0 8px 32px rgba(123, 84, 85, 0.1);
+  --shadow-deep: 0 18px 48px rgba(123, 84, 85, 0.14);
 
   /* ── Motion ────────────────────────────────────────────────────────────
-     Shared with the Motion variants in the components so CSS transitions and
+     Shared with the Motion variants in lib/motion.ts so CSS transitions and
      JS animation never disagree about how this product moves. */
-  --dur-fast:   160ms;
-  --dur:        320ms;
-  --ease:       cubic-bezier(0.22, 1, 0.36, 1);
-
-  --shadow-lift:
-    0 1px 1px oklch(30% 0.02 60 / 0.04),
-    0 4px 10px oklch(30% 0.02 60 / 0.05),
-    0 16px 34px oklch(30% 0.02 60 / 0.07);
+  --dur-fast: 160ms;
+  --dur:      320ms;
+  --ease:     cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-contrast: more) {
   :root {
-    --ink-faint:  oklch(46% 0.016 70);
-    --paper-edge: oklch(72% 0.024 84);
+    --on-surface-variant: #3a3030;
+    --outline-variant:    #b09a9a;
+    --glass:              rgba(255, 255, 255, 0.86);
+    --glass-strong:       rgba(255, 255, 255, 0.94);
   }
 }

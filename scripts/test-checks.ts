@@ -101,7 +101,7 @@ function renderMarkdown(rows: Row[]): string {
 
   const out: string[] = [];
 
-  out.push('# Test Results — "Is This Real?"');
+  out.push('# Test Results: Haven');
   out.push('');
   out.push(
     `Generated: ${new Date().toISOString()}  ·  Model: \`${

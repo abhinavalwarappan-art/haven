@@ -1,6 +1,6 @@
-# Test Results — "Is This Real?"
+# Test Results — Haven
 
-Generated: 2026-08-06T09:36:47.779Z  ·  Model: `gemini-3.1-flash-lite`  ·  Effort: `low`
+Generated: 2026-08-07T19:01:57.761Z  ·  Model: `gemini-3.1-flash-lite`  ·  Effort: `low`
 
 ## Verdict on the verdicts
 
@@ -12,7 +12,7 @@ Generated: 2026-08-06T09:36:47.779Z  ·  Model: `gemini-3.1-flash-lite`  ·  Eff
 | Neighbouring verdict | 0 |
 | 🚨 Legitimate flagged as scam | **0** (good) |
 | 🚨 Scam called safe | **0** (good) |
-| Average latency | 1734 ms |
+| Average latency | 1663 ms |
 | Rules-only fallbacks | 0 |
 
 Test set: 8 scams · 5 legitimate · 3 borderline.
@@ -38,11 +38,11 @@ The project previously ran on Claude Opus 5, which scored the same 16/16 at ~6 s
 | 9 | Real shipping notification | legitimate | 🟢 likely safe | 🟢 likely safe | 95 | ✅ pass |
 | 10 | Real bank security alert | legitimate | 🟢 likely safe / 🟡 be careful | 🟢 likely safe | 95 | ✅ pass |
 | 11 | Real appointment reminder | legitimate | 🟢 likely safe | 🟢 likely safe | 100 | ✅ pass |
-| 12 | Real two-factor code | legitimate | 🟢 likely safe | 🟢 likely safe | 100 | ✅ pass |
-| 13 | Real subscription renewal notice | legitimate | 🟢 likely safe | 🟢 likely safe | 100 | ✅ pass |
+| 12 | Real two-factor code | legitimate | 🟢 likely safe | 🟢 likely safe | 95 | ✅ pass |
+| 13 | Real subscription renewal notice | legitimate | 🟢 likely safe | 🟢 likely safe | 95 | ✅ pass |
 | 14 | Contractor invoice via Zelle | borderline | 🟡 be careful / 🔴 scam | 🟡 be careful | 75 | ✅ pass |
-| 15 | Political fundraising text | borderline | 🟡 be careful / 🟢 likely safe | 🟡 be careful | 75 | ✅ pass |
-| 16 | School notice from unknown number | borderline | 🟡 be careful / 🟢 likely safe | 🟡 be careful | 65 | ✅ pass |
+| 15 | Political fundraising text | borderline | 🟡 be careful / 🟢 likely safe | 🟢 likely safe | 85 | ✅ pass |
+| 16 | School notice from unknown number | borderline | 🟡 be careful / 🟢 likely safe | 🟢 likely safe | 85 | ✅ pass |
 
 ## Full results
 
@@ -58,14 +58,14 @@ The project previously ran on Claude Opus 5, which scored the same 16/16 at ~6 s
 USPS: Your package has been held at our facility due to an incomplete address. Please update your delivery details within 24 hours or the parcel will be returned to sender. Update here: https://usps-trackdelivery.icu/redelivery A $2.99 red…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 100/100 · 1754 ms
+**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 100/100 · 1888 ms
 
 **Reasons shown to the user:**
 
-- The website link provided (usps-trackdelivery.icu) is not the official USPS.com website.
-- The post office does not text people to pay delivery fees, and they will never ask you to click a link to pay them.
-- The message uses a fake deadline, claiming you must act within 24 hours to pressure you into making a quick mistake.
-- If you are worried about a package, go directly to the official USPS website or call your local post office using a number from a trusted source.
+- The website link uses a strange address, usps-trackdelivery.icu, which is not the official USPS website.
+- The post office does not charge small fees by text message to redeliver a package.
+- This message uses pressure by claiming your package will be returned to the sender within 24 hours.
+- If you are expecting a package, go to the official usps.com website directly to check your status instead of clicking this link.
 
 **Layer 1 red flags:** `urgency_language`, `unexpected_fee_request`, `lookalike_domain`, `suspicious_tld`, `impersonates_organization`
 
@@ -85,13 +85,13 @@ USPS: Your package has been held at our facility due to an incomplete address. P
 CHASE ALERT: A charge of $847.32 at BEST BUY #4471 was attempted on your card ending 4419. If you did NOT authorize this, your account will be locked within 30 minutes. Verify your identity immediately to stop this transaction: https://sec…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 95/100 · **Risk score (Layer 1):** 75/100 · 3254 ms
+**Verdict:** 🔴 scam · **Confidence:** 95/100 · **Risk score (Layer 1):** 75/100 · 1647 ms
 
 **Reasons shown to the user:**
 
-- The website link they sent is fake and is not a real Chase address, so it is likely designed to steal your information.
-- They are trying to scare you into clicking quickly by threatening to lock your account in 30 minutes, which is a common trick.
-- If you are worried about your account, ignore the message and call the number on the back of your credit card to speak with them directly.
+- The website link provided does not go to the official Chase bank website, but to a lookalike address meant to trick you.
+- Real banks do not threaten to lock your account in 30 minutes to pressure you into acting quickly.
+- Do not click the link. If you are worried about your account, call the phone number on the back of your actual bank card.
 
 **Layer 1 red flags:** `urgency_language`, `account_suspension_threat`, `deep_subdomain_spoof`, `impersonates_organization`
 
@@ -111,14 +111,14 @@ CHASE ALERT: A charge of $847.32 at BEST BUY #4471 was attempted on your card en
 FINAL NOTICE from the Social Security Administration. Your Social Security Number has been SUSPENDED due to suspicious activity linked to money laundering in Texas. A warrant for your arrest has been issued. To avoid arrest you must call o…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 59/100 · 1439 ms
+**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 59/100 · 1567 ms
 
 **Reasons shown to the user:**
 
 - The Social Security Administration will never call to threaten you with arrest or suspend your Social Security number.
-- No government agency will ever ask you to pay fees or settle fines using Apple gift cards.
-- Telling you to keep the matter secret and not discuss it with anyone is a classic tactic scammers use to prevent you from getting help.
-- If you are ever worried about your Social Security status, ignore this message and call the official Social Security number you find on their official website (ssa.gov).
+- Legitimate government agencies never demand payment using gift cards.
+- This message tells you not to talk to anyone about it, which is a tactic used to keep you from getting advice from family or friends.
+- If you are ever worried about your Social Security status, call the official Social Security number found on their website at ssa.gov, not a number from a text message.
 
 **Layer 1 red flags:** `urgency_language`, `threat_language`, `gift_card_request`, `impersonates_organization`
 
@@ -138,13 +138,13 @@ FINAL NOTICE from the Social Security Administration. Your Social Security Numbe
 Hi, it's Pastor Michael. Are you available? I need a favor and I can't talk on the phone right now, I'm in a meeting. I need to get some Apple gift cards for the church youth retreat but I can't leave. Could you pick up 4 cards at $100 eac…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 8/100 · 1413 ms
+**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 8/100 · 1347 ms
 
 **Reasons shown to the user:**
 
-- No legitimate person or organization will ever ask you to buy gift cards and send them a picture of the codes.
-- This is a very common trick where scammers pretend to be someone you trust, like a pastor or boss, to ask for money.
-- If you want to help your pastor, call him using the phone number you already have saved for him to verify this request is real.
+- No legitimate organization or leader will ever ask you to buy gift cards and send them the codes.
+- Sending photos of gift card codes is exactly the same as handing over cash that cannot be recovered.
+- The request to keep it a secret is a common tactic used to stop you from asking other people for advice before you act.
 
 **Layer 1 red flags:** `gift_card_request`, `impersonates_organization`
 
@@ -164,13 +164,13 @@ Hi, it's Pastor Michael. Are you available? I need a favor and I can't talk on t
 Hello David, are we still meeting for lunch at 12:30 tomorrow? Please confirm. Oh I am so sorry! I think I have the wrong number. My assistant gave me the wrong contact. But since we are talking, how is your day going? I am Cindy, I moved …
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1576 ms
+**Verdict:** 🔴 scam · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1383 ms
 
 **Reasons shown to the user:**
 
-- This is a classic 'wrong number' scam, where a stranger starts a conversation on purpose to build trust and eventually ask for money.
-- The person claims it was a mistake but immediately tries to get you to move the conversation to WhatsApp, which is a common tactic to keep you off the secure messaging system.
-- Be very careful with strangers who message you out of the blue to talk about their life or business, especially if they try to move the chat to a different app.
+- This is a common scam tactic where a stranger pretends to text the wrong person to start a conversation.
+- The sender immediately pivots to personal details and tries to move you to a different app like WhatsApp.
+- Do not reply to this message. If you respond, it lets them know your phone number is active and they will likely send more messages.
 
 **Layer 1 red flags:** _none_
 
@@ -190,13 +190,14 @@ Hello David, are we still meeting for lunch at 12:30 tomorrow? Please confirm. O
 GEEK SQUAD INVOICE #GS-88241-A Dear Customer, Thank you. Your Geek Squad Total Protection Plan has been automatically renewed. The amount of $429.99 has been debited from your registered account. Product: PC Optimizer Premium (36 months) A…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 33/100 · 1436 ms
+**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 33/100 · 1736 ms
 
 **Reasons shown to the user:**
 
-- The request to install 'AnyDesk' is a major red flag because it gives a stranger total control over your computer.
-- Real companies like Geek Squad do not ask you to install remote software to issue a refund.
-- This message is designed to scare you with a large charge so that you call their phone number, where they will try to steal your money.
+- It claims you were charged 429 dollars and tells you to call a specific phone number to cancel, which is a classic setup to trick you.
+- No legitimate company, including Geek Squad, will ever ask you to install software like AnyDesk to let a stranger take control of your computer.
+- The message uses a generic greeting instead of your name, which suggests it was sent to thousands of people at once.
+- If you are worried about a charge, look up the official Geek Squad support phone number on their actual website and call them directly.
 
 **Layer 1 red flags:** `urgency_language`, `impersonates_organization`, `generic_greeting`, `raw_credential_request`
 
@@ -216,13 +217,14 @@ GEEK SQUAD INVOICE #GS-88241-A Dear Customer, Thank you. Your Geek Squad Total P
 CONGRATULATIONS!!! 🎉🎉 Your mobile number has been selected as a WINNER in the 2026 Mega Millions International Promotional Draw held in London. You have won: $850,000.00 USD To claim your prize, contact our claims agent Mr. Andrew Colema…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 77/100 · 3737 ms
+**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 77/100 · 1458 ms
 
 **Reasons shown to the user:**
 
-- Real lotteries never ask you to pay a fee to get your prize; if you have to pay money to get money, it is a scam.
-- This message asks for sensitive documents like a copy of your ID, which is how criminals steal your identity.
-- You cannot win a lottery you did not enter, and legitimate organizations do not use WhatsApp to manage their winners.
+- No legitimate lottery will ever ask you to pay a fee to receive your winnings.
+- This message asks you to send personal documents and money to a stranger on WhatsApp, which is a major red flag.
+- The claim that you have won a large sum of money from a contest you did not enter is a classic sign of fraud.
+- Genuine organizations do not rush you to claim prizes by threatening an expiration date of only 48 hours.
 
 **Layer 1 red flags:** `urgency_language`, `unexpected_fee_request`, `contact_channel_switch`, `prize_or_windfall`
 
@@ -242,14 +244,14 @@ CONGRATULATIONS!!! 🎉🎉 Your mobile number has been selected as a WINNER in 
 Hello dear! I hope this message finds you well. My uncle is a senior analyst at a major exchange and he shares signals with our small private group. Our members made 340% returns last month with zero losses. I am only sharing this with a f…
 ```
 
-**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 85/100 · 1914 ms
+**Verdict:** 🔴 scam · **Confidence:** 100/100 · **Risk score (Layer 1):** 85/100 · 1628 ms
 
 **Reasons shown to the user:**
 
-- It promises guaranteed high returns with 'zero losses,' which is a classic sign of an investment scam.
-- It asks you to send money using cryptocurrency, which is irreversible and very difficult to get back if something goes wrong.
-- The message uses fake urgency like 'only 3 spots remaining' and 'act now' to rush you into making a mistake.
-- It asks you to move the conversation to Telegram, which is a common tactic used to keep conversations away from the protection of the app you are currently using.
+- This is a common scam promise that guarantees huge profits with no risk.
+- Legitimate investments never require you to send cryptocurrency to a random digital wallet address.
+- The message uses fake urgency by claiming there are only a few spots left to pressure you into acting quickly.
+- Any person asking you to move a conversation to Telegram for money matters is trying to avoid being caught by safety systems.
 
 **Layer 1 red flags:** `urgency_language`, `crypto_payment_request`, `contact_channel_switch`, `unsolicited_relationship_opener`
 
@@ -269,13 +271,13 @@ Hello dear! I hope this message finds you well. My uncle is a senior analyst at 
 UPS: Your package from REI is on the way and is scheduled to arrive Thursday, August 7 by 9:00 PM. Tracking: 1Z999AA[phone] Track it: https://www.ups.com/track?tracknum=1Z999AA[phone] Reply STOP to opt out of UPS delivery alerts. Msg & dat…
 ```
 
-**Verdict:** 🟢 likely safe · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1325 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1353 ms
 
 **Reasons shown to the user:**
 
-- The link in the message goes directly to the official UPS website, not a fake or hidden address.
-- This message is a standard delivery notification that does not ask for any money, passwords, or personal information.
-- It provides a specific tracking number you can use to check the status of your package on the official UPS website yourself.
+- The link provided goes directly to the official UPS website, not a fake address.
+- This message does not ask you for any money, passwords, or personal information.
+- It provides a standard tracking number you can use to check your package status on the official UPS website yourself.
 
 **Layer 1 red flags:** `impersonates_organization`
 
@@ -295,14 +297,13 @@ UPS: Your package from REI is on the way and is scheduled to arrive Thursday, Au
 Chase Fraud Alert: Did you make a $312.48 purchase at HOME DEPOT #6612 on 08/04 with your card ending in 3391? Reply YES if this was you, or NO if it was not. We will never ask you for your password, PIN, or a one-time code. If you have qu…
 ```
 
-**Verdict:** 🟢 likely safe · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1452 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 4502 ms
 
 **Reasons shown to the user:**
 
-- It correctly includes the last four digits of your card, which is a detail a real fraud alert would have.
-- It gives you a safe way to check: it tells you to call the number on the back of your card instead of clicking a link.
-- It does not ask for any sensitive information like your password, PIN, or Social Security number.
-- It asks only for a simple yes or no reply regarding a transaction, which is standard for bank text alerts.
+- It references specific transaction details like the dollar amount and store location which are consistent with a real bank alert.
+- It does not ask for sensitive information like your password, PIN, or a one-time code.
+- It instructs you to call the number on the back of your card, which is the safest way to confirm if the message is real.
 
 **Layer 1 red flags:** `impersonates_organization`
 
@@ -322,13 +323,13 @@ Chase Fraud Alert: Did you make a $312.48 purchase at HOME DEPOT #6612 on 08/04 
 Hi Margaret, this is a reminder from Lakeside Family Dentistry about your cleaning with Dr. Patel on Tuesday, August 12 at 2:15 PM. Please arrive 10 minutes early. No action is needed if this time still works for you — just reply R to resc…
 ```
 
-**Verdict:** 🟢 likely safe · **Confidence:** 100/100 · **Risk score (Layer 1):** 0/100 · 1225 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 100/100 · **Risk score (Layer 1):** 0/100 · 1184 ms
 
 **Reasons shown to the user:**
 
-- This is a standard appointment reminder that includes specific details like the doctor's name and the exact time of your visit.
-- It does not ask you to click any links, provide any passwords, or send any money.
-- The message explicitly states that no action is needed if the time works for you, which is typical for a real business.
+- It contains specific information like your appointment time and the doctor name that suggests it is a genuine reminder.
+- The message does not ask for money, passwords, or personal account information.
+- It gives you a clear and simple way to respond by calling the office directly if you need to reschedule.
 
 **Layer 1 red flags:** _none_
 
@@ -348,13 +349,13 @@ Hi Margaret, this is a reminder from Lakeside Family Dentistry about your cleani
 734912 is your Google verification code. It expires in 10 minutes. Google will never ask you for this code. Do not share it with anyone, including people claiming to be from Google. If you did not request this code, someone may be trying t…
 ```
 
-**Verdict:** 🟢 likely safe · **Confidence:** 100/100 · **Risk score (Layer 1):** 0/100 · 1297 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1275 ms
 
 **Reasons shown to the user:**
 
-- This is a standard security message from Google that you likely triggered yourself by trying to log in.
-- The link provided takes you to the official 'google.com' website, which is the correct and safe place to manage your security.
-- The message explicitly warns you not to share this code with anyone, which is the correct advice for keeping your account secure.
+- This is a standard security alert for a Google account that does not ask for money or personal information.
+- The link provided points directly to the real Google website at google.com.
+- This message is a normal automated system alert sent when someone attempts to sign into your account or reset a password.
 
 **Layer 1 red flags:** `urgency_language`, `impersonates_organization`
 
@@ -374,13 +375,14 @@ Hi Margaret, this is a reminder from Lakeside Family Dentistry about your cleani
 Hi Robert, This is a reminder that your Netflix subscription will renew on August 14, 2026. Your Standard plan is $17.99/month and will be charged to the Visa ending in 2214 on file. No action is needed if you'd like to continue watching. …
 ```
 
-**Verdict:** 🟢 likely safe · **Confidence:** 100/100 · **Risk score (Layer 1):** 0/100 · 1398 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 95/100 · **Risk score (Layer 1):** 0/100 · 1298 ms
 
 **Reasons shown to the user:**
 
-- It does not ask you to provide any money, passwords, or personal information.
-- The link provided goes directly to the official Netflix website, which you can verify by looking at the address.
-- The message uses specific details like the last four digits of your card on file, which suggests it is a genuine notification.
+- The message does not ask you to pay money or provide any private information.
+- The link provided points to the official Netflix website address.
+- It tells you that no action is needed, which is common for a simple subscription reminder.
+- The message includes specific details about your account, like the last four digits of your card, which suggests it is legitimate.
 
 **Layer 1 red flags:** `impersonates_organization`
 
@@ -400,13 +402,14 @@ Hi Robert, This is a reminder that your Netflix subscription will renew on Augus
 Hi this is Danny from Kowalski Landscaping. Following up on the invoice for the retaining wall job we finished last week, $1,450. Our card reader is down so if you could send it by Zelle to [email] that would be easiest. Or I can swing by …
 ```
 
-**Verdict:** 🟡 be careful · **Confidence:** 75/100 · **Risk score (Layer 1):** 0/100 · 1541 ms
+**Verdict:** 🟡 be careful · **Confidence:** 75/100 · **Risk score (Layer 1):** 0/100 · 1640 ms
 
 **Reasons shown to the user:**
 
-- Asking for payment through Zelle makes it impossible to get your money back if something is wrong with the transaction.
-- Using a personal Gmail address for a business payment is unusual and makes it hard to verify who you are actually paying.
-- Because the person also offered to come by for a check next week, you should choose that option to be safe instead of using Zelle.
+- Asking for payment by Zelle creates a risk because Zelle transactions are usually permanent and cannot be reversed like credit card charges.
+- The excuse that the card reader is down is a common tactic used to convince people to pay in less secure ways.
+- Because the message offers an alternative option to pay by check, you should choose that method instead to keep your payment secure.
+- Always confirm these payment instructions by calling the business at a phone number you know to be correct, rather than using the email address in this message.
 
 **Layer 1 red flags:** `p2p_payment_request`
 
@@ -426,13 +429,13 @@ Hi this is Danny from Kowalski Landscaping. Following up on the invoice for the 
 URGENT: The FEC deadline is at MIDNIGHT and we are $4,200 short of our goal. 😳 Sarah, we've asked 3 times and haven't heard back. If we miss this deadline our opponents will outspend us 3-to-1 in the final stretch. Can you chip in $25 rig…
 ```
 
-**Verdict:** 🟡 be careful · **Confidence:** 75/100 · **Risk score (Layer 1):** 0/100 · 1446 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 85/100 · **Risk score (Layer 1):** 0/100 · 1571 ms
 
 **Reasons shown to the user:**
 
-- This message is a generic political fundraising request, which is common, but these are often sent to random phone numbers.
-- The link uses a shortener that hides the true destination, so you cannot see where you are being sent before clicking.
-- If you want to donate to a political group, do not click links in text messages; go directly to their official website using your browser.
+- This is a common way for political campaigns to ask for small donations to meet fundraising deadlines.
+- The message includes a legal opt-out instructions at the bottom, which is standard for legitimate political texts.
+- While it uses an urgent tone about a deadline, this is typical for campaign communications rather than a scam attempt.
 
 **Layer 1 red flags:** `url_shortener`
 
@@ -452,13 +455,13 @@ URGENT: The FEC deadline is at MIDNIGHT and we are $4,200 short of our goal. �
 Hello parents, This is a reminder that fall sports physical forms are due this Friday, August 8. Please complete the online form with your student's name, date of birth, and emergency contact information: https://forms.gle/aB3xK9mPqR2sT7vN…
 ```
 
-**Verdict:** 🟡 be careful · **Confidence:** 65/100 · **Risk score (Layer 1):** 0/100 · 1534 ms
+**Verdict:** 🟢 likely safe · **Confidence:** 85/100 · **Risk score (Layer 1):** 0/100 · 1136 ms
 
 **Reasons shown to the user:**
 
-- The message asks for personal information like your child's date of birth and emergency contact details.
-- While Google Forms are common, schools usually use their own official website or a secure school portal for these documents.
-- Before filling this out, please call your school's athletic office directly using a phone number you already have to confirm they are using this form.
+- This message is a routine school reminder about sports paperwork.
+- It uses a standard Google Forms link, which is a common way for schools to collect information.
+- The message does not ask for money, passwords, or sensitive account login information.
 
 **Layer 1 red flags:** _none_
 

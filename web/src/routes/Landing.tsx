@@ -1,48 +1,50 @@
-import { FinalCta } from '../components/landing/FinalCta';
+import { useEffect, useState } from 'react';
+
+import { Footer, Nav } from '../components/Chrome';
+import { ClosingLine, FinalCta } from '../components/landing/FinalCta';
 import { Hero } from '../components/landing/Hero';
-import { HowItWorks } from '../components/landing/HowItWorks';
 import { LiveDemoPreview } from '../components/landing/LiveDemoPreview';
-import { Nav } from '../components/landing/Nav';
 import { ProblemSection } from '../components/landing/ProblemSection';
-import { TrustSection } from '../components/landing/TrustSection';
+import { HowItWorksTeaser, PrivacyTeaser } from '../components/landing/Teasers';
+import { fetchStats } from '../lib/api';
+import type { Stats } from '../lib/types';
 
 /**
  * Reading order is the argument: here is the thing, here is why it needs to
  * exist, here is how it works, here is what it gives you, here is why you can
  * hand it something private, now go use it.
+ *
+ * The how-it-works and privacy beats are teasers now. Both answers deserve
+ * more room than a scroll-past section, and both are things a cautious person
+ * goes looking for deliberately, so they live at /how-it-works and /privacy
+ * where they can be read, linked and returned to.
  */
 export function Landing() {
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    void fetchStats().then(setStats);
+  }, []);
+
   return (
     <div className="landing">
       <a className="skip" href="#main">
         Skip to content
       </a>
-      <div className="grain" aria-hidden="true" />
 
       <Nav />
 
       <main id="main">
         <Hero />
         <ProblemSection />
-        <HowItWorks />
+        <HowItWorksTeaser />
         <LiveDemoPreview />
-        <TrustSection />
+        <PrivacyTeaser />
+        <ClosingLine />
         <FinalCta />
       </main>
 
-      <footer className="landing__footer">
-        <div className="landing__footer-inner">
-          <p className="landing__footer-mark">
-            Is this real<span className="nav__q">?</span>
-          </p>
-          <p className="landing__footer-note">
-            Built for NextGen Innovation 2026 · Cybersecurity &amp; Digital
-            Trust. Classification runs on Google Gemini behind a deterministic
-            rules layer. Built with AI assistance, disclosed in full in the
-            repository.
-          </p>
-        </div>
-      </footer>
+      <Footer stats={stats} />
     </div>
   );
 }

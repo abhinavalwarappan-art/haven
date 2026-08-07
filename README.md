@@ -1,10 +1,12 @@
-# Is This Real?
+# Haven
+
+*Your safe place to check anything.*
 
 A landing page that explains the problem, and a tool that solves it. Paste in any suspicious text message, email, or DM and get a plain-English verdict — **"This looks like a scam," "This looks legitimate,"** or **"Be careful with this one"** — with specific reasons why.
 
 Built for non-technical users, especially older adults, who are the most targeted by scams and the least equipped to spot them.
 
-**🔗 Live demo: https://is-this-real-app.vercel.app**
+**🔗 Live demo: https://haven-safe.vercel.app**
 
 Built for **NextGen Innovation 2026** · Theme: **Cybersecurity & Digital Trust**
 

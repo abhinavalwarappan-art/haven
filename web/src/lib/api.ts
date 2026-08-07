@@ -2,6 +2,13 @@ import type { CheckResponse, Example, Stats } from './types';
 
 export interface CheckFailure {
   ok: false;
+  /**
+   * `paused` is a rate limit, which resolves on its own and is not a failure.
+   * The UI styles the two differently — an alarming error screen on a scam
+   * checker reads to a frightened person like the checker itself is
+   * compromised.
+   */
+  kind: 'paused' | 'failed';
   headline: string;
   body: string;
 }
@@ -15,7 +22,7 @@ const GENERIC_HEADLINE = "We couldn’t check that";
  * headline and must never read as "the demo is broken".
  */
 const PAUSED =
-  "You’ve made a lot of checks in a short time, so we’re pausing briefly. Wait about a minute and try again — nothing is broken, and re-checking a message you’ve already checked is always free.";
+  "You’ve made a lot of checks in a short time, so we’re pausing briefly. Wait about a minute and try again. Nothing is broken, and re-checking a message you’ve already checked is always free.";
 
 export async function check(text: string): Promise<CheckOutcome> {
   let response: Response;
@@ -28,6 +35,7 @@ export async function check(text: string): Promise<CheckOutcome> {
   } catch {
     return {
       ok: false,
+      kind: 'failed',
       headline: GENERIC_HEADLINE,
       body: "We couldn’t reach our checker. Please check your internet connection and try again.",
     };
@@ -51,10 +59,11 @@ export async function check(text: string): Promise<CheckOutcome> {
     //         hard would see "unexpected response" and assume the demo is
     //         broken, which is exactly the wall we’re trying to avoid.
     if (response.status === 429 || response.status === 403) {
-      return { ok: false, headline: 'Just a moment', body: payload?.message || PAUSED };
+      return { ok: false, kind: 'paused', headline: 'Just a moment', body: payload?.message || PAUSED };
     }
     return {
       ok: false,
+      kind: 'failed',
       headline: GENERIC_HEADLINE,
       body: payload?.message || 'Something went wrong. Please try again.',
     };
@@ -63,6 +72,7 @@ export async function check(text: string): Promise<CheckOutcome> {
   if (!payload || !payload.verdict || !Array.isArray(payload.reasons)) {
     return {
       ok: false,
+      kind: 'failed',
       headline: GENERIC_HEADLINE,
       body: 'We got an unexpected response. Please try again in a moment.',
     };

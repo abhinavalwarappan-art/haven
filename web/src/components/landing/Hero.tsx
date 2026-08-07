@@ -1,102 +1,114 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Link } from 'react-router-dom';
 
-import { StackFallback } from './StackFallback';
+import { ArrowRight, Check, NoAccount, ShieldAlert, Timer } from '../Icons';
 
-/* Three.js is ~600kb. Splitting it here means the headline and the button paint
-   immediately, `/check` never downloads a byte of it, and a slow connection
-   gets the static illustration instead of an empty rectangle. */
-const MessageStack3D = lazy(() => import('./MessageStack3D'));
+const MARKERS = [
+  { icon: Check, label: 'Free' },
+  { icon: NoAccount, label: 'No account needed' },
+  { icon: Timer, label: 'About a second and a half' },
+];
+
+/** Three fragments of a real scam text, and what the checker made of each. */
+const SPECIMEN_LINES = [
+  'USPS: Your package has been held at our facility.',
+  'Update within 24 hours or it returns to sender.',
+  'https://usps-trackdelivery.icu/redelivery',
+];
 
 export function Hero() {
   const reduced = useReducedMotion() ?? false;
 
-  // Mount WebGL after first paint so the canvas never competes with the copy
-  // for the main thread on load. Reduced motion skips it entirely: not a paused
-  // animation, no canvas at all.
-  const [mount3D, setMount3D] = useState(false);
-  useEffect(() => {
-    if (reduced) return;
-    const id = window.setTimeout(() => setMount3D(true), 120);
-    return () => window.clearTimeout(id);
-  }, [reduced]);
-
-  const rise = {
+  const rise = (delay = 0) => ({
     initial: { opacity: 0, y: reduced ? 0 : 16 },
     animate: { opacity: 1, y: 0 },
-  };
+    transition: { duration: reduced ? 0.001 : 0.6, delay: reduced ? 0 : delay },
+  });
 
   return (
     <section className="hero" aria-labelledby="hero-heading">
-      <div className="hero__copy">
-        <motion.p
-          className="hero__eyebrow"
-          {...rise}
-          transition={{ duration: reduced ? 0.001 : 0.5, delay: reduced ? 0 : 0.05 }}
-        >
-          Scam checker
-        </motion.p>
-
-        <motion.h1
-          className="hero__headline"
-          id="hero-heading"
-          {...rise}
-          transition={{ duration: reduced ? 0.001 : 0.6, delay: reduced ? 0 : 0.12 }}
-        >
-          Is this real<span className="hero__mark">?</span>
-        </motion.h1>
-
-        <motion.p
-          className="hero__sub"
-          {...rise}
-          transition={{ duration: reduced ? 0.001 : 0.6, delay: reduced ? 0 : 0.2 }}
-        >
-          Paste the text, email or DM you are unsure about. You get one sentence
-          back saying whether it looks like a scam, and the specific reasons why.
-          No jargon, no risk score, nothing to sign up for.
-        </motion.p>
-
-        <motion.div
-          className="hero__actions"
-          {...rise}
-          transition={{ duration: reduced ? 0.001 : 0.6, delay: reduced ? 0 : 0.28 }}
-        >
-          <Link className="btn btn--primary" to="/check">
-            Check a message
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-          <a className="btn btn--quiet" href="#how">
-            How it works
-          </a>
-        </motion.div>
-
-        <motion.p
-          className="hero__proof"
-          {...rise}
-          transition={{ duration: reduced ? 0.001 : 0.6, delay: reduced ? 0 : 0.36 }}
-        >
-          <b>16 of 16</b> on our classification suite · <b>1.5 seconds</b> a check ·
-          your message is never stored
-        </motion.p>
+      <div className="hero__bg">
+        {/* The real, self-hosted asset. The design pass pointed at a Google
+            preview CDN URL that is neither this file nor a stable public one.
+            2200px wide, WebP, 226kb, down from a 6.5mb PNG. */}
+        <img
+          src="/images/haven-hero.webp"
+          alt=""
+          width={2200}
+          height={1228}
+          fetchPriority="high"
+          decoding="async"
+        />
+        <div className="hero__scrim" aria-hidden="true" />
       </div>
 
-      <div className="hero__stage">
-        {mount3D ? (
-          <Suspense fallback={<StackFallback />}>
-            <MessageStack3D />
-          </Suspense>
-        ) : (
-          <StackFallback />
-        )}
+      <div className="hero__inner">
+        {/* Sits over the reflective floor, the one genuinely quiet region of
+            the photograph, and uses the strong glass so body copy never has
+            to fight the image behind it. */}
+        <motion.div className="hero__panel glass glass--strong" {...rise(0.05)}>
+          <div className="hero__lead">
+            <h1 className="hero__wordmark" id="hero-heading">
+              Haven
+            </h1>
+            <p className="hero__tagline">Your safe place to check anything.</p>
+            <p className="hero__sub">
+              Paste the text, email or DM you are unsure about. You get one
+              sentence back saying whether it looks like a scam, and the
+              specific reasons why.
+            </p>
+
+            <div className="hero__actions">
+              <Link className="btn btn--primary btn--lg" to="/check">
+                Check a message
+                <ArrowRight />
+              </Link>
+              <Link className="btn btn--glass btn--lg" to="/how-it-works">
+                How it works
+              </Link>
+            </div>
+
+            <ul className="hero__markers">
+              {MARKERS.map(({ icon: Icon, label }) => (
+                <li className="hero__marker" key={label}>
+                  <Icon />
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* The product, in miniature, before anyone has to click anything.
+              A landing page that only describes the thing asks the reader to
+              take it on faith; showing the shape of an answer costs one small
+              panel and removes that step. */}
+          <div className="hero__specimen" aria-hidden="true">
+            <p className="label hero__specimen-label">A message</p>
+            <div className="specimen__msg">
+              {SPECIMEN_LINES.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+
+            <div className="specimen__arrowline">
+              <span />
+            </div>
+
+            <p className="label hero__specimen-label">Haven says</p>
+            <div className="specimen__verdict">
+              <span className="specimen__icon">
+                <ShieldAlert />
+              </span>
+              <div>
+                <p className="specimen__headline">This looks like a scam.</p>
+                <p className="specimen__reason">
+                  The link goes to usps-trackdelivery.icu, which is not the real
+                  USPS website.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

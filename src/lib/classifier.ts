@@ -132,6 +132,7 @@ Each reason must:
 - Point at something specific and checkable in **this** message — quote or paraphrase the actual words, name the actual website. Not "contains urgency indicators" but "It says your account closes in 24 hours to rush you".
 - Be understandable with no technical background.
 - Never be generic filler.
+- Use plain punctuation only. Never use em dashes, en dashes, or emoji. If you want a pause, start a new sentence.
 
 If the verdict is **likely_safe**, you must still give real reasons — say concretely why it looks fine ("It doesn't ask for money or personal details", "The link goes to the company's real website", "It names your actual order number"). Never say only "looks fine". A verdict with no reasoning teaches the reader nothing and makes the tool untrustworthy.
 
@@ -358,6 +359,26 @@ export async function classify(
 }
 
 /**
+ * Haven's written voice uses plain punctuation, so a reason never comes back
+ * with a dash standing in for a clause break.
+ *
+ * The system prompt asks for this, but the prompt is itself full of em dashes
+ * and models mirror the style they are shown. Rewriting a tuned prompt to fix
+ * that would risk the classification behaviour it was tuned for, so the
+ * guarantee lives here instead, where it is deterministic and testable.
+ *
+ * A dash used as a clause break becomes a comma. A dash joining two things
+ * ("2-4 hours", "Monday-Friday") becomes a plain hyphen, because turning that
+ * into a comma would change what the sentence says.
+ */
+function plainPunctuation(text: string): string {
+  return text
+    .replace(/(\d)\s*[—–]\s*(\d)/g, '$1-$2') // numeric range, spaced or not
+    .replace(/(\w)[—–](\w)/g, '$1-$2') // tight join between words
+    .replace(/\s*[—–]\s*/g, ', '); // anything left is a clause break
+}
+
+/**
  * Validate and normalize the model's output. The response schema guarantees the
  * shape, but not the ranges or counts — those are enforced here so a
  * misbehaving response can never reach the API surface malformed.
@@ -381,13 +402,13 @@ function coerce(parsed: object, signals: SignalReport): Classification {
   const reasons = Array.isArray(obj.reasons)
     ? obj.reasons
         .filter((r): r is string => typeof r === 'string' && r.trim().length > 0)
-        .map((r) => redactHighRisk(r.trim()))
+        .map((r) => plainPunctuation(redactHighRisk(r.trim())))
         .slice(0, 4)
     : [];
 
   if (reasons.length === 0) {
     reasons.push(
-      'We could not produce a detailed explanation for this message — treat it with caution and verify with the sender directly.'
+      'We could not produce a detailed explanation for this message. Treat it with caution and verify with the sender directly.'
     );
   }
 

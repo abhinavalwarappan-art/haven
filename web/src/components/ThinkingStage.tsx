@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { STEP_MS, THINKING_STEPS } from '../lib/copy';
+import { Sparkle } from './Icons';
 
+/**
+ * The wait, narrated honestly.
+ *
+ * This state was missing from the design pass entirely — built here in the
+ * same glass-and-pastel system as the screens that were exported.
+ */
 export function ThinkingStage({ reduced }: { reduced: boolean }) {
   const [step, setStep] = useState(0);
   const [progress, setProgress] = useState(8);
@@ -27,15 +34,15 @@ export function ThinkingStage({ reduced }: { reduced: boolean }) {
   }, []);
 
   return (
-    <section className="stage stage--thinking" aria-live="polite" aria-busy="true">
-      <div className="thinking">
-        <div className="thinking__bar" aria-hidden="true">
-          <span className="thinking__fill" style={{ transform: `scaleX(${(progress / 100).toFixed(3)})` }} />
+    <section className="checker" aria-live="polite" aria-busy="true">
+      <div className="thinking glass">
+        <div className="thinking__orb" aria-hidden="true">
+          <Sparkle />
         </div>
 
-        {/* Each line replaces the last in place. Crossfading them rather than
-            swapping the text keeps the narration calm — a hard cut every 600ms
-            reads as flickering. */}
+        {/* Each line replaces the last in place. Crossfading rather than
+            swapping the text keeps the narration calm — a hard cut every
+            600ms reads as flickering. */}
         <p className="thinking__copy">
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
@@ -54,6 +61,13 @@ export function ThinkingStage({ reduced }: { reduced: boolean }) {
         <p className="thinking__sub">
           This takes a moment. We read it properly rather than guessing.
         </p>
+
+        <div className="thinking__bar" aria-hidden="true">
+          <span
+            className="thinking__fill"
+            style={{ transform: `scaleX(${(progress / 100).toFixed(3)})` }}
+          />
+        </div>
       </div>
     </section>
   );

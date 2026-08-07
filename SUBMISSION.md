@@ -4,8 +4,8 @@
 
 | Item | Status | Value |
 | --- | --- | --- |
-| Live demo URL | ✅ Ready | https://is-this-real-app.vercel.app |
-| Source code | ✅ Public | https://github.com/abhinavalwarappan-art/is-this-real |
+| Live demo URL | ✅ Ready | https://haven-safe.vercel.app |
+| Source code | ✅ Public | https://github.com/abhinavalwarappan-art/haven |
 | Project description | ✅ Drafted | Below — copy/paste |
 | Theme selection | ✅ | Cybersecurity & Digital Trust |
 | Demo script | ✅ Written | [DEMO_SCRIPT.md](DEMO_SCRIPT.md) — 2 min, rehearsed order |
@@ -27,7 +27,7 @@
 **Medium (~100 words)**
 > Americans lost $12.5 billion to scams last year, and the hardest-hit group is over 60. Existing tools are built for security analysts, not for the person actually holding the suspicious text.
 >
-> "Is This Real?" is one box and one button. Paste a message, get back "This looks like a scam," "This looks legitimate," or "Be careful with this one" — with 2–4 specific reasons written for a non-technical reader.
+> Haven is one box and one button. Paste a message, get back "This looks like a scam," "This looks legitimate," or "Be careful with this one" — with 2–4 specific reasons written for a non-technical reader.
 >
 > Under the hood it runs two layers: a deterministic rules engine that catches lookalike domains and gift-card demands offline and identically every time, feeding structured evidence into a Gemini classifier that reads context. Neither layer is sufficient alone — the romance-scam opener in our test set scores 0/100 on rules and is still caught.
 >

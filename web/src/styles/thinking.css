@@ -1,81 +1,91 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Thinking — honest narration, not a spinner.
+   Thinking — honest narration, not a spinner
+   ───────────────────────────────────────────────────────────────────────────
    The lines track what the pipeline is genuinely doing, in order. That turns
    the wait from "is it broken?" into "it is doing the work I asked for".
+
+   This state did not exist in the design pass at all — it was built here in
+   the same glass-and-pastel system as the five screens that did.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.thinking { padding: clamp(2.5rem, 2rem + 4vw, 4rem) 0; }
+.thinking {
+  border-radius: var(--radius-lg);
+  padding: clamp(2.5rem, 2rem + 3vw, 4rem) clamp(1.75rem, 1.4rem + 1.8vw, 3rem);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-/* Held to the width of the column the form occupied, so the bar appears more
-   or less where the input well just was. Run full-bleed across 58rem it stops
-   reading as progress and starts reading as a page divider — and the eye has
-   to travel to find the narration under it. */
-@media (min-width: 900px) {
-  .thinking { max-width: 32rem; }
+/* A soft pulsing bloom rather than a spinner — it reads as something warming
+   up rather than a machine grinding. */
+.thinking__orb {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  border-radius: var(--radius-full);
+  background: var(--secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  color: var(--on-secondary-container);
+}
+.thinking__orb svg { width: 1.9rem; height: 1.9rem; position: relative; z-index: 1; }
+
+.thinking__orb::after {
+  content: '';
+  position: absolute;
+  inset: -0.6rem;
+  border-radius: var(--radius-full);
+  background: var(--secondary-container);
+  opacity: 0.45;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .thinking__orb::after { animation: haven-pulse 2s var(--ease) infinite; }
+  @keyframes haven-pulse {
+    0%, 100% { transform: scale(0.9); opacity: 0.45; }
+    50%      { transform: scale(1.08); opacity: 0.15; }
+  }
+}
+
+.thinking__copy {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-headline);
+  line-height: var(--leading-headline);
+  color: var(--on-surface);
+  margin: 0;
+  min-height: 1.25em;
+  text-wrap: balance;
+}
+
+.thinking__sub {
+  margin: 0.9rem 0 2rem;
+  font-size: var(--text-body-md);
+  color: var(--on-surface-variant);
+  max-width: 36ch;
 }
 
 .thinking__bar {
-  height: 3px;
-  border-radius: 99px;
-  background: var(--paper-edge);
+  width: min(100%, 22rem);
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-highest);
   overflow: hidden;
-  margin-bottom: 1.7rem;
 }
 
 .thinking__fill {
   display: block;
   height: 100%;
   width: 100%;
-  border-radius: 99px;
-  background: linear-gradient(90deg, var(--pen), var(--pen-soft));
-  position: relative;
-  overflow: hidden;
-  /* Scaled, not widened. Animating `width` is a layout property: every tick
-     costs a reflow, and this ticks every 130ms for the whole wait. scaleX runs
-     on the compositor and looks identical.
-
-     The duration is matched to that 130ms tick — at 700ms the bar lagged so far
-     behind the real answer that it jumped at the end. */
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  /* Scaled, not widened. Animating `width` is a layout property and this
+     ticks every 130ms for the whole wait; scaleX runs on the compositor and
+     looks identical. */
   transform: scaleX(0);
   transform-origin: 0 50%;
   transition: transform 190ms linear;
-}
-
-/* A slow sheen travelling the filled portion. Compositor-only, and it gives the
-   bar a pulse without implying a specific remaining duration. */
-.thinking__fill::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    oklch(100% 0 0 / 0.55) 50%,
-    transparent 100%);
-  transform: translateX(-100%);
-  animation: sheen 1.15s var(--ease) infinite;
-}
-
-@keyframes sheen {
-  to { transform: translateX(100%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .thinking__fill::after { animation: none; opacity: 0; }
-}
-
-.thinking__copy {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--text-xl);
-  line-height: 1.2;
-  letter-spacing: -0.014em;
-  min-height: 1.2em;
-}
-
-.thinking__sub {
-  margin: 0.7rem 0 0;
-  color: var(--ink-faint);
-  font-size: var(--text-sm);
-  max-width: 34ch;
 }

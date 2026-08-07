@@ -4,26 +4,13 @@ import { motion } from 'motion/react';
 import { MAX_LENGTH, WARN_AT } from '../lib/copy';
 import { fetchExamples } from '../lib/api';
 import type { Example } from '../lib/types';
+import { ArrowRight, Search } from './Icons';
 
 interface Props {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (text: string) => void;
   reduced: boolean;
-}
-
-function Arrow() {
-  return (
-    <svg className="chip__arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M3 8h10M9 4l4 4-4 4"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
 }
 
 export function ComposeStage({ value, onChange, onSubmit, reduced }: Props) {
@@ -43,7 +30,7 @@ export function ComposeStage({ value, onChange, onSubmit, reduced }: Props) {
     }
     if (value.length > MAX_LENGTH) {
       setError(
-        `That’s a bit too long to check. Paste just the suspicious part — up to ${MAX_LENGTH.toLocaleString()} characters.`
+        `That’s a bit too long to check. Paste just the suspicious part, up to ${MAX_LENGTH.toLocaleString()} characters.`
       );
       textarea.current?.focus();
       return;
@@ -76,104 +63,109 @@ export function ComposeStage({ value, onChange, onSubmit, reduced }: Props) {
           : chars(length);
 
   return (
-    <section className="stage stage--compose" aria-labelledby="compose-heading">
-      <h2 className="sr-only" id="compose-heading">
-        Check a message
-      </h2>
+    <section className="checker" aria-labelledby="compose-heading">
+      <div className="compose__panel glass">
+        <h1 className="headline compose__title" id="compose-heading">
+          Paste the message here
+        </h1>
+        <p className="compose__sub">
+          A text, an email, a DM, anything you are unsure about. You will get a
+          plain-English answer and the specific reasons behind it.
+        </p>
 
-      <div className="compose__grid">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          submit();
-        }}
-        noValidate
-      >
-        <div className="well">
-          <label className="well__label" htmlFor="message">
-            Paste the message here
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            ref={textarea}
-            rows={7}
-            spellCheck={false}
-            autoComplete="off"
-            placeholder="A text, an email, a message from someone you don’t know…"
-            aria-describedby="counter"
-            aria-invalid={error ? true : undefined}
-            value={value}
-            onChange={(event) => {
-              onChange(event.target.value);
-              if (error && event.target.value.trim()) setError(null);
-            }}
-            onKeyDown={(event) => {
-              // Cmd/Ctrl+Enter submits — a small nicety for repeat demoing.
-              if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                event.preventDefault();
-                submit();
-              }
-            }}
-          />
-          <div className="well__foot">
-            <p className="counter" id="counter" data-state={counterState} aria-live="polite">
-              {counterText}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit();
+          }}
+          noValidate
+        >
+          <div className="well">
+            <label className="well__label" htmlFor="message">
+              The message
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              ref={textarea}
+              rows={7}
+              spellCheck={false}
+              autoComplete="off"
+              placeholder="Paste the message you’re wondering about…"
+              aria-describedby="counter"
+              aria-invalid={error ? true : undefined}
+              value={value}
+              onChange={(event) => {
+                onChange(event.target.value);
+                if (error && event.target.value.trim()) setError(null);
+              }}
+              onKeyDown={(event) => {
+                // Cmd/Ctrl+Enter submits — a small nicety for repeat demoing.
+                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                  event.preventDefault();
+                  submit();
+                }
+              }}
+            />
+            <div className="well__foot">
+              <p className="counter" id="counter" data-state={counterState} aria-live="polite">
+                {counterText}
+              </p>
+              {length > 0 && (
+                <button
+                  type="button"
+                  className="linkbtn"
+                  onClick={() => {
+                    onChange('');
+                    setError(null);
+                    textarea.current?.focus();
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <p className="field-error" role="alert">
+              {error}
             </p>
-            {length > 0 && (
-              <button
-                type="button"
-                className="linkbtn"
-                onClick={() => {
-                  onChange('');
-                  setError(null);
-                  textarea.current?.focus();
-                }}
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
+          )}
 
-        {error && (
-          <p className="field-error" role="alert">
-            {error}
-          </p>
+          {/* Below the field, never over it. */}
+          <button type="submit" className="btn btn--primary compose__submit">
+            <Search />
+            Check it
+          </button>
+        </form>
+
+        {examples.length > 0 && (
+          <section className="examples" aria-labelledby="examples-heading">
+            <h2 className="label examples__heading" id="examples-heading">
+              Or try one of these
+            </h2>
+            <div className="examples__row">
+              {examples.map((example, i) => (
+                <motion.button
+                  key={example.label}
+                  type="button"
+                  className="chip"
+                  onClick={() => useExample(example)}
+                  initial={{ opacity: 0, y: reduced ? 0 : 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: reduced ? 0.001 : 0.32, delay: reduced ? 0 : 0.05 * i }}
+                >
+                  <span>
+                    <span className="chip__label">{example.label}</span>
+                    <span className="chip__hint">{example.hint}</span>
+                  </span>
+                  <ArrowRight className="chip__arrow" />
+                </motion.button>
+              ))}
+            </div>
+          </section>
         )}
-
-        <button type="submit" className="cta compose__cta">
-          <span>Check it</span>
-          <Arrow />
-        </button>
-      </form>
-
-      {examples.length > 0 && (
-        <section className="examples" aria-labelledby="examples-heading">
-          <h3 className="examples__heading" id="examples-heading">
-            Or try one of these
-          </h3>
-          <div className="examples__row">
-            {examples.map((example, i) => (
-              <motion.button
-                key={example.label}
-                type="button"
-                className="chip"
-                onClick={() => useExample(example)}
-                initial={{ opacity: 0, y: reduced ? 0 : 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: reduced ? 0.001 : 0.32, delay: reduced ? 0 : 0.05 * i }}
-              >
-                <span className="chip__text">
-                  <span className="chip__label">{example.label}</span>
-                  <span className="chip__hint">{example.hint}</span>
-                </span>
-                <Arrow />
-              </motion.button>
-            ))}
-          </div>
-        </section>
-      )}
       </div>
     </section>
   );

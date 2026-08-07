@@ -20,7 +20,7 @@ export const VERDICT_COPY: Record<Verdict, VerdictCopy> = {
     eyebrow: 'Our answer',
     headline: 'This looks like a scam.',
     advice:
-      "Don’t reply, don’t click anything in it, and don’t send money or codes. If it claims to be from a company you use, contact them with a number you already have — not one from this message.",
+      "Don’t reply, don’t click anything in it, and don’t send money or codes. If it claims to be from a company you use, contact them with a number you already have, never one from this message.",
   },
   uncertain_be_careful: {
     eyebrow: 'Our answer',
@@ -45,7 +45,7 @@ export const VERDICT_COPY: Record<Verdict, VerdictCopy> = {
  */
 export function confidenceCopy(verdict: Verdict, confidence: number): string {
   if (verdict === 'uncertain_be_careful') {
-    return 'This one is genuinely unclear — there are signs both ways.';
+    return 'This one is genuinely unclear. There are signs both ways.';
   }
   const subject = verdict === 'scam' ? 'it is a scam' : 'it is genuine';
   if (confidence >= 92) return `We’re very confident ${subject}.`;

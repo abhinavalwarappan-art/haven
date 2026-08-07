@@ -1,5 +1,5 @@
 {
-  "name": "is-this-real",
+  "name": "haven",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -21,20 +21,17 @@
   "dependencies": {
     "@fastify/static": "^10.1.2",
     "@google/genai": "^2.16.0",
-    "@react-three/fiber": "^9.7.0",
     "@supabase/supabase-js": "^2.58.0",
     "fastify": "^5.2.0",
     "motion": "^13.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2",
-    "three": "^0.185.1"
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^6.0.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

@@ -1,50 +1,39 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Typefaces — self-hosted, latin subset only
    ───────────────────────────────────────────────────────────────────────────
-   Instrument Serif for anything the reader is meant to *hear* — the wordmark,
-   the verdict, the thinking narration. Instrument Sans for everything they
-   read. They are siblings from the same foundry, so the pairing is a designed
-   relationship rather than two faces that happen to sit together.
+   Libre Caslon Text for anything the reader is meant to *hear* — the wordmark,
+   the verdict, the closing statement. Plus Jakarta Sans for everything they
+   read: a warm, open grotesk with a tall x-height, which matters because this
+   audience skews older.
 
-   Served from our own origin: no Google Fonts request, no third-party
-   connection on a page about not trusting things, and nothing to fail on
-   venue wi-fi. 59kb for all three files.
-
-   Instrument Serif ships in a single weight. Every display rule below uses
-   font-weight 400 deliberately — asking for 600 would make the browser
-   synthesise a fake bold, which smears the high-contrast strokes that are the
-   entire reason for choosing it.
+   Served from our own origin. No Google Fonts request on a page about not
+   trusting things, and nothing to flash or fail on venue wi-fi. 61kb for all
+   three files.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @font-face {
-  font-family: 'Instrument Serif';
+  font-family: 'Libre Caslon Text';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/instrument-serif-latin.woff2') format('woff2');
+  src: url('/fonts/libre-caslon-text-400.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
     U+FEFF, U+FFFD;
 }
 
-@font-face {
-  font-family: 'Instrument Serif';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/instrument-serif-italic-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-    U+FEFF, U+FFFD;
-}
+/* No 700 Caslon face. Every display moment on this site is weight 400, and the
+   only bold text (`<b>` in the stats line and the how-it-works copy) resolves
+   to Plus Jakarta Sans. Shipping the bold Caslon would be 17kB nothing ever
+   requests. */
 
-/* Variable, 400–700. One file covers body, semibold labels and the CTA. */
+/* Variable, 200–800. One file covers body, medium labels and semibold CTAs. */
 @font-face {
-  font-family: 'Instrument Sans';
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
-  font-weight: 400 700;
+  font-weight: 200 800;
   font-display: swap;
-  src: url('/fonts/instrument-sans-latin.woff2') format('woff2');
+  src: url('/fonts/plus-jakarta-sans-var.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
     U+FEFF, U+FFFD;
