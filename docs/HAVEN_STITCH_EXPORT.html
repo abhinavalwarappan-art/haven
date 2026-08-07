@@ -1,0 +1,1176 @@
+<!-- Haven - Home (Desktop) -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haven - Your safe place to check anything</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary": "#5c5d6e",
+                        "on-surface": "#1a1c1a",
+                        "on-secondary-fixed-variant": "#35485e",
+                        "tertiary-fixed": "#e1e1f5",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dbdad7",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-variant": "#e3e2e0",
+                        "on-background": "#1a1c1a",
+                        "on-secondary-container": "#51647b",
+                        "inverse-primary": "#ecbaba",
+                        "surface": "#faf9f6",
+                        "tertiary-container": "#cdcde0",
+                        "outline-variant": "#d4c2c2",
+                        "outline": "#827473",
+                        "on-primary-container": "#734e4e",
+                        "primary-fixed-dim": "#ecbaba",
+                        "on-tertiary-fixed": "#191b29",
+                        "inverse-surface": "#2f312f",
+                        "primary-fixed": "#ffdad9",
+                        "surface-container": "#efeeeb",
+                        "primary-container": "#f4c2c2",
+                        "tertiary-fixed-dim": "#c5c5d8",
+                        "on-tertiary-fixed-variant": "#444655",
+                        "surface-bright": "#faf9f6",
+                        "secondary-fixed": "#d0e4ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e3e2e0",
+                        "secondary": "#4d6077",
+                        "surface-container-high": "#e9e8e5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#613d3e",
+                        "background": "#faf9f6",
+                        "surface-tint": "#7b5455",
+                        "on-surface-variant": "#504444",
+                        "primary": "#7b5455",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b4c8e2",
+                        "secondary-container": "#cde1fc",
+                        "surface-container-low": "#f4f3f1",
+                        "on-tertiary-container": "#555767",
+                        "on-secondary-fixed": "#071d30",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#2f1314"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "container-padding": "2rem",
+                        "unit": "8px",
+                        "gutter": "1.5rem",
+                        "margin-safe": "1rem"
+                    },
+                    fontFamily: {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-md": ["Libre Caslon Text"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Libre Caslon Text"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Libre Caslon Text"],
+                        "headline-lg": ["Libre Caslon Text"]
+                    },
+                    fontSize: {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-md": ["48px", { "lineHeight": "56px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(250, 249, 246, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .text-shadow-soft {
+            text-shadow: 0 4px 24px rgba(123, 84, 85, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-padding h-20 max-w-7xl mx-auto border-b border-white/20 bg-surface/60 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(123,84,85,0.08)]">
+<div class="font-display-md text-display-md text-primary tracking-tight">Haven</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">How it Works</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">Privacy</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">Checker</a>
+</nav>
+<button class="hidden md:inline-flex items-center justify-center px-6 py-3 bg-primary text-on-primary rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity">Get Started</button>
+</header>
+<!-- Hero Section -->
+<section class="relative min-h-[100svh] w-full flex items-end pb-32 pt-24">
+<div class="absolute inset-0 z-0">
+<img alt="Ethereal dreamcore background" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7_8qdOD-Be2QfPOK9lTHopIwOVTRaIhvIO_HvwU-gsjaggwXZ8l-KnMiu9FijGHQEmsMAHO5KDT9zzI-D_OJLAkPncBV0vdf-Q1swrsx9MgVxNLkn1PuZffVH-XO76oTUmPMziu_tquIw29T2EZY_7bBbl48vbl8LGJK48yeaIzSiusx76sNM1xETv13jgC42lWGv9DMkmG1UbDSATMkYGgwz6LDKJKka5tKZHVd-XRLqqZDBQeGkphQNNU_i3FyBcQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none"></div>
+</div>
+<div class="relative z-10 w-full max-w-7xl mx-auto px-container-padding grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
+<div class="glass-panel rounded-3xl p-8 md:p-12 shadow-[0_8px_32px_0_rgba(123,84,85,0.1)]">
+<h1 class="font-display-lg text-display-lg text-primary mb-4 text-shadow-soft">Haven</h1>
+<p class="font-headline-lg text-headline-lg text-on-surface mb-8 text-shadow-soft">Your safe place to check anything.</p>
+<div class="flex flex-col sm:flex-row gap-4 mb-8">
+<button class="inline-flex items-center justify-center px-8 py-4 bg-primary text-on-primary rounded-full font-label-md text-label-md hover:bg-surface-tint transition-colors shadow-lg shadow-primary/20">
+                        Check a message
+                    </button>
+</div>
+<div class="flex flex-wrap gap-x-6 gap-y-3 font-body-md text-body-md text-on-surface-variant">
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-primary" data-icon="check_circle">check_circle</span>Free</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-primary" data-icon="no_accounts">no_accounts</span>No account needed</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-primary" data-icon="timer">timer</span>90 seconds</div>
+</div>
+</div>
+<div class="hidden md:flex justify-end pb-8">
+<div class="animate-bounce p-4 rounded-full glass-panel flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="arrow_downward">arrow_downward</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Checker Tool Section -->
+<section class="py-32 relative bg-surface-container-lowest">
+<div class="max-w-4xl mx-auto px-container-padding relative z-10">
+<div class="glass-panel rounded-xl p-8 md:p-12 text-center bg-surface-container/30 border border-outline-variant/30">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-8">Paste a message to verify</h2>
+<div class="relative max-w-2xl mx-auto">
+<textarea class="w-full bg-surface/50 border border-outline-variant/50 rounded-xl p-6 font-body-lg text-body-lg text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all resize-none min-h-[160px] shadow-[0_4px_24px_0_rgba(0,0,0,0.02)]" placeholder="Paste an email, text message, or link here..."></textarea>
+<button class="absolute bottom-6 right-6 inline-flex items-center justify-center px-6 py-3 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md hover:bg-secondary-fixed transition-colors">
+                        Analyze
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Problem Stats Section -->
+<section class="py-32 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-[#d0e4ff]/30 to-[#ffdad9]/30 pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-container-padding relative z-10">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+<div class="glass-panel p-10 rounded-xl">
+<div class="font-display-lg text-display-lg text-primary mb-2">$10B+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Lost to digital fraud and scams annually. The cost of a single misjudgment is higher than ever.</p>
+</div>
+<div class="glass-panel p-10 rounded-xl">
+<div class="font-display-lg text-display-lg text-secondary mb-2">1 in 4</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant">People targeted by sophisticated phishing attempts every month, across all age groups.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- How it Works -->
+<section class="py-32 bg-surface-container-low relative">
+<div class="max-w-7xl mx-auto px-container-padding">
+<div class="text-center mb-24">
+<h2 class="font-display-md text-display-md text-primary mb-6">How Haven Works</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">A calm, two-step analysis process designed to provide clarity without anxiety.</p>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-center gap-8 relative">
+<!-- Step 1 -->
+<div class="w-full md:w-1/3 glass-panel p-10 rounded-xl relative z-10 text-center border border-primary-container/30 bg-surface/40">
+<div class="w-20 h-20 mx-auto bg-primary-container rounded-full flex items-center justify-center mb-6 shadow-[0_0_24px_rgba(244,194,194,0.5)]">
+<span class="material-symbols-outlined text-[32px] text-on-primary-container" data-icon="policy">policy</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">1. Rules Pass</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">We check structural elements against known malicious patterns and domains instantly.</p>
+</div>
+<!-- Connector -->
+<div class="hidden md:block w-24 h-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-full relative z-0">
+<div class="absolute inset-0 bg-white/50 blur-sm"></div>
+</div>
+<!-- Step 2 -->
+<div class="w-full md:w-1/3 glass-panel p-10 rounded-xl relative z-10 text-center border border-secondary-container/30 bg-surface/40">
+<div class="w-20 h-20 mx-auto bg-secondary-container rounded-full flex items-center justify-center mb-6 shadow-[0_0_24px_rgba(205,225,252,0.5)]">
+<span class="material-symbols-outlined text-[32px] text-on-secondary-container" data-icon="psychology">psychology</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">2. Context Pass</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Our AI evaluates the tone, urgency, and intent of the message for subtle manipulation tactics.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Pillars -->
+<section class="py-32 relative bg-surface-bright overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-[#e1e1f5]/20 to-transparent pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-container-padding relative z-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="p-8 rounded-xl bg-surface/60 border border-outline-variant/20 shadow-[0_4px_24px_rgba(0,0,0,0.02)] backdrop-blur-md">
+<span class="material-symbols-outlined text-[32px] text-tertiary mb-6" data-icon="delete_forever">delete_forever</span>
+<h4 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Never Stored</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Your queries vanish the moment you close the tab. We don't build profiles.</p>
+</div>
+<div class="p-8 rounded-xl bg-surface/60 border border-outline-variant/20 shadow-[0_4px_24px_rgba(0,0,0,0.02)] backdrop-blur-md">
+<span class="material-symbols-outlined text-[32px] text-tertiary mb-6" data-icon="fingerprint">fingerprint</span>
+<h4 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Scrambled Fingerprints</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Any identifiable data is intentionally obfuscated before analysis begins.</p>
+</div>
+<div class="p-8 rounded-xl bg-surface/60 border border-outline-variant/20 shadow-[0_4px_24px_rgba(0,0,0,0.02)] backdrop-blur-md">
+<span class="material-symbols-outlined text-[32px] text-tertiary mb-6" data-icon="health_and_safety">health_and_safety</span>
+<h4 class="font-label-md text-label-md text-on-surface mb-3 uppercase tracking-wider">Your Safety</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Designed to be a neutral, un-opinionated sanctuary from digital anxiety.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Closing -->
+<section class="py-40 bg-background text-center px-container-padding">
+<div class="max-w-4xl mx-auto">
+<h2 class="font-display-md md:font-display-lg text-display-md md:text-display-lg text-primary text-shadow-soft">
+                The best time to ask if something is real is before you respond to it.
+            </h2>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-12 px-container-padding flex flex-col md:flex-row justify-between items-center gap-gutter border-t border-outline-variant/30 bg-surface-container-lowest max-w-7xl mx-auto">
+<div class="font-display-md text-display-md text-primary">Haven</div>
+<p class="font-body-md text-body-md text-tertiary">© 2024 Haven — Your safe place to check anything.</p>
+<div class="flex gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">About</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Privacy</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Terms</a>
+</div>
+</footer>
+</body></html>
+
+<!-- Haven - Home (Mobile) -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haven - Your Safe Place</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#5c5d6e",
+                      "on-surface": "#1a1c1a",
+                      "on-secondary-fixed-variant": "#35485e",
+                      "tertiary-fixed": "#e1e1f5",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dbdad7",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#f2f1ee",
+                      "surface-variant": "#e3e2e0",
+                      "on-background": "#1a1c1a",
+                      "on-secondary-container": "#51647b",
+                      "inverse-primary": "#ecbaba",
+                      "surface": "#faf9f6",
+                      "tertiary-container": "#cdcde0",
+                      "outline-variant": "#d4c2c2",
+                      "outline": "#827473",
+                      "on-primary-container": "#734e4e",
+                      "primary-fixed-dim": "#ecbaba",
+                      "on-tertiary-fixed": "#191b29",
+                      "inverse-surface": "#2f312f",
+                      "primary-fixed": "#ffdad9",
+                      "surface-container": "#efeeeb",
+                      "primary-container": "#f4c2c2",
+                      "tertiary-fixed-dim": "#c5c5d8",
+                      "on-tertiary-fixed-variant": "#444655",
+                      "surface-bright": "#faf9f6",
+                      "secondary-fixed": "#d0e4ff",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e3e2e0",
+                      "secondary": "#4d6077",
+                      "surface-container-high": "#e9e8e5",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#613d3e",
+                      "background": "#faf9f6",
+                      "surface-tint": "#7b5455",
+                      "on-surface-variant": "#504444",
+                      "primary": "#7b5455",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#b4c8e2",
+                      "secondary-container": "#cde1fc",
+                      "surface-container-low": "#f4f3f1",
+                      "on-tertiary-container": "#555767",
+                      "on-secondary-fixed": "#071d30",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#2f1314"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding": "2rem",
+                      "unit": "8px",
+                      "gutter": "1.5rem",
+                      "margin-safe": "1rem"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-md": [
+                              "Libre Caslon Text"
+                      ],
+                      "label-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Libre Caslon Text"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Libre Caslon Text"
+                      ],
+                      "headline-lg": [
+                              "Libre Caslon Text"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-md": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "64px",
+                              {
+                                      "lineHeight": "72px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(123, 84, 85, 0.05);
+        }
+
+        .soft-gradient-bg {
+            background: linear-gradient(135deg, theme('colors.surface-container-lowest') 0%, theme('colors.primary-fixed') 100%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Top Navigation (Mobile) -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-container-padding h-20 mx-auto bg-surface/80 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_32px_0_rgba(123,84,85,0.08)]">
+<a class="font-display-md text-3xl md:text-display-md text-primary tracking-tight" href="#">Haven</a>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden p-2 text-primary">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<!-- Desktop Links (Hidden on Mobile) -->
+<div class="hidden md:flex items-center gap-8">
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">How it Works</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">Privacy</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">Checker</a>
+</div>
+<button class="hidden md:block px-6 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors">
+            Get Started
+        </button>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-20">
+<!-- Hero Section (Full Bleed Mobile) -->
+<section class="relative w-full h-[80vh] min-h-[600px] flex flex-col justify-end pb-12 px-4 md:px-container-padding overflow-hidden">
+<!-- Background Image with Soft Scrim -->
+<div class="absolute inset-0 z-0">
+<img alt="" class="w-full h-full object-cover object-center" data-alt="A serene, expansive architectural space bathed in soft, ethereal pink and violet light. Large arched windows reveal a dreamlike cloudy sky. The floor is highly polished light marble, reflecting the pastel sky and subtle neon glow along the wall base. Minimalist, premium, soft dreamcore aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBnr1eZ4vbZJuRB7j3q-uwIzF8tqbYuuqUozWGvdq3GOoNMbfUjMgsBdPSA9fdZQ9FsUzrT_LGkYNNj99gbtwdgm-Lm4Wicy-3pOP2YiT-lYLqDP9mT-E4_auooWEPIQE7CkSBPiFBgRh6EA4zRFTzxd7b7uE9_DjpjENLKxd3M8ZZXcb8MUcNrO5M1dO1OGqB3fwTc6K8pV5mbZs4A8fKNi_HdD78Wa3zT8hqybNzkKX59dmTuBjJ-LkHi3GqXG6OmA"/>
+<!-- Soft gradient overlay to ensure text legibility at bottom -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+</div>
+<!-- Hero Content -->
+<div class="relative z-10 max-w-xl">
+<h1 class="font-headline-lg-mobile md:font-display-lg text-headline-lg-mobile md:text-display-lg text-primary mb-4 drop-shadow-sm">Find clarity in the noise.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-sm">A serene space to check facts, verify information, and find peace of mind.</p>
+<button class="w-full md:w-auto px-8 py-4 rounded-full bg-primary/90 text-on-primary font-label-md text-label-md backdrop-blur-md hover:bg-primary transition-all shadow-[0_4px_16px_rgba(123,84,85,0.3)]">
+                    Start Checking
+                </button>
+</div>
+</section>
+<!-- Problem Section (Soft Gradient) -->
+<section class="py-24 px-4 md:px-container-padding soft-gradient-bg">
+<div class="max-w-4xl mx-auto space-y-12">
+<div class="text-center">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-6">The burden of uncertainty.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">In a world of endless feeds and conflicting voices, finding what's true feels heavier than ever. We built Haven to lift that weight.</p>
+</div>
+<!-- Bento Grid of Problems -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="glass-panel p-8 rounded-3xl flex flex-col gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">psychology</span>
+<h3 class="font-label-md text-label-md text-primary">Information Overload</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Too many sources, too little clarity. The constant stream of data creates anxiety and doubt.</p>
+</div>
+<div class="glass-panel p-8 rounded-3xl flex flex-col gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">visibility_off</span>
+<h3 class="font-label-md text-label-md text-primary">Hidden Agendas</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">It's hard to know who to trust when every platform seems to be pushing a narrative.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-4 md:px-container-padding flex flex-col md:flex-row justify-between items-center gap-gutter bg-surface-container-lowest border-t border-outline-variant/30">
+<div class="font-display-md text-2xl text-primary tracking-tight">Haven</div>
+<p class="font-body-md text-sm text-tertiary text-center md:text-left">© 2024 Haven — Your safe place to check anything.</p>
+<div class="flex gap-6">
+<a class="font-body-md text-sm text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">About</a>
+<a class="font-body-md text-sm text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Privacy</a>
+<a class="font-body-md text-sm text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Terms</a>
+</div>
+</footer>
+</body></html>
+
+<!-- Haven - Verdict: Scam -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haven - Scam Verdict</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#5c5d6e",
+                        "on-surface": "#1a1c1a",
+                        "on-secondary-fixed-variant": "#35485e",
+                        "tertiary-fixed": "#e1e1f5",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dbdad7",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-variant": "#e3e2e0",
+                        "on-background": "#1a1c1a",
+                        "on-secondary-container": "#51647b",
+                        "inverse-primary": "#ecbaba",
+                        "surface": "#faf9f6",
+                        "tertiary-container": "#cdcde0",
+                        "outline-variant": "#d4c2c2",
+                        "outline": "#827473",
+                        "on-primary-container": "#734e4e",
+                        "primary-fixed-dim": "#ecbaba",
+                        "on-tertiary-fixed": "#191b29",
+                        "inverse-surface": "#2f312f",
+                        "primary-fixed": "#ffdad9",
+                        "surface-container": "#efeeeb",
+                        "primary-container": "#f4c2c2",
+                        "tertiary-fixed-dim": "#c5c5d8",
+                        "on-tertiary-fixed-variant": "#444655",
+                        "surface-bright": "#faf9f6",
+                        "secondary-fixed": "#d0e4ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e3e2e0",
+                        "secondary": "#4d6077",
+                        "surface-container-high": "#e9e8e5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#613d3e",
+                        "background": "#faf9f6",
+                        "surface-tint": "#7b5455",
+                        "on-surface-variant": "#504444",
+                        "primary": "#7b5455",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b4c8e2",
+                        "secondary-container": "#cde1fc",
+                        "surface-container-low": "#f4f3f1",
+                        "on-tertiary-container": "#555767",
+                        "on-secondary-fixed": "#071d30",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#2f1314"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "2rem",
+                        "unit": "8px",
+                        "gutter": "1.5rem",
+                        "margin-safe": "1rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-md": ["Libre Caslon Text"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Libre Caslon Text"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Libre Caslon Text"],
+                        "headline-lg": ["Libre Caslon Text"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-md": ["48px", { "lineHeight": "56px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background: linear-gradient(135deg, #fce4ec 0%, #e3f2fd 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-padding h-20 max-w-7xl mx-auto bg-surface/60 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_32px_0_rgba(123,84,85,0.08)]">
+<div class="font-display-md text-display-md text-primary tracking-tight font-bold">Haven</div>
+<div class="hidden md:flex gap-gutter items-center">
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">How it Works</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">Privacy</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary/40 hover:opacity-100 hover:text-primary transition-all duration-300" href="#">Checker</a>
+</div>
+<button class="bg-primary text-on-primary rounded-full px-6 py-2 font-label-md text-label-md hover:opacity-90 transition-opacity">Get Started</button>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center pt-24 pb-12 px-margin-safe relative overflow-hidden">
+<!-- Decorative Ambient Blooms -->
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-error-container/30 rounded-full blur-3xl -z-10 mix-blend-multiply"></div>
+<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl -z-10 mix-blend-multiply"></div>
+<div class="w-full max-w-2xl">
+<!-- Glassmorphic Result Card -->
+<div class="glass-card rounded-xl p-8 md:p-12 shadow-xl flex flex-col items-center text-center">
+<!-- Verdict Icon -->
+<div class="w-24 h-24 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-8 shadow-inner">
+<span class="material-symbols-outlined text-[48px]" style="font-variation-settings: 'FILL' 1;">gpp_bad</span>
+</div>
+<!-- Headline -->
+<h1 class="font-display-lg text-display-lg text-error mb-4">This looks like a scam</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto mb-10">
+                    We've analyzed the message and identified several red flags indicating it is likely not legitimate. Proceed with extreme caution.
+                </p>
+<!-- Reasons List (Bento-style layout for reasons) -->
+<div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 text-left">
+<div class="bg-surface/50 rounded-lg p-6 border border-white/30 backdrop-blur-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-error mt-1">link_off</span>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Suspicious Link</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">The URL directs to a known malicious domain recently registered to mimic official services.</p>
+</div>
+</div>
+</div>
+<div class="bg-surface/50 rounded-lg p-6 border border-white/30 backdrop-blur-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-error mt-1">priority_high</span>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Urgency Tactic</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">The language creates a false sense of immediate panic, a common psychological manipulation.</p>
+</div>
+</div>
+</div>
+<div class="bg-surface/50 rounded-lg p-6 border border-white/30 backdrop-blur-sm md:col-span-2">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-error mt-1">account_circle_off</span>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Impersonation</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">The sender details do not match the official communication channels of the claimed organization.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+<button class="glass-card font-label-md text-label-md text-primary px-8 py-3 rounded-full hover:bg-white/50 transition-colors border-primary/20">
+                        Check another message
+                    </button>
+<button class="bg-surface text-on-surface font-label-md text-label-md px-8 py-3 rounded-full shadow-sm hover:shadow-md transition-shadow">
+                        Read safety guide
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-container-padding flex flex-col md:flex-row justify-between items-center gap-gutter bg-surface-container-lowest border-t border-outline-variant/30 relative z-10">
+<div class="font-display-md text-display-md text-primary">Haven</div>
+<div class="font-body-md text-body-md text-tertiary">
+            © 2024 Haven — Your safe place to check anything.
+        </div>
+<div class="flex gap-6 font-body-md text-body-md">
+<a class="text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">About</a>
+<a class="text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Privacy</a>
+<a class="text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Terms</a>
+</div>
+</footer>
+</body></html>
+
+<!-- Haven - Verdict: Safe -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haven - Safety Check Result</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#5c5d6e",
+                      "on-surface": "#1a1c1a",
+                      "on-secondary-fixed-variant": "#35485e",
+                      "tertiary-fixed": "#e1e1f5",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dbdad7",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#f2f1ee",
+                      "surface-variant": "#e3e2e0",
+                      "on-background": "#1a1c1a",
+                      "on-secondary-container": "#51647b",
+                      "inverse-primary": "#ecbaba",
+                      "surface": "#faf9f6",
+                      "tertiary-container": "#cdcde0",
+                      "outline-variant": "#d4c2c2",
+                      "outline": "#827473",
+                      "on-primary-container": "#734e4e",
+                      "primary-fixed-dim": "#ecbaba",
+                      "on-tertiary-fixed": "#191b29",
+                      "inverse-surface": "#2f312f",
+                      "primary-fixed": "#ffdad9",
+                      "surface-container": "#efeeeb",
+                      "primary-container": "#f4c2c2",
+                      "tertiary-fixed-dim": "#c5c5d8",
+                      "on-tertiary-fixed-variant": "#444655",
+                      "surface-bright": "#faf9f6",
+                      "secondary-fixed": "#d0e4ff",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e3e2e0",
+                      "secondary": "#4d6077",
+                      "surface-container-high": "#e9e8e5",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#613d3e",
+                      "background": "#faf9f6",
+                      "surface-tint": "#7b5455",
+                      "on-surface-variant": "#504444",
+                      "primary": "#7b5455",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#b4c8e2",
+                      "secondary-container": "#cde1fc",
+                      "surface-container-low": "#f4f3f1",
+                      "on-tertiary-container": "#555767",
+                      "on-secondary-fixed": "#071d30",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#2f1314"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding": "2rem",
+                      "unit": "8px",
+                      "gutter": "1.5rem",
+                      "margin-safe": "1rem"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-md": [
+                              "Libre Caslon Text"
+                      ],
+                      "label-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Libre Caslon Text"
+                      ],
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Libre Caslon Text"
+                      ],
+                      "headline-lg": [
+                              "Libre Caslon Text"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-md": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "64px",
+                              {
+                                      "lineHeight": "72px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            /* Soft pastel gradient wash for background */
+            background-image: radial-gradient(circle at 50% 0%, rgba(208, 228, 255, 0.4) 0%, transparent 70%),
+                              radial-gradient(circle at 100% 100%, rgba(244, 194, 194, 0.3) 0%, transparent 60%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-col;
+        }
+
+        /* Glassmorphism utilities */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(123, 84, 85, 0.05);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 16px rgba(123, 84, 85, 0.1);
+        }
+
+        /* Ambient bloom effect for active/safe elements */
+        .bloom-safe {
+            box-shadow: 0 0 40px rgba(77, 96, 119, 0.15); /* Soft secondary color bloom */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col font-body-md antialiased text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Suppressed for transactional result screen) -->
+<!-- Nav purposefully omitted to focus user on the result canvas -->
+<!-- Main Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center p-margin-safe md:p-container-padding w-full max-w-4xl mx-auto relative z-10 my-12">
+<!-- Brand Marker (Subtle, top of canvas) -->
+<div class="mb-8 flex flex-col items-center gap-2 opacity-80">
+<span class="material-symbols-outlined text-4xl text-primary" data-icon="verified_user" style="font-variation-settings: 'FILL' 0;">verified_user</span>
+<h2 class="font-display-md text-headline-lg-mobile md:text-headline-lg text-primary tracking-tight">Haven</h2>
+</div>
+<!-- Result Card (Glassmorphism) -->
+<div class="glass-card rounded-xl p-8 md:p-12 w-full flex flex-col items-center text-center bloom-safe transform transition-all duration-700 ease-out translate-y-0 opacity-100">
+<!-- Icon/Status Indicator -->
+<div class="w-24 h-24 rounded-full bg-surface flex items-center justify-center mb-6 shadow-[0_4px_24px_rgba(77,96,119,0.1)] border border-white/50 relative">
+<!-- Inner glow for safe status -->
+<div class="absolute inset-0 rounded-full bg-secondary-container opacity-40 blur-md"></div>
+<span class="material-symbols-outlined text-5xl text-secondary relative z-10" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Headlines -->
+<h1 class="font-display-md text-headline-lg-mobile md:text-display-md text-on-surface mb-3 tracking-tight">This looks legitimate</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-lg">
+                We've analyzed the message and haven't found any common indicators of a scam or phishing attempt.
+            </p>
+<!-- Details List (Bento-style layout within card) -->
+<div class="w-full text-left bg-surface/40 rounded-lg p-6 border border-white/30 backdrop-blur-sm mb-10 shadow-sm">
+<h3 class="font-label-md text-label-md text-tertiary uppercase tracking-wider mb-4 border-b border-outline-variant/30 pb-2">Analysis Details</h3>
+<ul class="space-y-4 font-body-md text-body-md text-on-surface">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5" data-icon="link" style="font-variation-settings: 'FILL' 0;">link</span>
+<div>
+<span class="block font-semibold text-on-surface">No Suspicious Links</span>
+<span class="block text-on-surface-variant text-sm mt-0.5">The URLs provided match known, safe domains.</span>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5" data-icon="gpp_good" style="font-variation-settings: 'FILL' 0;">gpp_good</span>
+<div>
+<span class="block font-semibold text-on-surface">Verified Sender Identity</span>
+<span class="block text-on-surface-variant text-sm mt-0.5">The sender profile aligns with established historical data.</span>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5" data-icon="format_quote" style="font-variation-settings: 'FILL' 0;">format_quote</span>
+<div>
+<span class="block font-semibold text-on-surface">Standard Language Patterns</span>
+<span class="block text-on-surface-variant text-sm mt-0.5">No artificial urgency or typical manipulation phrases detected.</span>
+</div>
+</li>
+</ul>
+</div>
+<!-- Action -->
+<a class="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-[0_4px_16px_rgba(123,84,85,0.2)] hover:bg-primary/90 hover:shadow-[0_8px_24px_rgba(123,84,85,0.3)] transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="search" style="font-variation-settings: 'FILL' 0;">search</span>
+                Check another message
+            </a>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-container-padding flex flex-col md:flex-row justify-between items-center gap-gutter bg-surface-container-lowest dark:bg-surface-container-low border-t border-outline-variant/30 mt-auto relative z-10">
+<div class="font-display-md text-display-md text-primary dark:text-primary-fixed-dim text-2xl md:text-3xl">
+            Haven
+        </div>
+<div class="flex items-center gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">About</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Privacy</a>
+<a class="font-body-md text-body-md text-on-surface-variant opacity-70 hover:text-primary hover:opacity-100 transition-colors" href="#">Terms</a>
+</div>
+<div class="font-body-md text-body-md text-tertiary dark:text-tertiary-fixed-dim text-sm text-center md:text-right">
+            © 2024 Haven — Your safe place to check anything.
+        </div>
+</footer>
+</body></html>
+
+<!-- Haven - Verdict: Uncertain -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haven - Uncertain Verdict</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        tertiary: "#5c5d6e",
+                        "on-surface": "#1a1c1a",
+                        "on-secondary-fixed-variant": "#35485e",
+                        "tertiary-fixed": "#e1e1f5",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dbdad7",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f2f1ee",
+                        "surface-variant": "#e3e2e0",
+                        "on-background": "#1a1c1a",
+                        "on-secondary-container": "#51647b",
+                        "inverse-primary": "#ecbaba",
+                        surface: "#faf9f6",
+                        "tertiary-container": "#cdcde0",
+                        "outline-variant": "#d4c2c2",
+                        outline: "#827473",
+                        "on-primary-container": "#734e4e",
+                        "primary-fixed-dim": "#ecbaba",
+                        "on-tertiary-fixed": "#191b29",
+                        "inverse-surface": "#2f312f",
+                        "primary-fixed": "#ffdad9",
+                        "surface-container": "#efeeeb",
+                        "primary-container": "#f4c2c2",
+                        "tertiary-fixed-dim": "#c5c5d8",
+                        "on-tertiary-fixed-variant": "#444655",
+                        "surface-bright": "#faf9f6",
+                        "secondary-fixed": "#d0e4ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e3e2e0",
+                        secondary: "#4d6077",
+                        "surface-container-high": "#e9e8e5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#613d3e",
+                        background: "#faf9f6",
+                        "surface-tint": "#7b5455",
+                        "on-surface-variant": "#504444",
+                        primary: "#7b5455",
+                        error: "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b4c8e2",
+                        "secondary-container": "#cde1fc",
+                        "surface-container-low": "#f4f3f1",
+                        "on-tertiary-container": "#555767",
+                        "on-secondary-fixed": "#071d30",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#2f1314"
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "container-padding": "2rem",
+                        unit: "8px",
+                        gutter: "1.5rem",
+                        "margin-safe": "1rem"
+                    },
+                    fontFamily: {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-md": ["Libre Caslon Text"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Libre Caslon Text"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Libre Caslon Text"],
+                        "headline-lg": ["Libre Caslon Text"]
+                    },
+                    fontSize: {
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "display-md": ["48px", { lineHeight: "56px", fontWeight: "400" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "-0.02em", fontWeight: "400" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "400" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .dream-gradient {
+            background: linear-gradient(135deg, rgba(244,194,194,0.3) 0%, rgba(205,205,224,0.3) 50%, rgba(250,249,246,0.5) 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 15s ease infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(123, 84, 85, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen dream-gradient flex flex-col relative overflow-x-hidden antialiased">
+<!-- Top Navigation suppressed due to Transactional/Result nature -->
+<header class="w-full py-8 px-container-padding flex justify-center items-center absolute top-0 left-0 z-10">
+<div class="font-display-md text-display-md text-primary tracking-tight">Haven</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-4 sm:px-container-padding py-24 sm:py-32 relative z-0">
+<div class="glass-card w-full max-w-2xl rounded-xl p-8 sm:p-12 flex flex-col items-center text-center space-y-8">
+<div class="w-24 h-24 rounded-full bg-amber-100/50 flex items-center justify-center shadow-[0_0_40px_rgba(251,191,36,0.3)] border border-amber-200/30">
+<span class="material-symbols-outlined text-5xl text-amber-600" data-icon="help_center" style="font-variation-settings: 'FILL' 1;">help_center</span>
+</div>
+<div class="space-y-4">
+<h1 class="font-display-md text-display-md text-amber-700 hidden md:block">We're not sure about this one</h1>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-amber-700 md:hidden">We're not sure about this one</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">
+                    The signals are mixed. While we haven't found definitive proof this is a scam, there are enough unusual patterns that we recommend extreme caution.
+                </p>
+</div>
+<div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 text-left">
+<!-- Red Flags -->
+<div class="bg-surface/50 rounded-lg p-6 border border-white/20">
+<div class="flex items-center space-x-2 mb-4">
+<span class="material-symbols-outlined text-error" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h3 class="font-label-md text-label-md text-on-surface">REASONS FOR CAUTION</h3>
+</div>
+<ul class="space-y-3">
+<li class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-error opacity-70 mt-0.5" data-icon="priority_high">priority_high</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Sense of urgency in the message tone.</span>
+</li>
+<li class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-error opacity-70 mt-0.5" data-icon="link_off">link_off</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Link redirects through multiple unknown domains.</span>
+</li>
+</ul>
+</div>
+<!-- Green Flags -->
+<div class="bg-surface/50 rounded-lg p-6 border border-white/20">
+<div class="flex items-center space-x-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<h3 class="font-label-md text-label-md text-on-surface">POSITIVE SIGNS</h3>
+</div>
+<ul class="space-y-3">
+<li class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-primary opacity-70 mt-0.5" data-icon="check">check</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Sender's domain matches a known entity.</span>
+</li>
+<li class="flex items-start space-x-3">
+<span class="material-symbols-outlined text-primary opacity-70 mt-0.5" data-icon="check">check</span>
+<span class="font-body-md text-body-md text-on-surface-variant">No explicit requests for immediate payment.</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="pt-8 w-full flex justify-center">
+<button class="bg-primary/10 hover:bg-primary/20 text-primary font-label-md text-label-md rounded-full px-8 py-4 transition-all duration-300 flex items-center space-x-2 border border-primary/20">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span>Check another message</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer suppressed for clean Result screen -->
+</body></html>
